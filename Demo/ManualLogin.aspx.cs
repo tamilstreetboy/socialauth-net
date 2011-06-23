@@ -18,8 +18,11 @@ namespace Brickred.SocialAuth.NET.Demo
 
         protected void btn_Click(object sender, EventArgs e)
         {
-            PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), e.ToString().ToUpper());
+            PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE),((Button)sender).Text.ToUpper());
             SocialAuthUser objUser = new SocialAuthUser(selectedProvider);
+            objUser.Login(); 
+            //Login method also accepts a parameter for URL to which user should be redirected after login. If not specified, 
+            //automatically defaultUrl as set in Web.Config will be picked for redirection.
         }
 
     }
