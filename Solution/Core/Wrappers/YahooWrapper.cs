@@ -36,6 +36,9 @@ using System.Xml.Linq;
 
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
+    /// <summary>
+    /// Contains OAuth implementation for Yahoo
+    /// </summary>
     class YahooWrapper : Provider, IProvider
     {
         private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(YahooWrapper));
@@ -201,7 +204,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             string outUrl = "";
             string queryString = "";
 
-            string sig = oAuth.GenerateSignature(new Uri(string.Format(ProfileEndpoint,ContextToken.SessionGUID)),
+            string sig = oAuth.GenerateSignature(new Uri(string.Format(ProfileEndpoint, ContextToken.SessionGUID)),
                Consumerkey, Consumersecret,
                Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
                 TransportName.ToString(), timeStamp, nonce,
@@ -210,7 +213,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             sig = Utility.UrlEncodeForSigningRequest(sig);
 
             string rawProfileData = "";
-            StringBuilder sb = new StringBuilder(string.Format(ProfileEndpoint,ContextToken.SessionGUID) + "?");
+            StringBuilder sb = new StringBuilder(string.Format(ProfileEndpoint, ContextToken.SessionGUID) + "?");
             sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
             sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
             sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
@@ -233,20 +236,20 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 XDocument xDoc = XDocument.Parse(rawProfileData);
                 UserProfile profile = new UserProfile();
                 XNamespace xn = xDoc.Root.GetDefaultNamespace();
-                profile.FirstName = xDoc.Root.Element(xn + "givenName").Value;
-                profile.LastName = xDoc.Root.Element(xn + "familyName").Value;
-                profile.DateOfBirth = xDoc.Root.Element(xn + "birthdate").Value;
-                profile.Country = xDoc.Root.Element(xn + "location").Value;
-                profile.ProfileURL = xDoc.Root.Element(xn + "profileUrl").Value;
-                profile.ProfilePictureURL = xDoc.Root.Element(xn + "image").Element(xn + "imageUrl").Value;
-                profile.Language = xDoc.Root.Element(xn + "lang").Value;
-                profile.Gender = xDoc.Root.Element(xn + "gender").Value;
-                logger.LogProfileResponse( null);
+                profile.FirstName = xDoc.Root.Element(xn + "givenName") != null ? xDoc.Root.Element(xn + "givenName").Value : string.Empty;
+                profile.LastName = xDoc.Root.Element(xn + "familyName") != null ? xDoc.Root.Element(xn + "familyName").Value : string.Empty;
+                profile.DateOfBirth = xDoc.Root.Element(xn + "birthdate") != null ? xDoc.Root.Element(xn + "birthdate").Value : string.Empty;
+                profile.Country = xDoc.Root.Element(xn + "location") != null ? xDoc.Root.Element(xn + "location").Value : string.Empty;
+                profile.ProfileURL = xDoc.Root.Element(xn + "profileUrl") != null ? xDoc.Root.Element(xn + "profileUrl").Value : string.Empty;
+                profile.ProfilePictureURL = xDoc.Root.Element(xn + "image") != null ? xDoc.Root.Element(xn + "image").Element(xn + "imageUrl").Value : string.Empty;
+                profile.Language = xDoc.Root.Element(xn + "lang") != null ? xDoc.Root.Element(xn + "lang").Value : string.Empty;
+                profile.Gender = xDoc.Root.Element(xn + "gender") != null ? xDoc.Root.Element(xn + "gender").Value : string.Empty;
+                logger.LogProfileResponse(null);
                 return profile;
             }
             catch (Exception ex)
             {
-                logger.LogProfileResponse( ex);
+                logger.LogProfileResponse(ex);
                 throw;
             }
 
@@ -261,7 +264,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             string outUrl = "";
             string queryString = "";
 
-            string sig = oAuth.GenerateSignature(new Uri(string.Format(ContactsEndpoint,ContextToken.SessionGUID)),
+            string sig = oAuth.GenerateSignature(new Uri(string.Format(ContactsEndpoint, ContextToken.SessionGUID)),
                Consumerkey, Consumersecret,
                Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
                 TransportName.ToString(), timeStamp, nonce,
@@ -270,7 +273,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             sig = Utility.UrlEncodeForSigningRequest(sig);
 
             string rawContactsData = "";
-            StringBuilder sb = new StringBuilder(string.Format(ContactsEndpoint,ContextToken.SessionGUID) + "?");
+            StringBuilder sb = new StringBuilder(string.Format(ContactsEndpoint, ContextToken.SessionGUID) + "?");
             sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
             sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
             sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
@@ -342,6 +345,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
 
 
-       
+
     }
 }

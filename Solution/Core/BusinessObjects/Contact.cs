@@ -30,11 +30,26 @@ using System.Text;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
+    /// <summary>
+    /// Contains information of logged in user's friends/contacts
+    /// </summary>
     public class Contact
     {
-        public string Name { get; set; }
-        public string ID { get; set; }
-        public string Email { get; set; }
-        public string ProfileURL { get; set; }
+        /// <summary>
+        /// Gets Firstname and Lastname of a contact
+        /// </summary>
+        public string Name {  get; internal set; }
+        /// <summary>
+        /// Gets provider's specific UserID (if provided by provider)
+        /// </summary>
+        public string ID { get; internal set; }
+        /// <summary>
+        /// Gets EmailID of a contact (if provided by provider)
+        /// </summary>
+        public string Email { get; internal set; }
+        /// <summary>
+        /// Gets Profile URL of a contact (if provided by provider)
+        /// </summary>
+        public string ProfileURL { get; internal set; }
     }
 }

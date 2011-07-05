@@ -82,8 +82,8 @@ namespace Brickred.SocialAuth.NET.Core
                 //Process response recevied post authentication call
                 (ProviderFactory.GetProvider(token.provider)).ProcessAuthenticationResponse();
 
-                if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None
-                    && Utility.GetConfiguration().Authentication.Enabled == true)
+                if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
+                    Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
                 {
                     FormsAuthenticationTicket ticket =
                         new FormsAuthenticationTicket(SocialAuthUser.GetCurrentUser().Profile.Email, false, 20);
@@ -97,6 +97,7 @@ namespace Brickred.SocialAuth.NET.Core
                 {
                     FormsAuthentication.RedirectFromLoginPage(SocialAuthUser.GetCurrentUser().Profile.Email, false);
                 }
+
 
             }
         }
@@ -157,6 +158,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         private void LogOut()
         {
+            string callbackUrl = SocialAuthUser.GetCurrentUser().contextToken.CallbackURL;
             //cleanup any cookie
             FormsAuthentication.SignOut();
             current.Session.Abandon();
@@ -164,8 +166,16 @@ namespace Brickred.SocialAuth.NET.Core
             if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None)
             {
                 string loginFormUrl = Utility.GetConfiguration().Authentication.LoginUrl;
-                if (loginFormUrl == "")
+                if (loginFormUrl == "" && Utility.GetConfiguration().Authentication.Enabled == true)
                     loginFormUrl = "SocialAuth/LoginForm.sauth";
+                else if (Utility.GetConfiguration().Authentication.Enabled == false)
+                {
+                    if (callbackUrl == "")
+
+                        current.Response.Redirect(current.Request.UrlReferrer.ToString());
+                    else
+                        current.Response.Redirect(callbackUrl);
+                }
                 current.Response.Redirect(current.Request.GetBaseURL() + loginFormUrl);
             }
             else

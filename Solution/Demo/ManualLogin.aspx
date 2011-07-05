@@ -53,6 +53,7 @@
                   <td onclick="Login('google')">Google</td>
                   <td onclick="Login('yahoo')">Yahoo</td>
                   <td onclick="Login('msn')">MSN</td>
+                   <td onclick="Login('twitter')">Twitter</td>
             </tr>
         </table>
         <br /><br />
