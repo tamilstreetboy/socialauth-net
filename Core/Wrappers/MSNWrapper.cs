@@ -35,6 +35,9 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
+    /// <summary>
+    /// Contains OAuth implementation for MSN
+    /// </summary>
     class MSNWrapper : Provider, IProvider
     {
         private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(GoogleWrapper));
@@ -101,7 +104,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
             string processedUrl = Utility.http_build_query(data);
             logger.LogAuthenticationRequest(processedUrl);
-            Current.Response.Redirect(RequestTokenURL + "?" + processedUrl);// + "&wrap_callback=http://opensource.brickred.com/Demo/socialAuth/Validate.sauth");
+            Current.Response.Redirect(RequestTokenURL + "?" + processedUrl);
         }
 
         public override void ProcessAuthenticationResponse()

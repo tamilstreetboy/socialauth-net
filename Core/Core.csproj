@@ -79,6 +79,7 @@
     <Compile Include="Wrappers\FacebookWrapper.cs" />
     <Compile Include="Wrappers\GoogleWrapper.cs" />
     <Compile Include="Wrappers\MSNWrapper.cs" />
+    <Compile Include="Wrappers\TwitterWrapper.cs" />
     <Compile Include="Wrappers\YahooWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

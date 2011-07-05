@@ -62,7 +62,8 @@ namespace Brickred.SocialAuth.NET.Core
                 url.Append(request.Url.Port);
             }
             url.Append(request.ApplicationPath);
-            url.Append("/");
+            if (!url.ToString().EndsWith("/"))
+                url.Append("/");
             return url.ToString();
 
         }
@@ -73,7 +74,7 @@ namespace Brickred.SocialAuth.NET.Core
 
 public static class IdentityExtensions
 {
-    
+
     public static bool IsSTSaware(this HttpApplication app)
     {
         HttpModuleCollection activeModules = app.Modules;

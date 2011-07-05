@@ -44,7 +44,7 @@ namespace Brickred.SocialAuth.NET.Core
             get { return HttpContext.Current; }
         }
 
-        protected Token ContextToken
+        internal Token ContextToken
         {
             get { return SocialAuthUser.GetCurrentUser().contextToken; }
         }

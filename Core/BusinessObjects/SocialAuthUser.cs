@@ -31,7 +31,9 @@ using System.Web.Security;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
-
+    /// <summary>
+    /// Represents the user in context
+    /// </summary>
     public class SocialAuthUser
     {
 
@@ -45,12 +47,20 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         #endregion
 
         #region UTILITY_METHODS_PROPERTIES
-
+        /// <summary>
+        /// Returns an instance of user in context
+        /// </summary>
+        /// <returns></returns>
         public static SocialAuthUser GetCurrentUser()
         {
             if (HttpContext.Current.Session["socialauthuser"] == null)
             {
-                HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
+                if (Utility.GetConfiguration().Authentication.Enabled)
+                    HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
+                else
+                {
+                    return null;
+                }
             }
             return (SocialAuthUser)HttpContext.Current.Session["socialauthuser"];
         }
@@ -64,12 +74,18 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         internal UserProfile Profile { get; set; }
 
+        /// <summary>
+        /// Returns a GUID to identify current user
+        /// </summary>
         public Guid Identifier { get { return identifier; } }
 
         #endregion
 
         #region INITIALIZATION
-
+        /// <summary>
+        /// Initializes context user object
+        /// </summary>
+        /// <param name="providerType">Provider selected for authentication</param>
         public SocialAuthUser(PROVIDER_TYPE providerType)
         {
             contextUser = this;
@@ -81,6 +97,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             this.providerType = providerType.ToString();
         }
 
+        /// <summary>
+        /// Initializes context user object
+        /// </summary>
+        /// <param name="provider">Provider selected for authentication</param>
         public static void CreateUser(PROVIDER_TYPE provider)
         {
             SocialAuthUser objUser = new SocialAuthUser(provider);
@@ -90,12 +110,15 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         #region OAUTH_IMPLEMENTATION
 
-        private void Login(string defaultURL)
+        public void Login(string defaultURL)
         {
             contextUser.contextToken.CallbackURL = (defaultURL.Contains("http") ? defaultURL : current.Request.GetBaseURL() + defaultURL);
             provider.RequestUserAuthentication();
         }
 
+        /// <summary>
+        /// Redirects user to provider's login for authentication
+        /// </summary>
         public void Login()
         {
             string callbackUrl = "";
@@ -109,11 +132,19 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             Login(callbackUrl);
         }
 
+        /// <summary>
+        /// Returns contacts list of context user
+        /// </summary>
+        /// <returns></returns>
         public List<Contact> GetContacts()
         {
             return provider.GetContacts();
         }
 
+        /// <summary>
+        /// Returns profile of context user
+        /// </summary>
+        /// <returns></returns>
         public UserProfile GetProfile()
         {
             if (Profile == null)
@@ -121,6 +152,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             return Profile;
         }
 
+        /// <summary>
+        /// Returns boolean value indicating if a user is logged in
+        /// </summary>
+        /// <returns></returns>
         public static bool IsLoggedIn()
         {
             if (GetCurrentUser() == null)
@@ -135,11 +170,19 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             set;
         }
 
+        /// <summary>
+        /// Logs out user for current application (not provider) and redirects to login screen
+        /// </summary>
         public void Logout()
         {
+            
                   HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
         }
 
+        /// <summary>
+        /// Logs out user for current application (not provider) and redirects to specified URL
+        /// </summary>
+        /// <param name="callbackURL">URL where user should be redirected after logout</param>
         public void Logout(string callbackURL)
         {
             SocialAuthUser.GetCurrentUser().contextToken.CallbackURL = callbackURL;
@@ -151,6 +194,9 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             Provider.SetIClaims();
         }
 
+        /// <summary>
+        /// Returns name of provider used for authenticating context user
+        /// </summary>
         public string ProviderName
         {
             get

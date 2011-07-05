@@ -36,7 +36,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
-
+    /// <summary>
+    /// Contains OAuth implementation for Facebook
+    /// </summary>
     class FacebookWrapper : Provider, IProvider
     {
 
@@ -176,14 +178,17 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                         profile.FirstName = jsonObject.SelectToken("first_name").ToString();
                         profile.LastName = jsonObject.SelectToken("last_name").ToString();
                         string[] locale = jsonObject.SelectToken("locale").ToString().Split(new char[] { '_' });
-                        profile.Language = locale[0];
-                        profile.Country = locale[1];
+                        if (locale.Length > 0)
+                        {
+                            profile.Language = locale[0];
+                            profile.Country = locale[1];
+                        }
                         profile.ProfileURL = jsonObject.SelectToken("link").ToString();
                         profile.Email = HttpUtility.UrlDecode(jsonObject.SelectToken("email").ToString());
-                        profile.DateOfBirth = jsonObject.SelectToken("birthday").ToString().Replace(@"""", "");
+                        profile.DateOfBirth = jsonObject.SelectToken("birthday") != null ? jsonObject.SelectToken("birthday").ToString().Replace(@"""", "") : string.Empty;
                         profile.Gender = jsonObject.SelectToken("gender").ToString();
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -207,8 +212,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 logger.LogProfileResponse(ex);
                 throw;
             }
-            
-           
+
+
         }
 
         public override List<Contact> GetContacts()
@@ -239,7 +244,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogContactsResponse(ex);
                 throw;
@@ -251,6 +256,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         #endregion
 
 
-      
+
     }
 }

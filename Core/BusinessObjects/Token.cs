@@ -30,7 +30,7 @@ using System.Web;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
-    public class Token
+    internal class Token
     {
         public PROVIDER_TYPE provider { get; set; }
         public string AuthenticationToken { get; set; }

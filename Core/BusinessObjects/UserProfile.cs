@@ -29,17 +29,50 @@ using System.Text;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
+    /// <summary>
+    /// Contains information about context user
+    /// </summary>
     public class UserProfile
     {
-        public string ID { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string ProfilePictureURL { get; set; }
-        public string Language { get; set; }
-        public string Country { get; set; }
-        public string ProfileURL { get; set; }
-        public string DateOfBirth { get; set; }
-        public string Gender { get; set; }
+        /// <summary>
+        /// Gets ID of user at provider
+        /// </summary>
+        public string ID { get; internal set; }
+        /// <summary>
+        /// Gets first name of user
+        /// </summary>
+        public string FirstName { get; internal set; }
+        /// <summary>
+        /// Gets last name of user
+        /// </summary>
+        public string LastName { get; internal set; }
+        /// <summary>
+        /// Gets Email ID of user
+        /// </summary>
+        public string Email { get; internal set; }
+        /// <summary>
+        /// Gets profile picture URL of user
+        /// </summary>
+        public string ProfilePictureURL { get; internal set; }
+        /// <summary>
+        /// Gets language of user
+        /// </summary>
+        public string Language { get; internal set; }
+        /// <summary>
+        /// Gets country of user
+        /// </summary>
+        public string Country { get; internal set; }
+        /// <summary>
+        /// Gets public profile URL of user
+        /// </summary>
+        public string ProfileURL { get; internal set; }
+        /// <summary>
+        /// Gets date of birth of user
+        /// </summary>
+        public string DateOfBirth { get; internal set; }
+        /// <summary>
+        /// Gets Gender of user
+        /// </summary>
+        public string Gender { get; internal set; }
     }
 }

@@ -29,21 +29,31 @@ using System.Text;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
+    /// <summary>
+    /// Enumeration for available providers
+    /// </summary>
     public enum PROVIDER_TYPE
     {
         FACEBOOK,
         GOOGLE,
         YAHOO,
-        MSN
+        MSN,
+        TWITTER
         
     }
 
+    /// <summary>
+    /// Enumeration for available transport methods
+    /// </summary>
     public enum TRANSPORT_METHOD
     {
         POST,
         GET
     }
 
+    /// <summary>
+    /// Enumeration for available signing mechanisms
+    /// </summary>
     public enum SIGNATURE_TYPE
     {
         HMACSHA1,
@@ -51,9 +61,5 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         RSASHA1
     }
 
-    public enum GENDER
-    {
-        MALE,
-        FEMALE
-    }
+  
 }
