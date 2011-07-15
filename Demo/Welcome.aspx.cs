@@ -49,38 +49,44 @@ public partial class Welcome : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!SocialAuthUser.IsLoggedIn())
-            Response.Redirect("socialauth/logout.sauth");
-        IsSTSaware = HttpContext.Current.ApplicationInstance.IsSTSaware();
-        Provider = User.Identity.GetProvider();
-        Email = User.Identity.GetProfile().Email;
-        FirstName = User.Identity.GetProfile().FirstName;
-        LastName = User.Identity.GetProfile().LastName;
-        DateOfBirth = User.Identity.GetProfile().DateOfBirth;
-        Gender = User.Identity.GetProfile().Gender;
-        ProfileURL = User.Identity.GetProfile().ProfileURL;
-        ProfilePicture = User.Identity.GetProfile().ProfilePictureURL;
-        Country = User.Identity.GetProfile().Country;
-        Language= User.Identity.GetProfile().Language;
-        bool IsAlternate = false;
-        User.Identity.GetContacts().ForEach(
-            x =>
-            {
-                HtmlTableRow tr = new HtmlTableRow();
-                tr.Attributes.Add("class", (IsAlternate) ? "dark" : "light");
-                tr.Cells.Add(new HtmlTableCell() { InnerText= x.Name });
-                tr.Cells.Add(new HtmlTableCell() { InnerText = x.Email });
-                tr.Cells.Add(new HtmlTableCell() { InnerText = x.ProfileURL });
-                tblContacts.Rows.Add(tr);
-                IsAlternate = !IsAlternate;
-            }
-            
-            );
-        ContactsCount = (tblContacts.Rows.Count-1).ToString();
+        if (SocialAuthUser.IsLoggedIn())
+        {
+            IsSTSaware = HttpContext.Current.ApplicationInstance.IsSTSaware();
+            Provider = User.Identity.GetProvider();
+            Email = User.Identity.GetProfile().Email;
+            FirstName = User.Identity.GetProfile().FirstName;
+            LastName = User.Identity.GetProfile().LastName;
+            DateOfBirth = User.Identity.GetProfile().DateOfBirth;
+            Gender = User.Identity.GetProfile().Gender;
+            ProfileURL = User.Identity.GetProfile().ProfileURL;
+            ProfilePicture = User.Identity.GetProfile().ProfilePictureURL;
+            Country = User.Identity.GetProfile().Country;
+            Language = User.Identity.GetProfile().Language;
+            bool IsAlternate = false;
+            User.Identity.GetContacts().ForEach(
+                x =>
+                {
+                    HtmlTableRow tr = new HtmlTableRow();
+                    tr.Attributes.Add("class", (IsAlternate) ? "dark" : "light");
+                    tr.Cells.Add(new HtmlTableCell() { InnerText = x.Name });
+                    tr.Cells.Add(new HtmlTableCell() { InnerText = x.Email });
+                    tr.Cells.Add(new HtmlTableCell() { InnerText = x.ProfileURL });
+                    tblContacts.Rows.Add(tr);
+                    IsAlternate = !IsAlternate;
+                }
+
+                );
+            ContactsCount = (tblContacts.Rows.Count - 1).ToString();
+        }
+        else 
+        {
+
+            Response.Write("You are not logged in..");
+        }
     }
     protected void btnLogout_Click(object sender, EventArgs e)
     {
-        SocialAuthUser.GetCurrentUser().Logout();
+        SocialAuthUser.GetCurrentUser().Logout("ManualLogin.aspx");
     }
 }
 

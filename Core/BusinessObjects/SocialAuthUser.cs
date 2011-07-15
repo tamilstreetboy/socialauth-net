@@ -55,11 +55,11 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         {
             if (HttpContext.Current.Session["socialauthuser"] == null)
             {
-                if (Utility.GetConfiguration().Authentication.Enabled)
+                if (Utility.OperationMode() == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
                     HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
                 else
                 {
-                    return null;
+                    return new SocialAuthUser() { HasUserLoggedIn = false, contextToken = new Token() };
                 }
             }
             return (SocialAuthUser)HttpContext.Current.Session["socialauthuser"];
@@ -96,6 +96,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             HttpContext.Current.Session["socialauthuser"] = contextUser;
             this.providerType = providerType.ToString();
         }
+
+        internal SocialAuthUser()
+        {
+            HttpContext.Current.Session["socialauthuser"] = this;
+        }
+
 
         /// <summary>
         /// Initializes context user object
