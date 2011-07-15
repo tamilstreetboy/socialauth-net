@@ -53,6 +53,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Demo.sln" />
     <Content Include="images\SocialAuthIcons\facebook.jpg" />
     <Content Include="images\SocialAuthIcons\google.jpg" />
     <Content Include="images\SocialAuthIcons\msn.jpg" />
@@ -101,8 +102,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>53012</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>
-          </IISUrl>
+          <IISUrl>http://localhost/Demo</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>True</UseCustomServer>
           <CustomServerUrl>http://opensource.brickred.com/Demo</CustomServerUrl>

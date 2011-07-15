@@ -61,6 +61,7 @@ namespace Brickred.SocialAuth.NET.Core
             if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None &&
                 Utility.GetConfiguration().Authentication.Enabled == true)
             {
+                HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
                 loginUrl = Utility.GetConfiguration().Authentication.LoginUrl;
                 if (string.IsNullOrEmpty(loginUrl))
                     if (HttpContext.Current.Request["p"] == null)

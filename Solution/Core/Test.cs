@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SocialAuth.BusinessObjects;
+
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -40,8 +40,7 @@ namespace SocialAuth
 
 
             UriBuilder ub = new UriBuilder("http://asdasd.com?a=1&b=2&c=3");
-            ub.SetQueryparameter("d", "4");
-            ub.SetQueryparameter("a", "34");
+          
             Console.WriteLine(ub.ToString());
             Console.ReadKey();
 

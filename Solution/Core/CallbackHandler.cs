@@ -158,28 +158,51 @@ namespace Brickred.SocialAuth.NET.Core
 
         private void LogOut()
         {
-            string callbackUrl = SocialAuthUser.GetCurrentUser().contextToken.CallbackURL;
+            string callbackUrl = "";
+            if (!string.IsNullOrEmpty(SocialAuthUser.GetCurrentUser().contextToken.CallbackURL))
+            { 
+                callbackUrl = (SocialAuthUser.GetCurrentUser().contextToken.CallbackURL);
+                if (!callbackUrl.StartsWith("http"))
+                    callbackUrl += current.Request.GetBaseURL();
+            }
             //cleanup any cookie
             FormsAuthentication.SignOut();
             current.Session.Abandon();
-            //Redirect user
-            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None)
-            {
-                string loginFormUrl = Utility.GetConfiguration().Authentication.LoginUrl;
-                if (loginFormUrl == "" && Utility.GetConfiguration().Authentication.Enabled == true)
-                    loginFormUrl = "SocialAuth/LoginForm.sauth";
-                else if (Utility.GetConfiguration().Authentication.Enabled == false)
-                {
-                    if (callbackUrl == "")
 
-                        current.Response.Redirect(current.Request.UrlReferrer.ToString());
-                    else
-                        current.Response.Redirect(callbackUrl);
-                }
-                current.Response.Redirect(current.Request.GetBaseURL() + loginFormUrl);
-            }
-            else
+
+            //Redirect user
+            OPERATION_MODE mode = Utility.OperationMode();
+
+            //If forms Authentication, then RedirectToLoginPage
+            if (mode == OPERATION_MODE.FORMS_SECURITY_CUSTOM_SCREEN)
                 FormsAuthentication.RedirectToLoginPage();
+            else if (mode == OPERATION_MODE.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || mode == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+            //If full SocialAuth then
+            {
+                //if callbackUrl specified, then to callback URL
+                if (!String.IsNullOrEmpty(callbackUrl))
+                    current.Response.Redirect(callbackUrl);
+                //if loginURL specified, then to login URL
+                else if (!string.IsNullOrEmpty(Utility.GetConfiguration().Authentication.LoginUrl))
+                    current.Response.Redirect(Utility.GetConfiguration().Authentication.LoginUrl);
+                //Else to referrer URL
+                else
+                {
+                    if (mode == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+                        current.Response.Redirect("SocialAuth/LoginForm.sauth");
+                    else
+                        current.Response.Redirect(current.Request.UrlReferrer.ToString());
+                }
+            }
+            //If custom authentication, then
+            else if (mode == OPERATION_MODE.CUSTOM_SECURITY_CUSTOM_SCREEN)
+                //if callback url specified then callback
+                if (!String.IsNullOrEmpty(callbackUrl))
+                    current.Response.Redirect(callbackUrl);
+                //else referrer url
+                else
+                    current.Response.Redirect(current.Request.UrlReferrer.ToString());
+
         }
         #endregion
 

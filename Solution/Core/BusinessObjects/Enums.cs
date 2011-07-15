@@ -39,7 +39,6 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         YAHOO,
         MSN,
         TWITTER
-        
     }
 
     /// <summary>
@@ -61,5 +60,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         RSASHA1
     }
 
-  
+  internal enum OPERATION_MODE
+  {
+      SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN,
+      SOCIALAUTH_SECURITY_CUSTOM_SCREEN,
+      FORMS_SECURITY_CUSTOM_SCREEN,
+      CUSTOM_SECURITY_CUSTOM_SCREEN,
+      NOT_SUPPORTED
+  }
 }

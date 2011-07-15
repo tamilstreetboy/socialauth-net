@@ -35,6 +35,7 @@ using System.Web;
 using System.Net;
 using System.Collections.Specialized;
 using System.Web.Configuration;
+using Brickred.SocialAuth.NET.Core.BusinessObjects;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -278,7 +279,24 @@ namespace Brickred.SocialAuth.NET.Core
             return config;
         }
 
+        internal static OPERATION_MODE OperationMode()
+        {
+            OPERATION_MODE mode = OPERATION_MODE.NOT_SUPPORTED;
 
+            if (GetAuthenticationMode() == AuthenticationMode.Forms)
+                mode = OPERATION_MODE.FORMS_SECURITY_CUSTOM_SCREEN;
+            else if (GetAuthenticationMode() == AuthenticationMode.None && GetConfiguration().Authentication.Enabled)
+            {
+                if (String.IsNullOrEmpty(GetConfiguration().Authentication.LoginUrl))
+                    mode = OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN;
+                else
+                    mode = OPERATION_MODE.SOCIALAUTH_SECURITY_CUSTOM_SCREEN;
+            }
+            else if (GetAuthenticationMode() == AuthenticationMode.None && !GetConfiguration().Authentication.Enabled)
+                mode = OPERATION_MODE.CUSTOM_SECURITY_CUSTOM_SCREEN;
+
+            return mode;
+        }
     }
 }
 
