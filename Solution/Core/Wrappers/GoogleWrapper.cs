@@ -136,29 +136,29 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
         public override void AuthorizeUser()
         {
-                OAuthBase oAuth = new OAuthBase();
-                string nonce = oAuth.GenerateNonce();
-                string timeStamp = oAuth.GenerateTimeStamp();
-                string outUrl = "";
-                string queryString = "";
-                string sig = oAuth.GenerateSignature(new Uri(AccessTokenURL),
-                   Consumerkey, Consumersecret,
-                   Utility.UrlEncode(ContextToken.AuthorizationToken), string.Empty,
-                    TransportName.ToString(), timeStamp, nonce,
-                    SignatureMethod, "", "", out outUrl, out queryString);
+            OAuthBase oAuth = new OAuthBase();
+            string nonce = oAuth.GenerateNonce();
+            string timeStamp = oAuth.GenerateTimeStamp();
+            string outUrl = "";
+            string queryString = "";
+            string sig = oAuth.GenerateSignature(new Uri(AccessTokenURL),
+               Consumerkey, Consumersecret,
+               Utility.UrlEncode(ContextToken.AuthorizationToken), string.Empty,
+                TransportName.ToString(), timeStamp, nonce,
+                SignatureMethod, "", "", out outUrl, out queryString);
 
-                sig = Utility.UrlEncodeForSigningRequest(sig);
-                string authToken = Utility.HttpTransferEncode(ContextToken.AuthorizationToken);
+            sig = Utility.UrlEncodeForSigningRequest(sig);
+            string authToken = Utility.HttpTransferEncode(ContextToken.AuthorizationToken);
 
-                StringBuilder sb = new StringBuilder(AccessTokenURL + "?");
-                sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-                sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AuthorizationToken));
-                sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-                sb.AppendFormat("oauth_signature={0}&", sig);
-                sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-                sb.AppendFormat("oauth_nonce={0}&", nonce);
-                sb.AppendFormat("oauth_version=1.0");
-                logger.LogAuthorizationRequest(sb.ToString());
+            StringBuilder sb = new StringBuilder(AccessTokenURL + "?");
+            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
+            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AuthorizationToken));
+            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
+            sb.AppendFormat("oauth_signature={0}&", sig);
+            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
+            sb.AppendFormat("oauth_nonce={0}&", nonce);
+            sb.AppendFormat("oauth_version=1.0");
+            logger.LogAuthorizationRequest(sb.ToString());
             try
             {
 
@@ -260,7 +260,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                                {
                                    ID = c.Element(contactsXML.Root.GetDefaultNamespace() + "id").Value,
                                    Name = c.Element(contactsXML.Root.GetDefaultNamespace() + "title").Value,
-                                   Email = c.Element(xn + "email").Attribute("address").Value
+                                   Email = (c.Element(xn + "email") == null) ? "" : c.Element(xn + "email").Attribute("address").Value
                                };
                 logger.LogContactsResponse(null);
                 return contacts.ToList<Contact>();
@@ -277,6 +277,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
 
 
-       
+
     }
 }
