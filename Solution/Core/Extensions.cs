@@ -49,6 +49,7 @@ namespace Brickred.SocialAuth.NET.Core
             ub.Query = result.Substring(0, result.Length - 1);
         }
 
+        
         public static string GetBaseURL(this HttpRequest request)
         {
 
@@ -67,8 +68,17 @@ namespace Brickred.SocialAuth.NET.Core
             return url.ToString();
 
         }
+        public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
+        {
+            int position = -1;
+            while ((position = (input.IndexOf(delimeter, startIndex))) > -1 && (n-- > 0))
+                startIndex = position + 1;
+            return startIndex;
+        }
 
     }
+
+     
 
 }
 

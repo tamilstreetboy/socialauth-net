@@ -30,6 +30,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
+using Newtonsoft.Json.Linq;
 
 
 public partial class Welcome : System.Web.UI.Page
@@ -77,6 +78,8 @@ public partial class Welcome : System.Web.UI.Page
 
                 );
             ContactsCount = (tblContacts.Rows.Count - 1).ToString();
+
+           
         }
         else 
         {
@@ -88,5 +91,6 @@ public partial class Welcome : System.Web.UI.Page
     {
         SocialAuthUser.GetCurrentUser().Logout("ManualLogin.aspx");
     }
+    
 }
 

@@ -38,7 +38,7 @@ namespace Brickred.SocialAuth.NET.Core
      * <add name="GoogleWrapper" ConsumerKey="sdfsdfsdf" ConsumerSecret="asdasdasd"/>
      * </SocialAuthProviders>
      * **********************/
-   
+
     public class SocialAuthConfiguration : ConfigurationSection
     {
         public SocialAuthConfiguration()
@@ -84,7 +84,7 @@ namespace Brickred.SocialAuth.NET.Core
         }
     }
 
-   
+
     public class ProviderElement : ConfigurationElement
     {
 
@@ -118,6 +118,13 @@ namespace Brickred.SocialAuth.NET.Core
         {
             get { return (string)this["ConsumerSecret"]; }
             set { this["ConsumerSecret"] = value; }
+        }
+
+        [ConfigurationProperty("AdditionalScopes")]
+        public string AdditionalScopes
+        {
+            get { return (string)this["AdditionalScopes"]; }
+            set { this["AdditionalScopes"] = value; }
         }
     }
 

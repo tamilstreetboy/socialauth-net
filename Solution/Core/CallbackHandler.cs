@@ -163,7 +163,7 @@ namespace Brickred.SocialAuth.NET.Core
             { 
                 callbackUrl = (SocialAuthUser.GetCurrentUser().contextToken.CallbackURL);
                 if (!callbackUrl.StartsWith("http"))
-                    callbackUrl += current.Request.GetBaseURL();
+                    callbackUrl = current.Request.GetBaseURL() + callbackUrl;
             }
             //cleanup any cookie
             FormsAuthentication.SignOut();

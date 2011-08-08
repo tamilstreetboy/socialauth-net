@@ -180,7 +180,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 logger.LogAuthenticationResponse(Current.Request.ToString(), null);
                 //In Hybrid mode, token recevied is both authenticated and authorized
 
-                SocialAuthUser.GetCurrentUser().contextToken.AuthenticationToken = Current.Request["openid.oauth.request_token"];
+                SocialAuthUser.GetCurrentUser().contextToken.RequestToken = Current.Request["openid.oauth.request_token"];
                 SocialAuthUser.GetCurrentUser().contextToken.AuthorizationToken = Current.Request["openid.oauth.request_token"];
                 string Email = Current.Request["openid.ax.value.email"];
                 ////Access Token Required
@@ -336,6 +336,51 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             catch (Exception ex)
             {
                 logger.LogContactsResponse(ex);
+                throw;
+            }
+        }
+
+        public override string  ExecuteFeed(string url)
+        {
+            OAuthBase oAuth = new OAuthBase();
+            string nonce = oAuth.GenerateNonce();
+            string timeStamp = oAuth.GenerateTimeStamp();
+            string outUrl = "";
+            string queryString = "";
+
+            string sig = oAuth.GenerateSignature(new Uri(string.Format(url, ContextToken.SessionGUID)),
+               Consumerkey, Consumersecret,
+               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
+                TransportName.ToString(), timeStamp, nonce,
+                SignatureMethod, "", "", out outUrl, out queryString);
+
+            sig = Utility.UrlEncodeForSigningRequest(sig);
+
+            string feedOutput = "";
+            StringBuilder sb = new StringBuilder(string.Format(url, ContextToken.SessionGUID) + "?");
+            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
+            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
+            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
+            sb.AppendFormat("oauth_signature={0}&", sig);
+            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
+            sb.AppendFormat("oauth_nonce={0}&", nonce);
+            sb.AppendFormat("oauth_version=1.0");
+
+            logger.LogContactsRequest(sb.ToString());
+
+            try
+            {
+
+
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
+                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = webResponse.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
+                    feedOutput = reader.ReadToEnd();
+                return feedOutput;
+            }
+            catch (Exception ex)
+            {
                 throw;
             }
         }

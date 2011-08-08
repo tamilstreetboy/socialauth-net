@@ -186,7 +186,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 logger.LogAuthenticationResponse(Current.Request.ToString(), null);
                 //In Hybrid mode, token recevied is both authenticated and authorized
 
-                SocialAuthUser.GetCurrentUser().contextToken.AuthenticationToken = Current.Request["openid.ext2.request_token"];
+                SocialAuthUser.GetCurrentUser().contextToken.RequestToken = Current.Request["openid.ext2.request_token"];
                 SocialAuthUser.GetCurrentUser().contextToken.AuthorizationToken = Current.Request["openid.ext2.request_token"];
                 SocialAuthUser.GetCurrentUser().Profile = new UserProfile();
                 SocialAuthUser.GetCurrentUser().Profile.FirstName = Current.Request["openid.ext1.value.firstname"];
@@ -268,6 +268,49 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             catch (Exception ex)
             {
                 logger.LogContactsResponse(ex);
+                throw;
+            }
+        }
+
+        public override string ExecuteFeed(string url)
+        {
+            OAuthBase oAuth = new OAuthBase();
+            string nonce = "3543bfafc7e949982c06765580b4e876"; //oAuth.GenerateNonce();
+            string timeStamp = oAuth.GenerateTimeStamp();
+            string outUrl = "";
+            string queryString = "";
+
+            string sig = oAuth.GenerateSignature(new Uri(url),
+               Consumerkey, Consumersecret,
+               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
+                TransportName.ToString(), timeStamp, nonce,
+               SignatureMethod, "", "", out outUrl, out queryString);
+
+            sig = Utility.UrlEncodeForSigningRequest(sig);
+
+            string feedOutput = "";
+            StringBuilder sb = new StringBuilder(url + "&");
+            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
+            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
+            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
+            sb.AppendFormat("oauth_signature={0}&", sig);
+            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
+            sb.AppendFormat("oauth_nonce={0}&", nonce);
+            sb.AppendFormat("oauth_version=1.0");
+
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
+                request.Headers.Add("GData-Version: 2");
+                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = webResponse.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
+                    feedOutput = reader.ReadToEnd();
+
+                return feedOutput;
+            }
+            catch (Exception ex)
+            {
                 throw;
             }
         }

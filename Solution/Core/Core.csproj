@@ -60,10 +60,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessObjects\Album.cs" />
     <Compile Include="BusinessObjects\Contact.cs" />
     <Compile Include="BusinessObjects\Enums.cs" />
     <Compile Include="BusinessObjects\Token.cs" />
     <Compile Include="CallbackHandler.cs" />
+    <Compile Include="CustomException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="BusinessObjects\UserProfile.cs" />
     <Compile Include="BusinessObjects\SocialAuthUser.cs" />

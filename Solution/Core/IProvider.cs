@@ -49,6 +49,7 @@ namespace Brickred.SocialAuth.NET.Core
         string Consumersecret { get; set; }
         SIGNATURE_TYPE SignatureMethod { get;  }
         TRANSPORT_METHOD TransportName { get;  }
+        string AdditionalScope { get; set; }
       
         //Methods()
         void RequestUserAuthentication();
@@ -56,6 +57,7 @@ namespace Brickred.SocialAuth.NET.Core
         void AuthorizeUser();
         UserProfile GetProfile();
         List<Contact> GetContacts();
+        string ExecuteFeed(string url);
         void Logout();
 
         

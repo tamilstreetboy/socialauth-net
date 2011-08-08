@@ -54,6 +54,8 @@
 
 <body>
     <form id="form1" runat="server">
+    <h3>Checout out <a href="CustomFeedDemo.aspx"> Custom Feed Demo</a> <small><sup>*NEW*</sup></small></h3>
+
     <div style="width:100%;text-align:right">
         <asp:LinkButton ID="btnLogout" runat="server" onclick="btnLogout_Click" >Logout</asp:LinkButton>
     </div>
@@ -130,6 +132,9 @@
      <td style="width:400px"><b>ProfileURL</b></td>
     </tr>
     </table>
+
+   
+
     </form>
 </body>
 </html>

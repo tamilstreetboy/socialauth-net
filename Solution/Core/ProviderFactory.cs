@@ -95,6 +95,7 @@ namespace Brickred.SocialAuth.NET.Core
         {
             providerType.Consumerkey = provider.ConsumerKey;
             providerType.Consumersecret = provider.ConsumerSecret;
+            providerType.AdditionalScope = provider.AdditionalScopes;
         }
 
 
