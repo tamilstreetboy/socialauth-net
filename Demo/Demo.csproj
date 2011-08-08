@@ -33,6 +33,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="SocialAuth-net">
       <HintPath>..\Lib\SocialAuth-net.dll</HintPath>
     </Reference>
@@ -53,6 +56,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CustomFeedDemo.aspx" />
     <Content Include="Demo.sln" />
     <Content Include="images\SocialAuthIcons\facebook.jpg" />
     <Content Include="images\SocialAuthIcons\google.jpg" />
@@ -72,6 +76,13 @@
     <Content Include="Welcome.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomFeedDemo.aspx.cs">
+      <DependentUpon>CustomFeedDemo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CustomFeedDemo.aspx.designer.cs">
+      <DependentUpon>CustomFeedDemo.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ManualLogin.aspx.cs">
       <DependentUpon>ManualLogin.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -33,7 +33,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     internal class Token
     {
         public PROVIDER_TYPE provider { get; set; }
-        public string AuthenticationToken { get; set; }
+        public string RequestToken { get; set; }
         public string AuthorizationToken { get; set; }
         public string CallbackURL { get; set; }
         public string Expiry { get; set; }

@@ -74,6 +74,8 @@ namespace Brickred.SocialAuth.NET.Core
         public abstract void RequestUserAuthentication();
         public abstract void ProcessAuthenticationResponse();
         public abstract void AuthorizeUser();
+        public virtual string AdditionalScope { get; set; }
+        public virtual string ExecuteFeed(string url) { return ""; }
         public virtual void Logout()
         {
 

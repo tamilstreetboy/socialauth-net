@@ -70,6 +70,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             get { return HttpContext.Current; }
         }
 
+        public string AccessToken
+        {
+            get { return contextUser.contextToken.AuthorizationToken; }
+        }
         internal Token contextToken { get; set; }
 
         internal UserProfile Profile { get; set; }
@@ -170,6 +174,14 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 return GetCurrentUser().HasUserLoggedIn;
         }
 
+        public string ExecuteFeed(string url)
+        {
+            if (GetCurrentUser() != null)
+                return provider.ExecuteFeed(url);
+            else
+                return "";
+        }
+
         internal bool HasUserLoggedIn
         {
             get;
@@ -181,8 +193,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         public void Logout()
         {
-            
-                  HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
+
+            HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
         }
 
         /// <summary>

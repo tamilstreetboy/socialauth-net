@@ -43,7 +43,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(GoogleWrapper));
 
         #region CONFIGURATION_PROPERTIES
-        
+
         public override string RequestTokenURL
         {
             get { return "https://consent.live.com/Connect.aspx"; }
@@ -114,7 +114,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 logger.LogAuthenticationResponse(Current.Request.ToString(), null);
                 //In Hybrid mode, token recevied is both authenticated and authorized
 
-                SocialAuthUser.GetCurrentUser().contextToken.AuthenticationToken = Current.Request["wrap_verification_code"];
+                SocialAuthUser.GetCurrentUser().contextToken.RequestToken = Current.Request["wrap_verification_code"];
                 (ProviderFactory.GetProvider(PROVIDER_TYPE.MSN)).AuthorizeUser();
                 SocialAuthUser.GetCurrentUser().HasUserLoggedIn = true;
 
@@ -134,7 +134,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     Consumerkey,
                     Consumersecret,
                   Current.Request.GetBaseURL() + "socialAuth/Validate.sauth",
-                    ContextToken.AuthenticationToken,
+                    ContextToken.RequestToken,
                     "CID");
             byte[] postDataEncoded = System.Text.Encoding.UTF8.GetBytes(postData);
 
@@ -285,7 +285,32 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 throw;
             }
         }
-        
+
+        public override string ExecuteFeed(string url)
+        {
+            string uid = SocialAuthUser.GetCurrentUser().Profile.ID;
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(string.Format(url, uid));
+            request.Headers.Add(HttpRequestHeader.Authorization, "WRAP access_token=" + ContextToken.AccessToken);
+            request.Accept = "application/json";
+            request.ContentType = "application/json";
+
+            try
+            {
+                string feedOutput = "";
+                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = webResponse.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
+                {
+                    feedOutput = reader.ReadToEnd();
+                }
+                return feedOutput;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         #endregion
 
     }

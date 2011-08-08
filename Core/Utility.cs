@@ -270,7 +270,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static System.Web.Configuration.AuthenticationMode GetAuthenticationMode()
         {
-            return ((AuthenticationSection)WebConfigurationManager.GetSection("system.web/authentication")).Mode; 
+            return ((AuthenticationSection)WebConfigurationManager.GetSection("system.web/authentication")).Mode;
         }
 
         public static SocialAuthConfiguration GetConfiguration()
@@ -296,6 +296,23 @@ namespace Brickred.SocialAuth.NET.Core
                 mode = OPERATION_MODE.CUSTOM_SECURITY_CUSTOM_SCREEN;
 
             return mode;
+        }
+
+        internal static NameValueCollection GetQuerystringParameters(string querystring)
+        {
+            NameValueCollection parts = new NameValueCollection();
+            if (querystring.Contains("?"))
+                querystring = querystring.Substring(querystring.IndexOf("?") + 1);
+
+            var queryParts = querystring.Split(new char[] { '&' });
+            foreach (var queryPart in queryParts)
+            {
+                string[] keyValue = queryPart.ToString().Split(new char[] { '=' });
+                parts.Add(keyValue[0], keyValue[1]);
+            }
+            return parts;
+
+
         }
     }
 }

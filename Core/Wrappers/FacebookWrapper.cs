@@ -91,6 +91,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             get { throw new NotImplementedException(); }
         }
 
+
         #endregion
 
         #region OAUTH_WORKFLOW_METHODS
@@ -100,7 +101,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             UriBuilder ub = new UriBuilder(RequestTokenURL);
             ub.SetQueryparameter("client_id", Consumerkey);
             ub.SetQueryparameter("redirect_uri", Current.Request.GetBaseURL() + "SocialAuth/validate.sauth");
-            ub.SetQueryparameter("scope", "email");
+            ub.SetQueryparameter("scope", "email" + (string.IsNullOrEmpty(AdditionalScope) ? "" : "," + AdditionalScope));
             logger.LogAuthenticationRequest(ub.ToString());
             HttpContext.Current.Response.Redirect(ub.ToString());
         }
@@ -111,7 +112,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             UriBuilder ub = new UriBuilder(AccessTokenURL);
             ub.SetQueryparameter("client_id", Consumerkey);
             ub.SetQueryparameter("client_secret", Consumersecret);
-            ub.SetQueryparameter("code", ContextToken.AuthenticationToken);
+            ub.SetQueryparameter("code", ContextToken.RequestToken);
             ub.SetQueryparameter("redirect_uri", Current.Request.GetBaseURL() + "SocialAuth/validate.sauth");
             logger.LogAuthorizationRequest(ub.ToString());
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
@@ -141,11 +142,11 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 if (Current.Request["code"] != null)
                 {
                     logger.LogAuthenticationResponse(Current.Request.ToString(), null);
-                    ContextToken.AuthenticationToken = Current.Request["code"];
+                    ContextToken.RequestToken = Current.Request["code"];
                     (ProviderFactory.GetProvider(PROVIDER_TYPE.FACEBOOK)).AuthorizeUser();
                     logger.Log(LogEventType.Info, "User successully logged in at Facebook");
                     SocialAuthUser.GetCurrentUser().HasUserLoggedIn = true;
-                    SocialAuthUser.GetCurrentUser().Profile = (ProviderFactory.GetProvider(PROVIDER_TYPE.FACEBOOK)).GetProfile();
+                    SocialAuthUser.GetCurrentUser().Profile = GetProfile();
                     base.SetClaims();
                 }
             }
@@ -251,6 +252,31 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
 
 
+        }
+
+        public override string ExecuteFeed(string url)
+        {
+            UriBuilder ub;
+            /******** retrieve standard Fields ************/
+            try
+            {
+                ub = new UriBuilder(url + "?");
+                ub.SetQueryparameter("access_token", ContextToken.AuthorizationToken);
+                logger.LogContactsRequest(ub.ToString());
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
+                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = webResponse.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
+                {
+                    return reader.ReadToEnd();
+                }
+
+            }
+            catch (Exception ex)
+            {
+               
+                throw;
+            }
         }
 
         #endregion
