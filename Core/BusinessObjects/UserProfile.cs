@@ -34,6 +34,15 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     /// </summary>
     public class UserProfile
     {
+        public UserProfile()
+        {
+            
+        }
+
+        public UserProfile(PROVIDER_TYPE provider)
+        {
+            this.Provider = provider;
+        }
         /// <summary>
         /// Gets ID of user at provider
         /// </summary>
@@ -46,6 +55,21 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// Gets last name of user
         /// </summary>
         public string LastName { get; internal set; }
+        public string FullName
+        {
+            get{
+                string fullname = "";
+                if (!String.IsNullOrEmpty(FirstName))
+                    fullname = FirstName;
+                if (!string.IsNullOrEmpty(LastName))
+                    if (string.IsNullOrEmpty(fullname))
+                        fullname = LastName;
+                    else
+                        fullname = fullname + " " + LastName;
+
+                return fullname;
+            }
+        }
         /// <summary>
         /// Gets Email ID of user
         /// </summary>
@@ -73,6 +97,36 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// <summary>
         /// Gets Gender of user
         /// </summary>
-        public string Gender { get; internal set; }
+        public GENDER GenderType { get; internal set; }
+        public string Gender { get { return GenderType.ToString(); } }
+        /// <summary>
+        /// This Profile belongs to which provider
+        /// </summary>
+        public PROVIDER_TYPE Provider { get; internal set; }
+        /// <summary>
+        /// Is Profile SET? To avoid calls again
+        /// </summary>
+        internal bool IsSet { get; set; }
+        /// <summary>
+        /// Gets username of profile
+        /// </summary>
+        public string Username { get; set; }
+        /// <summary>
+        /// Gets displayname of profile. Often same as Name.
+        /// </summary>
+        public string Displayname { get; set; }
+
+
+        public string GetIdentifier()
+        {
+            if (!string.IsNullOrEmpty(Email))
+                return Email;
+            else if (!string.IsNullOrEmpty(ID))
+                return ID;
+            else if (string.IsNullOrEmpty(FullName))
+                return FullName + "@" + Provider.ToString();
+            else
+                return Provider.ToString();
+        }
     }
 }

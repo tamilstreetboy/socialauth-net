@@ -27,39 +27,61 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
+using System.Runtime.Serialization;
+using System.Collections.Specialized;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
-    internal class Token
+    [Serializable]
+    public class Token
     {
-        public PROVIDER_TYPE provider { get; set; }
-        public string RequestToken { get; set; }
-        public string AuthorizationToken { get; set; }
-        public string CallbackURL { get; set; }
-        public string Expiry { get; set; }
-        public string AssocHandle { get; set; }
+        public Token()
+        {
+            Profile = new UserProfile();
+            ResponseCollection = new QueryParameters();
+        }
+
+        //Properties we want to be serializable
+        public SCOPE_LEVEL ScopeLevel { get; set; }
+        public PROVIDER_TYPE Provider { get; set; }
+        public string UserReturnURL { get; set; }
+        public string ProviderCallbackUrl { get { return Domain + "socialauth/validate.sauth"; } }
+        public DateTime ExpiresOn { get; set; }
         public string AccessToken { get; set; }
-        public string AccessTokenSecret { get; set; }
-        public string SessionGUID { get; set; }
+        public string TokenSecret { get; set; }
+        public Guid SessionGUID { get; set; }
+        public string Scope { get; set; }
+        public string Domain { get; set; }
+        public string OauthVerifier { get; set; }
+        public QueryParameters ResponseCollection { get; set; }
+        public UserProfile Profile { get; set; }
 
-        internal static Token GetCurrentToken(bool forceNew = false)
-        {
-            if (HttpContext.Current.Session["token"] == null || forceNew)
-            {
-                Token t = new Token();
-                HttpContext.Current.Session.Add("token", t);
-            }
 
-            return (Token)HttpContext.Current.Session["token"];
-        }
+        //Properties we do not want to be serializable
+        [NonSerialized]
+        private string requestToken;
+        [NonSerialized]
+        private string authorizationToken;
+        [NonSerialized]
+        private string assocHandle;
+        [NonSerialized]
+        private string code;
 
-        internal static void DestroyCurrentToken()
-        {
-            HttpContext.Current.Session.Remove("token");
-
-        }
+        internal string RequestToken { get { return requestToken; } set { requestToken = value; } }
+        internal string AuthorizationToken { get { return authorizationToken; } set { authorizationToken = value; } }
+        internal string AssocHandle { get { return assocHandle; } set { assocHandle = value; } }
+        internal string Code { get { return code; } set { code = value; } }
 
     }
 
+
+    //public class UserToken
+    //{
+    //    public string AccessToken { get; }
+    //    public string Provider { get; }
+    //    public DateTime IssuedOn { get; }
+    //    public DateTime ExpiresOn { get; }
+    //    public string UserIdentifier { get; }
+    //}
 
 }

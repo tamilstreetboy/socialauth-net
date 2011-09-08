@@ -28,6 +28,9 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Security;
+using Microsoft.IdentityModel.Claims;
+using System.Threading;
+using System.Net;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
@@ -37,192 +40,461 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     public class SocialAuthUser
     {
 
-        #region CLASS_VARIABLES
+        #region ConsumerMethods&Properties
 
-        private SocialAuthUser contextUser;
-        private IProvider provider;
-        private Guid identifier;
-        private string providerType;
-
-        #endregion
-
-        #region UTILITY_METHODS_PROPERTIES
+        //--------- Constructor (Optional and is for backward compatibility)
         /// <summary>
-        /// Returns an instance of user in context
+        /// Constructor
+        /// </summary>
+        /// <param name="providerType">Provider Type for this connection</param>
+        public SocialAuthUser(PROVIDER_TYPE providerType)
+        {
+            this.providerType = providerType;
+        }
+
+
+        //--------- Authentication Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="returnUrl">URL where user should return after login.</param>
+        /// <param name="callback">Delegate invoked just before redirecting user after successful login</param>
+        public void Login(string returnUrl = "", Action callback = null)
+        {
+            if (callback != null)
+                SessionManager.SetCallback(callback);
+            Connect(providerType, returnUrl);
+        }
+
+        /// <summary>
+        /// Connects to a provider (Same as Login())
+        /// </summary>
+        /// <param name="providerType">Provider to which connection has to be established</param>
+        /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
+        public static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
+        {
+
+            try
+            {
+
+
+                AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
+
+                //Set where user should be redirected after successful login
+                if (Utility.GetAuthenticationOption() == AUTHENTICATION_OPTION.CUSTOM_SECURITY_CUSTOM_SCREEN
+                     && string.IsNullOrEmpty(returnURL))
+                    throw new Exception("Please specify return URL");
+                else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+                    returnURL = HttpContext.Current.Request.GetBaseURL() + Utility.GetSocialAuthConfiguration().Authentication.DefaultUrl;
+                else
+                    returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
+                if (HttpContext.Current.Request["ReturnUrl"] != null)
+                    returnURL = HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
+
+
+                SessionManager.AddConnectionToken(new Token()
+                {
+                    Provider = providerType,
+                    Domain = HttpContext.Current.Request.GetBaseURL(),
+                    UserReturnURL = returnURL,
+                    SessionGUID = SessionManager.GetUserSessionGUID(),
+                    Profile = new UserProfile() { Provider = providerType }
+
+                });
+
+                GetCurrentConnectionToken().Profile.Provider = providerType;
+
+                ProviderFactory.GetProvider(providerType).Connect(providerType);
+            }
+            catch (Exception ex)
+            {
+                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Logs user out of local application (User may still remain logged in at provider)
+        /// </summary>
+        /// <param name="loginUrl">Where should user be redirected after logout. (Only applicable when using custom authentication)</param>
+        /// <param name="callback">Delegate invoked (if specified) just before redirecting user to login page</param>
+        public static void Disconnect(string loginUrl = "", Action callback = null)
+        {
+            //Remove all tokens
+            SessionManager.RemoveAllConnections();
+
+            //cleanup any cookie
+            FormsAuthentication.SignOut();
+
+            //Redirect to login Page
+            if (callback != null)
+                callback.Invoke();
+
+            RedirectToLoginPage(loginUrl);
+
+        }
+
+        /// <summary>
+        /// Logs user out of local application (User may still remain logged in at provider)
+        /// </summary>
+        /// <param name="loginUrl">Where should user be redirected after logout. (Only applicable when using custom authentication)</param>
+        /// <param name="callback">Delegate invoked (if specified) just before redirecting user to login page</param>
+        public void Logout(string loginUrl = "", Action callback = null)
+        {
+            Disconnect(loginUrl, callback);
+        }
+
+        /// <summary>
+        /// If callback was specified in Login(), use this method to stop invoking delegate.
+        /// </summary>
+        public static void ResetCallback()
+        {
+            SessionManager.SetCallback(null);
+        }
+
+
+
+        //------------ Getting & Checking Connections
+        /// <summary>
+        /// Returns an instance of SocialAuthUser with current connection
         /// </summary>
         /// <returns></returns>
         public static SocialAuthUser GetCurrentUser()
         {
-            if (HttpContext.Current.Session["socialauthuser"] == null)
+            AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
+
+            if (SessionManager.ConnectionsCount == 0)
             {
-                if (Utility.OperationMode() == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-                    HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
+                if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+                    RedirectToLoginPage();
                 else
                 {
-                    return new SocialAuthUser() { HasUserLoggedIn = false, contextToken = new Token() };
+                    return new SocialAuthUser() { contextToken = new Token() };
                 }
             }
-            return (SocialAuthUser)HttpContext.Current.Session["socialauthuser"];
+            return new SocialAuthUser() { contextToken = GetCurrentConnectionToken() };
         }
 
-        private HttpContext current
+        /// <summary>
+        /// Is User connected with any provider?
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsLoggedIn() { return SessionManager.IsConnected; }
+
+        /// <summary>
+        /// Returns connection for last connected provider
+        /// </summary>
+        public static IProvider CurrentConnection
         {
-            get { return HttpContext.Current; }
+            get
+            {
+                return SessionManager.GetCurrentConnection();
+            }
         }
 
-        public string AccessToken
+        /// <summary>
+        /// specifies whether user is connected with specified provider
+        /// </summary>
+        /// <param name="providerType">Provider Type</param>
+        /// <returns></returns>
+        public static bool IsConnectedWith(PROVIDER_TYPE providerType)
         {
-            get { return contextUser.contextToken.AuthorizationToken; }
+            return SessionManager.IsConnectedWith(providerType);
         }
+
+        /// <summary>
+        /// Returns Connection Token of last connected provider
+        /// </summary>
+        /// <returns></returns>
+        public static Token GetCurrentConnectionToken()
+        {
+            return SessionManager.GetConnectionToken(SessionManager.GetCurrentConnection().ProviderType);
+        }
+
+        /// <summary>
+        /// Returns connection for specified provider. (throws exception is not connected)
+        /// </summary>
+        /// <param name="provider">Provider Type</param>
+        /// <returns></returns>
+        public static IProvider GetConnection(PROVIDER_TYPE provider)
+        {
+            return ProviderFactory.GetProvider(provider);
+        }
+
+        /// <summary>
+        /// Returns a list of all types of providers, user is connected with
+        /// </summary>
+        /// <returns></returns>
+        public static List<PROVIDER_TYPE> GetConnectedProviders()
+        {
+            return SessionManager.GetConnectedProviders();
+        }
+
+
+        //------------ Data Retrieval Methods
+        /// <summary>
+        /// Returns Profile from current connection or specified provider
+        /// </summary>
+        /// <param name="providerType">Provider Type (Connection should exist else exception is thrown)</param>
+        /// <returns></returns>
+        public static UserProfile GetProfile(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        {
+            if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
+            {
+
+                if (SessionManager.IsConnectedWith(providerType))
+                {
+                    if (GetConnection(providerType).GetConnectionToken().Profile.ID != null)
+                        return GetConnection(providerType).GetConnectionToken().Profile;
+                    else
+                        return SessionManager.GetConnection(providerType).GetProfile();
+                }
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException(providerType);
+                }
+            }
+            else
+            {
+                if (SessionManager.IsConnected)
+                {
+                    if (GetCurrentConnectionToken().Profile.ID != null)
+                        return GetCurrentConnectionToken().Profile;
+                    else
+                        return SessionManager.GetCurrentConnection().GetProfile();
+                }
+
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns contacts from current connection or specified provider
+        /// </summary>
+        /// <param name="providerType">Provider Type (Connection should exist else exception is thrown)</param>
+        /// <returns></returns>
+        public static List<Contact> GetContacts(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        {
+            if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
+            {
+
+                if (SessionManager.IsConnectedWith(providerType))
+                {
+                    if (GetConnection(providerType).GetConnectionToken().Profile.ID != null)
+                        return GetConnection(providerType).GetContacts();
+                    else
+                        return SessionManager.GetConnection(providerType).GetContacts();
+                }
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException(providerType);
+                }
+            }
+            else
+            {
+                if (SessionManager.IsConnected)
+                {
+                    if (GetCurrentConnectionToken().Profile.ID != null)
+                        return CurrentConnection.GetContacts();
+                    else
+                        return CurrentConnection.GetContacts();
+                }
+
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Execute data feed with current or specified provider
+        /// </summary>
+        /// <param name="feedUrl"></param>
+        /// <param name="transportMethod"></param>
+        /// <returns></returns>
+        public static WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        {
+            if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
+            {
+
+                if (SessionManager.IsConnectedWith(providerType))
+                {
+                    IProvider provider = ProviderFactory.GetProvider(providerType);
+                    return provider.AuthenticationStrategy.ExecuteFeed(feedUrl, provider, GetConnection(providerType).GetConnectionToken(), transportMethod);
+                }
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException(providerType);
+                }
+            }
+            else
+            {
+                if (SessionManager.IsConnected)
+                {
+                    IProvider p = CurrentConnection;
+                    return p.ExecuteFeed(feedUrl, transportMethod);
+                }
+
+                else
+                {
+                    throw new InvalidSocialAuthConnectionException();
+                }
+            }
+
+        }
+
+
+
+        //------------ Future Methods
+        //public static void Disconnect(PROVIDER_TYPE providerType);
+        //public static void RefreshToken()
+        //public static void Connect(Access Token)
+        //public static void SwitchConnection(PROVIDER_TYPE)
+        // & more....
+
+        #endregion
+
+        #region InternalStuff
+
+        private SocialAuthUser() { }
+        PROVIDER_TYPE providerType { get; set; }
         internal Token contextToken { get; set; }
-
-        internal UserProfile Profile { get; set; }
 
         /// <summary>
         /// Returns a GUID to identify current user
         /// </summary>
-        public Guid Identifier { get { return identifier; } }
-
-        #endregion
-
-        #region INITIALIZATION
-        /// <summary>
-        /// Initializes context user object
-        /// </summary>
-        /// <param name="providerType">Provider selected for authentication</param>
-        public SocialAuthUser(PROVIDER_TYPE providerType)
-        {
-            contextUser = this;
-            contextUser.provider = ProviderFactory.GetProvider(providerType);
-            contextUser.contextToken = new Token();
-            contextUser.contextToken.provider = providerType;
-            identifier = Guid.NewGuid();
-            HttpContext.Current.Session["socialauthuser"] = contextUser;
-            this.providerType = providerType.ToString();
-        }
-
-        internal SocialAuthUser()
-        {
-            HttpContext.Current.Session["socialauthuser"] = this;
-        }
-
+        public Guid Identifier { get { return SessionManager.GetUserSessionGUID(); } }
 
         /// <summary>
-        /// Initializes context user object
+        /// Callbed by Authentication Strategy at end of authentication process
         /// </summary>
-        /// <param name="provider">Provider selected for authentication</param>
-        public static void CreateUser(PROVIDER_TYPE provider)
-        {
-            SocialAuthUser objUser = new SocialAuthUser(provider);
-        }
-
-        #endregion
-
-        #region OAUTH_IMPLEMENTATION
-
-        public void Login(string defaultURL)
-        {
-            contextUser.contextToken.CallbackURL = (defaultURL.Contains("http") ? defaultURL : current.Request.GetBaseURL() + defaultURL);
-            provider.RequestUserAuthentication();
-        }
-
-        /// <summary>
-        /// Redirects user to provider's login for authentication
-        /// </summary>
-        public void Login()
-        {
-            string callbackUrl = "";
-            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None
-                && Utility.GetConfiguration().Authentication.Enabled)
-                callbackUrl = Utility.GetConfiguration().Authentication.DefaultUrl.Contains("http") ? Utility.GetConfiguration().Authentication.DefaultUrl
-                     : current.Request.GetBaseURL() + Utility.GetConfiguration().Authentication.DefaultUrl;
-            else
-                callbackUrl = FormsAuthentication.DefaultUrl;
-
-            Login(callbackUrl);
-        }
-
-        /// <summary>
-        /// Returns contacts list of context user
-        /// </summary>
-        /// <returns></returns>
-        public List<Contact> GetContacts()
-        {
-            return provider.GetContacts();
-        }
-
-        /// <summary>
-        /// Returns profile of context user
-        /// </summary>
-        /// <returns></returns>
-        public UserProfile GetProfile()
-        {
-            if (Profile == null)
-                Profile = provider.GetProfile();
-            return Profile;
-        }
-
-        /// <summary>
-        /// Returns boolean value indicating if a user is logged in
-        /// </summary>
-        /// <returns></returns>
-        public static bool IsLoggedIn()
-        {
-            if (GetCurrentUser() == null)
-                return false;
-            else
-                return GetCurrentUser().HasUserLoggedIn;
-        }
-
-        public string ExecuteFeed(string url)
-        {
-            if (GetCurrentUser() != null)
-                return provider.ExecuteFeed(url);
-            else
-                return "";
-        }
-
-        internal bool HasUserLoggedIn
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Logs out user for current application (not provider) and redirects to login screen
-        /// </summary>
-        public void Logout()
+        /// <param name="isSuccess">Is authentication successful</param>
+        internal static void OnAuthneticationProcessCompleted(bool isSuccess)
         {
 
-            HttpContext.Current.Response.Redirect("~/socialAuth/logout.sauth");
-        }
 
-        /// <summary>
-        /// Logs out user for current application (not provider) and redirects to specified URL
-        /// </summary>
-        /// <param name="callbackURL">URL where user should be redirected after logout</param>
-        public void Logout(string callbackURL)
-        {
-            SocialAuthUser.GetCurrentUser().contextToken.CallbackURL = callbackURL;
-            Logout();
-        }
-
-        internal void SetClaims()
-        {
-            Provider.SetIClaims();
-        }
-
-        /// <summary>
-        /// Returns name of provider used for authenticating context user
-        /// </summary>
-        public string ProviderName
-        {
-            get
+            if (!isSuccess)
             {
-                return providerType;
+                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
+            }
+            else
+            {
+
+                //LoadProfile
+                SessionManager.GetCurrentConnection().GetConnectionToken().Profile = SessionManager.GetCurrentConnection().GetProfile();
+                SetClaims();
+
+
+
+                if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
+                   Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
+                {
+                    FormsAuthenticationTicket ticket =
+                        new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, 60);
+
+                    string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
+                    HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
+                    HttpContext.Current.Response.Cookies.Add(cookie);
+                    SessionManager.ExecuteCallback();
+                    SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
+                }
+                else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
+                {
+                    SessionManager.ExecuteCallback();
+                    FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+                }
+
+
+            }
+
+
+        }
+
+        /// <summary>
+        /// Sets Windows Identify Foundatin Claims
+        /// </summary>
+        internal static void SetClaims()
+        {
+            if (HttpContext.Current.ApplicationInstance.IsSTSaware())
+            {
+                //Set Claims
+                IClaimsPrincipal principal = (IClaimsPrincipal)Thread.CurrentPrincipal;
+                IClaimsIdentity identity = (IClaimsIdentity)principal.Identity;
+
+                UserProfile Profile = GetCurrentConnectionToken().Profile;
+                if (!string.IsNullOrEmpty(Profile.DateOfBirth))
+                    identity.Claims.Add(new Claim(ClaimTypes.DateOfBirth.ToString(), Profile.DateOfBirth, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+                if (!string.IsNullOrEmpty(Profile.FirstName))
+                    identity.Claims.Add(new Claim(ClaimTypes.GivenName.ToString(), Profile.FirstName, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+                if (!string.IsNullOrEmpty(Profile.LastName))
+                    identity.Claims.Add(new Claim(ClaimTypes.Surname.ToString(), Profile.LastName, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+                if (!string.IsNullOrEmpty(Profile.Email))
+                    identity.Claims.Add(new Claim(ClaimTypes.Email.ToString(), Profile.Email, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+                if (!string.IsNullOrEmpty(Profile.Gender))
+                    identity.Claims.Add(new Claim(ClaimTypes.Gender.ToString(), Profile.Gender, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+                if (!string.IsNullOrEmpty(Profile.Country))
+                    identity.Claims.Add(new Claim(ClaimTypes.Country.ToString(), Profile.Country, "string", "SocialAuth.NET", Profile.Provider.ToString()));
+
+
             }
         }
-        #endregion
 
+        /// <summary>
+        /// Redirect function
+        /// </summary>
+        /// <param name="url"></param>
+        internal static void Redirect(string url)
+        {
+            HttpContext.Current.Response.Redirect(url,false);
+        }
+
+        /// <summary>
+        /// Redirects user to Login Screen based on authentication option chosen
+        /// </summary>
+        /// <param name="loginUrl"></param>
+        internal static void RedirectToLoginPage(string loginUrl = "")
+        {
+            /***************LOGIC***************
+             * If AuthenticationMode = SocialAuth 
+             *      and LoginUrl == empty, redirect to loginform.sauth 
+             *      and LoginUrl <> empty, redirect to LoginUrl
+             * If AuthenticationMode = FormsAuthentication call RedirectToLoginPage()
+             * If AuthenticationMode = Custom, redirect to Parameter passed in Login
+             * ********************************/
+
+            string loginUrlInConfigFile = Utility.GetSocialAuthConfiguration().Authentication.LoginUrl;
+            string redirectTo = "?ReturnUrl=" + HttpUtility.UrlEncode(HttpContext.Current.Request.Url.ToString());
+
+            AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
+
+            //* If AuthenticationMode = SocialAuth and LoginUrl == empty, redirect to loginform.sauth
+            if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + "loginForm.sauth" + redirectTo);
+
+            //* If AuthenticationMode = SocialAuth and LoginUrl <> empty, redirect to LoginUrl
+            else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN)
+                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + loginUrlInConfigFile + redirectTo);
+
+            //* If AuthenticationMode = FormsAuthentication call RedirectToLoginPage()
+            else if (option == AUTHENTICATION_OPTION.FORMS_AUTHENTICATION)
+                FormsAuthentication.RedirectToLoginPage();
+
+            //* If AuthenticationMode = Custom, redirect to Configuration LoginURL OR otherwise SamePage as current request
+            else if (option == AUTHENTICATION_OPTION.CUSTOM_SECURITY_CUSTOM_SCREEN)
+            {
+                if (string.IsNullOrEmpty(loginUrl))
+                    throw new Exception("Please specify Login URL");
+                else
+                    SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + loginUrl + redirectTo);
+            }
+
+        }
+
+
+        #endregion
     }
 }

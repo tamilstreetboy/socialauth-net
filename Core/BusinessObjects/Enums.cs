@@ -34,11 +34,15 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     /// </summary>
     public enum PROVIDER_TYPE
     {
+        NOT_SPECIFIED=0,
         FACEBOOK,
         GOOGLE,
         YAHOO,
         MSN,
-        TWITTER
+        TWITTER,
+        LINKEDIN,
+        MYSPACE
+      
     }
 
     /// <summary>
@@ -60,12 +64,27 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         RSASHA1
     }
 
-  internal enum OPERATION_MODE
-  {
-      SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN,
-      SOCIALAUTH_SECURITY_CUSTOM_SCREEN,
-      FORMS_SECURITY_CUSTOM_SCREEN,
-      CUSTOM_SECURITY_CUSTOM_SCREEN,
-      NOT_SUPPORTED
-  }
+    internal enum AUTHENTICATION_OPTION
+    {
+        SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN, //Everything by socialauth including screen generation
+        SOCIALAUTH_SECURITY_CUSTOM_SCREEN, //Everything by socialauth but user's login url
+        FORMS_AUTHENTICATION, //Forms authentication
+        CUSTOM_SECURITY_CUSTOM_SCREEN, //User handles everything by calling API
+        NOT_SUPPORTED //Error
+    }
+
+    public enum SCOPE_LEVEL
+    {
+        DEFAULT,
+        CUSTOM
+    }
+
+    public enum GENDER
+    {
+        NOT_SPECIFIED = 0,
+        MALE = 1,
+        FEMALE = 2
+    }
+
+
 }
