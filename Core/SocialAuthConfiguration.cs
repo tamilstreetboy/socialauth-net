@@ -82,6 +82,13 @@ namespace Brickred.SocialAuth.NET.Core
         {
             get { return (IconFolderElement)this["IconFolder"]; }
         }
+
+        [ConfigurationProperty("BaseURL")]
+        public BaseURLElement BaseURL
+        {
+            get { return (BaseURLElement)this["BaseURL"]; }
+        }
+
     }
 
 
@@ -126,6 +133,14 @@ namespace Brickred.SocialAuth.NET.Core
             get { return (string)this["AdditionalScopes"]; }
             set { this["AdditionalScopes"] = value; }
         }
+
+        [ConfigurationProperty("ScopeLevel")]
+        public string ScopeLevel
+        {
+            get { return (string)this["ScopeLevel"]; }
+            set { this["ScopeLevel"] = value; }
+        }
+
     }
 
 
@@ -242,6 +257,17 @@ namespace Brickred.SocialAuth.NET.Core
         {
             get { return (string)this["Path"]; }
             set { this["Path"] = value; }
+        }
+    }
+
+    public class BaseURLElement : ConfigurationElement
+    {
+        [ConfigurationProperty("Domain", IsRequired = false)]
+        public string Domain
+        {
+            get { return (string)this["Domain"]; }
+            set { this["Domain"] = value; }
+
         }
     }
 }

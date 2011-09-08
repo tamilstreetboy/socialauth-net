@@ -30,117 +30,156 @@ using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using System.Web;
 using Microsoft.IdentityModel.Claims;
 using System.Threading;
+using System.Collections.Specialized;
+using System.Net;
 
 namespace Brickred.SocialAuth.NET.Core
 {
 
     public abstract class Provider : IProvider
     {
+     
+        #region IProvider Members
 
-        #region HELPER_PROPERTIES
-
-        protected HttpContext Current
+        //******** PROVIDER IN CONTEXT
+        public abstract PROVIDER_TYPE ProviderType
         {
-            get { return HttpContext.Current; }
+            get;
         }
 
-        internal Token ContextToken
+        //******** AUTHENTICATION STRATEGY
+        public abstract OAuthStrategyBase AuthenticationStrategy
         {
-            get { return SocialAuthUser.GetCurrentUser().contextToken; }
+            get;
         }
 
-        #endregion
-
-        #region CONFIGURATION_PROPERTIES
-
-        public abstract string RequestTokenURL { get; }
-        public abstract string AuthorizationTokenURL { get; }
-        public abstract SIGNATURE_TYPE SignatureMethod { get; }
-        public abstract TRANSPORT_METHOD TransportName { get; }
-        public abstract string AccessTokenURL { get; }
-        public abstract string ContactsEndpoint { get; }
-        public abstract string ProfileEndpoint { get; }
-        public abstract string ProfilePictureEndpoint { get; }
-        public abstract PROVIDER_TYPE ProviderType { get; }
-        public string AssocHandleURL { get; set; }
-        public string Consumerkey { get; set; }
-        public string Consumersecret { get; set; }
-        public bool Secure { get; set; }
-
-        #endregion
-
-        #region OAUTH_WORKFLOW_METHODS
-
-        public abstract void RequestUserAuthentication();
-        public abstract void ProcessAuthenticationResponse();
-        public abstract void AuthorizeUser();
-        public virtual string AdditionalScope { get; set; }
-        public virtual string ExecuteFeed(string url) { return ""; }
-        public virtual void Logout()
+        //******** END POINTS
+        public virtual string OpenIdDiscoveryEndpoint
         {
-
+            get { return ""; }
+        }
+        public virtual string AssocHandleEndpoint
+        {
+            get { return ""; }
+        }
+        public virtual string RequestTokenEndpoint
+        {
+            get { return ""; }
+        }
+        public abstract string UserLoginEndpoint
+        {
+            get;
+            set;
+        }
+        public abstract string AccessTokenEndpoint
+        {
+            get;
+           
+        }
+        public abstract string ProfileEndpoint
+        {
+            get;
+        }
+        public abstract string ContactsEndpoint
+        {
+            get;
+        }
+        public virtual string ProfilePictureEndpoint
+        {
+            get { return ""; }
         }
 
-        #endregion
+        //******** PROVIDER PROPERTIES
+        public string Consumerkey
+        {
+            get;
+            set;
+        }
+        public string Consumersecret
+        {
+            get;
+            set;
+        }
+        public abstract SIGNATURE_TYPE SignatureMethod
+        {
+            get;
+        }
+        public abstract TRANSPORT_METHOD TransportName
+        {
+            get;
+        }
 
-        #region DATA_RETRIEVAL_METHODS
+        //******** SCOPE MANAGEMENT
+        public virtual string AdditionalScopes
+        {
+            get;
+            set;
+        }
+       public abstract string DefaultScope
+        {
+            get;
+            
+        }
+        public virtual SCOPE_LEVEL ScopeLevel
+        { get; set; }
 
+        public virtual bool IsProfileSupported
+        {
+            get { return true; }
+            
+        }
+        public virtual string ScopeDelimeter
+        {
+            get { return ","; }
+        }
+        
+        public string GetScope()
+        {
+
+            List<string> scopes = new List<string>();
+            scopes.AddRange(AdditionalScopes.Split(new char[] {','}).ToList<string>());
+
+           if (ScopeLevel == SCOPE_LEVEL.DEFAULT)
+                scopes.AddRange(DefaultScope.Split(new char[] { ',' }).ToList<string>());
+
+           string strScopes = String.Join(ScopeDelimeter, scopes.ToArray());
+            if (strScopes.EndsWith(ScopeDelimeter))
+                strScopes = strScopes.Substring(0, strScopes.Length - 1);
+            if (strScopes.StartsWith(ScopeDelimeter))
+                strScopes = strScopes.Substring(ScopeDelimeter.Length);
+            return strScopes;
+        }
+
+
+
+        //******** PROVIDER OPERATIONS
+        public virtual void Connect(PROVIDER_TYPE provider)
+        {
+            AuthenticationStrategy.Login();
+        }
+        public virtual void Connect(Token connectionToken)
+        {
+            
+        }
+        public virtual void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler)
+        {
+            AuthenticationStrategy.LoginCallback(responseCollection, AuthenticationHandler);
+        }
         public abstract UserProfile GetProfile();
         public abstract List<Contact> GetContacts();
-
-        protected void SetClaims()
+        public abstract WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
+        public Token GetConnectionToken()
         {
-            if (HttpContext.Current.ApplicationInstance.IsSTSaware())
-            {
-                //Set Claims
-                IClaimsPrincipal principal = (IClaimsPrincipal)Thread.CurrentPrincipal;
-                IClaimsIdentity identity = (IClaimsIdentity)principal.Identity;
+            return SessionManager.GetConnectionToken(this.ProviderType);
+        }
+        public virtual void Logout()
+        {
+        }
+        public virtual void AuthenticationCompleting(bool isSuccess)
+        {
 
-                SocialAuthUser user = SocialAuthUser.GetCurrentUser();
-                if (!string.IsNullOrEmpty(user.Profile.DateOfBirth))
-                    identity.Claims.Add(new Claim(ClaimTypes.DateOfBirth.ToString(), user.Profile.DateOfBirth, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.FirstName))
-                    identity.Claims.Add(new Claim(ClaimTypes.GivenName.ToString(), user.Profile.FirstName, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.LastName))
-                    identity.Claims.Add(new Claim(ClaimTypes.Surname.ToString(), user.Profile.LastName, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Email))
-                    identity.Claims.Add(new Claim(ClaimTypes.Email.ToString(), user.Profile.Email, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Gender))
-                    identity.Claims.Add(new Claim(ClaimTypes.Gender.ToString(), user.Profile.Gender, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Country))
-                    identity.Claims.Add(new Claim(ClaimTypes.Country.ToString(), user.Profile.Country, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-
-
-            }
         }
 
-        public static void SetIClaims()
-        {
-            if (HttpContext.Current.ApplicationInstance.IsSTSaware())
-            {
-                //Set Claims
-                IClaimsPrincipal principal = (IClaimsPrincipal)Thread.CurrentPrincipal;
-                IClaimsIdentity identity = (IClaimsIdentity)principal.Identity;
-
-                SocialAuthUser user = SocialAuthUser.GetCurrentUser();
-                
-                if (user.contextToken == null) { return; }//This triggers during logout
-                if (!string.IsNullOrEmpty(user.Profile.DateOfBirth))
-                    identity.Claims.Add(new Claim(ClaimTypes.DateOfBirth.ToString(), user.Profile.DateOfBirth, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.FirstName))
-                    identity.Claims.Add(new Claim(ClaimTypes.GivenName.ToString(), user.Profile.FirstName, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.LastName))
-                    identity.Claims.Add(new Claim(ClaimTypes.Surname.ToString(), user.Profile.LastName, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Email))
-                    identity.Claims.Add(new Claim(ClaimTypes.Email.ToString(), user.Profile.Email, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Gender))
-                    identity.Claims.Add(new Claim(ClaimTypes.Gender.ToString(), user.Profile.Gender, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-                if (!string.IsNullOrEmpty(user.Profile.Country))
-                    identity.Claims.Add(new Claim(ClaimTypes.Country.ToString(), user.Profile.Country, "string", "SocialAuth.NET", user.contextToken.provider.ToString()));
-
-         }
-
-        }
         #endregion
     }
 }
