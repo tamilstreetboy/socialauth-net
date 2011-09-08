@@ -7,6 +7,7 @@ using System.Net;
 using System.IO;
 using System.Collections.Specialized;
 using Newtonsoft.Json.Linq;
+using System.Web;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -81,14 +82,7 @@ namespace Brickred.SocialAuth.NET.Core
             }
             catch (Exception ex)
             {
-                QueryParameters qp = new QueryParameters();
-                qp.Add("client_id", provider.Consumerkey);
-                qp.Add("client_secret", provider.Consumersecret);
-                qp.Add("code", connectionToken.Code);
-                qp.Add("redirect_uri", connectionToken.ProviderCallbackUrl);
-                qp.Add("grant_type", "authorization_code");
-                logger.LogOauthRequestFailure(ex, qp);
-                throw;
+                throw new OAuthException("There was an error while retrieving Access Token from " + ub.ToString() + "!", ex);
             }
         }
 
@@ -150,7 +144,7 @@ namespace Brickred.SocialAuth.NET.Core
             catch (Exception ex)
             {
                 logger.LogOauthRequestFailure(ex, new QueryParameters() { new QueryParameter("access_token", connectionToken.AccessToken) });
-                throw;
+                throw new OAuthException("There was an error while executing " + feedURL +"!", ex);
             }
 
             return wr;
