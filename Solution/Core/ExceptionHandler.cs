@@ -21,59 +21,67 @@ namespace Brickred.SocialAuth.NET.Core
             get
             {
                 if (providertype == PROVIDER_TYPE.NOT_SPECIFIED)
-                    return "User is not connected with any provider";
+                    return "Can not get results as User is not connected with any provider.";
                 else
-                    return "User is not connected with " + providertype.ToString();
+                    return "Can not get results from " + providertype.ToString() + " as User is not connected with it.";
             }
         }
     }
 
-    [Serializable]
-    public class NewException : Exception, ISerializable
+
+    public class OAuthException : Exception
     {
-        Exception ex;
-        public NewException(Exception ex)
+        string message = "";
+        public OAuthException(string message, Exception ex)
         {
-            this.ex = ex;
-        }
-        public NewException()
-        {
-
-            // Add implementation.
-        }
-        public NewException(string message)
-        {
-            // Add implementation.
-        }
-        public NewException(string message, Exception inner)
-        {
-
-        }
-
-        public override string StackTrace
-        {
-            get
+            this.message = message;
+            
+            if (ex.Message.Contains("400")) //BAD REQUEST
             {
-                return "ffffffffffffffffffff";
+                message += Environment.NewLine + "Bad Request! Please ensure:" + Environment.NewLine + "(1) All required parameters are passed";
+                message += Environment.NewLine + "(2) Signature is Url Encoded";
+                message += Environment.NewLine + "(3) Authorization header is properly set";
             }
-        }
-        // This constructor is needed for serialization.
-        protected NewException(SerializationInfo info, StreamingContext context)
-        {
-            // Add implementation.
+            else if (ex.Message.Contains("401")) //UNAUTHORIZED
+            {
+                message += Environment.NewLine + "Unauthorized! Please ensure:" + Environment.NewLine + "(1) All required parameters are passed";
+                message += Environment.NewLine + "(2) Signature is Url Encoded";
+                message += Environment.NewLine + "(3) Authorization header is properly set";
+            }
+            else if (ex.Message.Contains("403")) //FORBIDDEN
+            {
+                message += Environment.NewLine + "Forbidden! " + Environment.NewLine  + ex.Message;
+            }
+            else if (ex.Message.Contains("404")) //NOT FOUND
+            {
+                message += Environment.NewLine + " Requested URL could not be found at provider";
+            }
+            else if (ex.Message.Contains("500")) //INTERNAL SERVER ERROR
+            {
+                message += Environment.NewLine + " Something is broken at provider. Request broke with error message:" + ex.Message;
+            }
+            else if (ex.Message.Contains("502")) //SERVICE UNAVAILABLE
+            {
+                message += Environment.NewLine + " Possibly provider is down. Request broke with errror: " + ex.Message;
+            }
+            else if (ex.Message.Contains("503")) //SERVICE UNAVAILABLE
+            {
+                message += Environment.NewLine + " Request broke with error message: " + ex.Message;
+            }
+            else
+            {
+                message = ex.Message;
+            }
+
         }
 
-        public override Exception GetBaseException()
-        {
-            return ex.InnerException;
-        }
         public override string Message
         {
             get
             {
-                return "asdasdasd";
+                return message;
             }
         }
-
     }
+
 }

@@ -50,44 +50,50 @@ namespace Brickred.SocialAuth.NET.Core
 
         private void context_AuthenticateRequest(object sender, EventArgs e)
         {
-            string loginUrl = "";
-            string defaultUrl = "";
-            //string allowedURls = "";
+            /*************************
+             * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
+             * If Request is of LoginURL, skip
+             * OTHERWISE:::::::::::::::::::::
+             * <<<<IF USER IS NOT LOGGED IN>>>
+             * If AuthenticationOption = SocialAuth
+             *          Redirect in Priority - ConfigurationLoginURL,  "LoginForm.sauth"
+             * If AuthenticationOption = FormsAuthentication
+             *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
+             * If AuthenticationOption = Everything Custom
+             *          Don't do anything. User will put checking code on everypage himself.
+             * **********************/
 
-            if (VirtualPathUtility.GetExtension(HttpContext.Current.Request.RawUrl) != ".aspx")
-                return;
+            AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
 
-            //User wants SocialAuth to manage authentication
-            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None &&
-                Utility.GetConfiguration().Authentication.Enabled == true)
+
+            if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
             {
-                HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-                loginUrl = Utility.GetConfiguration().Authentication.LoginUrl;
-                if (string.IsNullOrEmpty(loginUrl))
-                    if (HttpContext.Current.Request["p"] == null)
-                        loginUrl = "SocialAuth/LoginForm.sauth";
-                    else
-                        loginUrl = "SocialAuth/LoginAction.sauth?p=facebook";
+                //block any .aspx page. Rest all is allowed.
+                //TODO: Better Implementation of this
+                if (VirtualPathUtility.GetExtension(HttpContext.Current.Request.RawUrl) != ".aspx")
+                    return;
 
-                defaultUrl = Utility.GetConfiguration().Authentication.DefaultUrl;
+                //If requested page is login URL only, allow it
+                string currentUrl = HttpContext.Current.Request.Url.AbsolutePath;
+                string loginurl = Utility.GetSocialAuthConfiguration().Authentication.LoginUrl;
+                loginurl = string.IsNullOrEmpty(loginurl) ? "socialauth/loginform.sauth" : loginurl;
+                if (currentUrl.EndsWith(loginurl))
+                    return;
 
-                string cookieName = FormsAuthentication.FormsCookieName;
-                HttpCookie authCookie = HttpContext.Current.Request.Cookies[cookieName];
-                bool isauth = HttpContext.Current.Request.IsAuthenticated;
-
-                if (authCookie == null && (!
-                        ((HttpContext.Current.Request.Url.ToString().ToLower().Contains(loginUrl.ToLower()) && loginUrl != "") ||
-                    HttpContext.Current.Request.Url.ToString().ToLower().Contains(".sauth"))))
+                //If Url is pointing to a .aspx page, authorize it!
+                HttpCookie cookie = HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName];
+                if (cookie != null)
                 {
-                    HttpContext.Current.Response.Redirect(HttpContext.Current.Request.GetBaseURL() +  loginUrl);
+                    HttpContext.Current.User = new GenericPrincipal(new FormsIdentity(FormsAuthentication.Decrypt(cookie.Value)), null);
                 }
-                else if (authCookie != null)
+                else
                 {
-                    HttpContext.Current.User = new GenericPrincipal(new FormsIdentity(FormsAuthentication.Decrypt(authCookie.Value)), null);
-
+                    //User is not logged in
+                    HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                    SocialAuthUser.RedirectToLoginPage();
                 }
-
             }
+
         }
 
 
@@ -95,9 +101,9 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (HttpContext.Current.ApplicationInstance.IsSTSaware())
                 if (HttpContext.Current.Session != null)
-                    if (SocialAuthUser.GetCurrentUser() != null)
-                        if (SocialAuthUser.GetCurrentUser().Profile != null)
-                            SocialAuthUser.GetCurrentUser().SetClaims();
+                    if (SocialAuthUser.IsLoggedIn())
+                        if (SocialAuthUser.GetProfile() != null)
+                            SocialAuthUser.SetClaims();
         }
     }
 }

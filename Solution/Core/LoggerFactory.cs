@@ -39,15 +39,10 @@ namespace Brickred.SocialAuth.NET.Core
         void Log(LogEventType eventType, string errorDescription);
 
         //Shortcut methods for logging in SocialAuthcontext
-        void LogAuthenticationRequest(string url);
-        void LogAuthenticationResponse(string response, Exception ex);
-        void LogAuthorizationRequest(string url);
-        void LogAuthorizationResponse(string response, Exception ex);
-        void LogProfileRequest(string url);
-        void LogProfileResponse(Exception ex);
-        void LogContactsRequest(string url);
-        void LogContactsResponse(Exception ex);
-
+        void LogOauthRequest(string message);
+        void LogOauthRequestFailure(Exception ex, QueryParameters oauthParams);
+        void LogOauthSuccess(string message);
+    
     }
 
     //Type of Logging Events
@@ -104,13 +99,13 @@ namespace Brickred.SocialAuth.NET.Core
         public void Log(LogEventType eventType, string errorDescription, Exception exception)
         {
 
-            if (!Utility.GetConfiguration().Logging.Enabled)
+            if (!Utility.GetSocialAuthConfiguration().Logging.Enabled)
                 return;
 
 
             log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (SocialAuthUser.GetCurrentUser() != null)
-                log4net.ThreadContext.Properties["SocialAuthUserSessionId"] = SocialAuthUser.GetCurrentUser().Identifier;// HttpContext.Current.Session.SessionID;
+            if (SocialAuthUser.CurrentConnection != null)
+                log4net.ThreadContext.Properties["SocialAuthUserSessionId"] = SocialAuthUser.CurrentConnection;// HttpContext.Current.Session.SessionID;
 
             switch (eventType)
             {
@@ -178,113 +173,28 @@ namespace Brickred.SocialAuth.NET.Core
             Log(eventType, errorDescription, null);
         }
 
-        //Call this method before maing Token Request (before redirecting user to provider for login)
-        public void LogAuthenticationRequest(string url)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (logger.IsDebugEnabled)
-                Log(LogEventType.Debug, "AuthenticateUser(), User redirected for login to: " + url);
-            else
-                Log(LogEventType.Info, "User redirected for login to: " + SocialAuthUser.GetCurrentUser().contextToken.provider.ToString());
+       
 
+        #region ILogger Members
+
+
+        public void LogOauthRequest(string message)
+        {
+            Log(LogEventType.Info, message);
         }
 
-        //Call this method when response is recevied for Token request, Null exception infers success.
-        public void LogAuthenticationResponse(string response, Exception ex)
+        public void LogOauthRequestFailure(Exception ex, QueryParameters oauthParams)
         {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (ex == null)
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Debug, "AuthenticateUser(), response recieved: " + response);
-            }
-            else
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Error, "AuthenticateUser(), login request failed with error: " + ex.Message);
-                else
-                    Log(LogEventType.Info, "User login request failed");
-            }
+            string errorDesc = oauthParams.ToString() + Environment.NewLine + ex.Message + "<br>" + ex.StackTrace;
+            Log(LogEventType.Error, errorDesc);
         }
 
-        //Call this method when request is made for AccessToken
-        public void LogAuthorizationRequest(string url)
+        public void LogOauthSuccess(string message)
         {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (logger.IsDebugEnabled)
-                Log(LogEventType.Debug, "AuthorizeUser() call made to:" + url);
+            Log(LogEventType.Info, message);
         }
 
-        //Call this method when response is recevied for AccessToken request. Null exception infers success.
-        public void LogAuthorizationResponse(string response, Exception ex)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (ex == null)
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Debug, "AuthorizeUser(), success response recieved: " + response);
-            }
-            else
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Error, "AuthorizeUser() request failed with error: " + ex.Message);
-                else
-                    Log(LogEventType.Info, "Authorization request failed.");
-            }
-        }
-
-        //Call thismethod when request is to be made for retriving user's profile
-        public void LogProfileRequest(string url)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (logger.IsDebugEnabled)
-                Log(LogEventType.Debug, "GetProfile() call made to:" + url);
-            else
-                Log(LogEventType.Info, "Requesting user's Profile");
-        }
-
-        //Call this method when Response is recevied for Profile request. Null exception infers success.
-        public void LogProfileResponse(Exception ex)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (ex == null)
-
-                Log(LogEventType.Info, "GetProfile(), Profile recevied successfully");
-            else
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Error, "GetProfile(), Request failed with error: " + ex.Message);
-                else
-                    Log(LogEventType.Info, "Profile request failed");
-            }
-        }
-
-        //Call this method when request is made for user's contacts
-        public void LogContactsRequest(string url)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (logger.IsDebugEnabled)
-                Log(LogEventType.Debug, "GetContacts() call made to:" + url);
-            else
-                Log(LogEventType.Info, "Requesting user's Contacts");
-        }
-
-        //Call this method when response os recevied for contacts request. Null exception infers success.
-        public void LogContactsResponse(Exception ex)
-        {
-            log4net.ILog logger = log4net.LogManager.GetLogger(sourceType);
-            if (ex == null)
-
-                Log(LogEventType.Info, "GetContacts(), Contacts recevied successfully");
-            else
-            {
-                if (logger.IsDebugEnabled)
-                    Log(LogEventType.Error, "GetContacts(), Request failed with error: " + ex.Message);
-                else
-                    Log(LogEventType.Info, "Contacts request failed");
-            }
-        }
-
+        #endregion
     }
 
 }

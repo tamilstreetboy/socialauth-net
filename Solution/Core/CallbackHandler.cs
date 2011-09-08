@@ -41,72 +41,55 @@ namespace Brickred.SocialAuth.NET.Core
     {
         #region HttpHandler Implementation
 
-        public bool IsReusable
-        {
-            get { return false; }
-        }
+        public bool IsReusable { get { return false; } }
 
         public void ProcessRequest(HttpContext context)
         {
             //Call for Logout
             if (current.Request.Url.ToString().IndexOf("logout.sauth") > -1)
-            { LogOut(); return; }
+            { SocialAuthUser.Disconnect(); }
 
 
-            //Call for Login
-            if (HttpContext.Current.Request.RawUrl.ToLower().Contains("login.sauth"))
+            //Call for login (likely from HTML clients) with provider in parameter "p"
+            else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("login.sauth"))
             {
-                if (HttpContext.Current.Request["p"] != null)
+                string returnUrl = "";
+                if (current.Request["returnUrl"] != null)
+                    returnUrl = current.Request["returnUrl"];
+                if (current.Request["p"] != null)
                 {
-
-                    SocialAuthUser oUser = new SocialAuthUser((PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), HttpContext.Current.Request["p"].ToUpper()));
-                    oUser.Login();
+                    SocialAuthUser.Connect((PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), HttpContext.Current.Request["p"].ToUpper()), returnURL:returnUrl);
                 }
             }
 
             //call to display login Form
-            else if (HttpContext.Current.Request.RawUrl.Contains("LoginForm.sauth"))
+            else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("loginform.sauth"))
             {
                 RenderHtml();
                 HttpContext.Current.Response.End();
             }
 
-            //call to validate authentication
+            //call to process response recevied from Providers
             else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("validate.sauth"))
             {
-                ILogger logger = LoggerFactory.GetLogger(this.GetType());
-                Token token = SocialAuthUser.GetCurrentUser().contextToken;
-                if (token == null)
-                    LogOut();
+                //ILogger logger = LoggerFactory.GetLogger(this.GetType());
+                Token token = SocialAuthUser.GetCurrentConnectionToken();
+                //if (token == null)
+                //    LogOut();
 
                 //Process response recevied post authentication call
-                (ProviderFactory.GetProvider(token.provider)).ProcessAuthenticationResponse();
-
-                if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
-                    Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
-                {
-                    FormsAuthenticationTicket ticket =
-                        new FormsAuthenticationTicket(SocialAuthUser.GetCurrentUser().Profile.Email, false, 20);
-
-                    string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
-                    HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
-                    current.Response.Cookies.Add(cookie);
-                    current.Response.Redirect(token.CallbackURL);
-                }
-                else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
-                {
-                    FormsAuthentication.RedirectFromLoginPage(SocialAuthUser.GetCurrentUser().Profile.Email, false);
-                }
-
+                (ProviderFactory.GetProvider(token.Provider)).LoginCallback(Utility.GetQuerystringParameters(current.Request.Url.ToString()),
+                    SocialAuthUser.OnAuthneticationProcessCompleted);
 
             }
         }
+
 
         #endregion
 
         #region Helper Methods
 
-        private HttpContext current
+        private static HttpContext current
         {
             get { return HttpContext.Current; }
         }
@@ -156,54 +139,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
-        private void LogOut()
-        {
-            string callbackUrl = "";
-            if (!string.IsNullOrEmpty(SocialAuthUser.GetCurrentUser().contextToken.CallbackURL))
-            { 
-                callbackUrl = (SocialAuthUser.GetCurrentUser().contextToken.CallbackURL);
-                if (!callbackUrl.StartsWith("http"))
-                    callbackUrl = current.Request.GetBaseURL() + callbackUrl;
-            }
-            //cleanup any cookie
-            FormsAuthentication.SignOut();
-            current.Session.Abandon();
 
-
-            //Redirect user
-            OPERATION_MODE mode = Utility.OperationMode();
-
-            //If forms Authentication, then RedirectToLoginPage
-            if (mode == OPERATION_MODE.FORMS_SECURITY_CUSTOM_SCREEN)
-                FormsAuthentication.RedirectToLoginPage();
-            else if (mode == OPERATION_MODE.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || mode == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-            //If full SocialAuth then
-            {
-                //if callbackUrl specified, then to callback URL
-                if (!String.IsNullOrEmpty(callbackUrl))
-                    current.Response.Redirect(callbackUrl);
-                //if loginURL specified, then to login URL
-                else if (!string.IsNullOrEmpty(Utility.GetConfiguration().Authentication.LoginUrl))
-                    current.Response.Redirect(Utility.GetConfiguration().Authentication.LoginUrl);
-                //Else to referrer URL
-                else
-                {
-                    if (mode == OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-                        current.Response.Redirect("SocialAuth/LoginForm.sauth");
-                    else
-                        current.Response.Redirect(current.Request.UrlReferrer.ToString());
-                }
-            }
-            //If custom authentication, then
-            else if (mode == OPERATION_MODE.CUSTOM_SECURITY_CUSTOM_SCREEN)
-                //if callback url specified then callback
-                if (!String.IsNullOrEmpty(callbackUrl))
-                    current.Response.Redirect(callbackUrl);
-                //else referrer url
-                else
-                    current.Response.Redirect(current.Request.UrlReferrer.ToString());
-
-        }
         #endregion
 
 

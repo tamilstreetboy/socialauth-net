@@ -30,7 +30,7 @@ using System.Web;
 using System.Security.Principal;
 using System.Web.Security;
 using System.Web.UI;
-
+using Brickred.SocialAuth.NET.Core.BusinessObjects;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -49,20 +49,37 @@ namespace Brickred.SocialAuth.NET.Core
             ub.Query = result.Substring(0, result.Length - 1);
         }
 
-        
+
         public static string GetBaseURL(this HttpRequest request)
         {
-
+            string baseUrlInConfig = Utility.GetSocialAuthConfiguration().BaseURL.Domain;
             StringBuilder url = new StringBuilder();
             url.Append(request.Url.Scheme);
             url.Append("://");
-            url.Append(request.Url.Host);
-            if (request.Url.Port != 80)
+            
+            if (string.IsNullOrEmpty(baseUrlInConfig))
             {
-                url.Append(":");
-                url.Append(request.Url.Port);
+                url.Append(request.Url.Host);
+                if (request.Url.Port != 80)
+                {
+                    url.Append(":");
+                    url.Append(request.Url.Port);
+                }
+
+
+                url.Append(request.ApplicationPath);
+             
             }
-            url.Append(request.ApplicationPath);
+            else
+            {
+                if (request.Url.Port != 80)
+                {
+                    url.Append(":");
+                    url.Append(request.Url.Port);
+                }
+                url.Append(baseUrlInConfig);
+                
+            }
             if (!url.ToString().EndsWith("/"))
                 url.Append("/");
             return url.ToString();
@@ -76,9 +93,13 @@ namespace Brickred.SocialAuth.NET.Core
             return startIndex;
         }
 
+        public static string ToStringWithoutQuotes(this Newtonsoft.Json.Linq.JToken input)
+        {
+            return input.ToString().Replace("\"", "");
+        }
     }
 
-     
+
 
 }
 
@@ -99,24 +120,24 @@ public static class IdentityExtensions
 
     public static Brickred.SocialAuth.NET.Core.BusinessObjects.UserProfile GetProfile(this IIdentity identity)
     {
-        if (Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser() != null)
-            return Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser().GetProfile();
+        if (SocialAuthUser.CurrentConnection != null)
+            return SocialAuthUser.GetProfile();
         else
             return null;
     }
 
     public static List<Brickred.SocialAuth.NET.Core.BusinessObjects.Contact> GetContacts(this IIdentity identity)
     {
-        if (Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser() != null)
-            return Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser().GetContacts();
+        if (SocialAuthUser.IsLoggedIn())
+            return SocialAuthUser.GetContacts();
         else
             return null;
     }
 
     public static string GetProvider(this IIdentity identity)
     {
-        if (Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser() != null)
-            return Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser.GetCurrentUser().ProviderName;
+        if (SocialAuthUser.IsLoggedIn())
+            return SocialAuthUser.CurrentConnection.ProviderType.ToString();
         else
             return "";
     }

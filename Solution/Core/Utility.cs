@@ -36,6 +36,7 @@ using System.Net;
 using System.Collections.Specialized;
 using System.Web.Configuration;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
+using System.Text.RegularExpressions;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -261,7 +262,7 @@ namespace Brickred.SocialAuth.NET.Core
                 }
                 else
                 {
-                    result.Append('%' + String.Format("{0:X2}", (int)symbol));
+                    result.Append('%' + String.Format("{0:X2}", (int)symbol).ToUpper());
                 }
             }
 
@@ -273,34 +274,43 @@ namespace Brickred.SocialAuth.NET.Core
             return ((AuthenticationSection)WebConfigurationManager.GetSection("system.web/authentication")).Mode;
         }
 
-        public static SocialAuthConfiguration GetConfiguration()
+        public static SocialAuthConfiguration GetSocialAuthConfiguration()
         {
             SocialAuthConfiguration config = System.Configuration.ConfigurationManager.GetSection("SocialAuthConfiguration") as SocialAuthConfiguration;
             return config;
         }
 
-        internal static OPERATION_MODE OperationMode()
+        internal static AUTHENTICATION_OPTION GetAuthenticationOption()
         {
-            OPERATION_MODE mode = OPERATION_MODE.NOT_SUPPORTED;
+            AUTHENTICATION_OPTION option = AUTHENTICATION_OPTION.NOT_SUPPORTED;
+            AuthenticationMode mode = GetAuthenticationMode();
+            if (mode == AuthenticationMode.None || mode == AuthenticationMode.Windows)
+                mode = AuthenticationMode.None;
 
-            if (GetAuthenticationMode() == AuthenticationMode.Forms)
-                mode = OPERATION_MODE.FORMS_SECURITY_CUSTOM_SCREEN;
-            else if (GetAuthenticationMode() == AuthenticationMode.None && GetConfiguration().Authentication.Enabled)
+            if (mode == AuthenticationMode.Forms)
+                option = AUTHENTICATION_OPTION.FORMS_AUTHENTICATION;
+            else if (mode == AuthenticationMode.None && GetSocialAuthConfiguration().Authentication.Enabled)
             {
-                if (String.IsNullOrEmpty(GetConfiguration().Authentication.LoginUrl))
-                    mode = OPERATION_MODE.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN;
+                if (String.IsNullOrEmpty(GetSocialAuthConfiguration().Authentication.LoginUrl))
+                    option = AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN;
                 else
-                    mode = OPERATION_MODE.SOCIALAUTH_SECURITY_CUSTOM_SCREEN;
+                    option = AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN;
             }
-            else if (GetAuthenticationMode() == AuthenticationMode.None && !GetConfiguration().Authentication.Enabled)
-                mode = OPERATION_MODE.CUSTOM_SECURITY_CUSTOM_SCREEN;
+            else if (mode == AuthenticationMode.None && !GetSocialAuthConfiguration().Authentication.Enabled)
+                option = AUTHENTICATION_OPTION.CUSTOM_SECURITY_CUSTOM_SCREEN;
 
-            return mode;
+            if (option == AUTHENTICATION_OPTION.NOT_SUPPORTED)
+            {
+                throw new Exception("invalid authentication type.");
+            }
+
+            return option;
         }
 
-        internal static NameValueCollection GetQuerystringParameters(string querystring)
+        internal static QueryParameters GetQuerystringParameters(string querystring)
         {
-            NameValueCollection parts = new NameValueCollection();
+
+            QueryParameters parts = new QueryParameters();
             if (querystring.Contains("?"))
                 querystring = querystring.Substring(querystring.IndexOf("?") + 1);
 
@@ -308,12 +318,25 @@ namespace Brickred.SocialAuth.NET.Core
             foreach (var queryPart in queryParts)
             {
                 string[] keyValue = queryPart.ToString().Split(new char[] { '=' });
-                parts.Add(keyValue[0], keyValue[1]);
+                if (keyValue.Length == 1) continue;
+                parts.Add(new QueryParameter(keyValue[0], keyValue[1]));
             }
             return parts;
 
 
         }
+
+        internal static GENDER ParseGender(string gender)
+        {
+            if (string.IsNullOrEmpty(gender))
+                return GENDER.NOT_SPECIFIED;
+            else if (gender.ToLower().StartsWith("m"))
+                return GENDER.MALE;
+            else
+                return GENDER.FEMALE;
+        }
+
+
     }
 }
 

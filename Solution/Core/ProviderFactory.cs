@@ -91,11 +91,20 @@ namespace Brickred.SocialAuth.NET.Core
         }
 
 
-        private static void ConfigureProvider(ProviderElement provider, IProvider providerType)
+        private static void ConfigureProvider(ProviderElement configProvider, IProvider provider)
         {
-            providerType.Consumerkey = provider.ConsumerKey;
-            providerType.Consumersecret = provider.ConsumerSecret;
-            providerType.AdditionalScope = provider.AdditionalScopes;
+            if (string.IsNullOrEmpty(configProvider.ConsumerKey))
+                throw new Exception("Please specify Consumer Key for " + provider.ProviderType);
+            if (string.IsNullOrEmpty(configProvider.ConsumerSecret))
+                throw new Exception("Please specify Consumer Secret for " + provider.ProviderType);
+
+            provider.Consumerkey = configProvider.ConsumerKey;
+            provider.Consumersecret = configProvider.ConsumerSecret;
+            provider.AdditionalScopes = configProvider.AdditionalScopes;
+            if (!string.IsNullOrEmpty(configProvider.ScopeLevel))
+                provider.ScopeLevel = (SCOPE_LEVEL)Enum.Parse(typeof(SCOPE_LEVEL), configProvider.ScopeLevel);
+            else
+                provider.ScopeLevel = SCOPE_LEVEL.DEFAULT;
         }
 
 
