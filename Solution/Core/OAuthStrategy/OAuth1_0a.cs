@@ -105,7 +105,8 @@ namespace Brickred.SocialAuth.NET.Core
             catch (Exception ex)
             {
                 logger.LogOauthRequestFailure(ex, oauthParameters);
-                throw;
+                throw new OAuthException("There was an error while retrieving request token from " + provider.RequestTokenEndpoint, ex);
+
             }
         }
 
@@ -147,7 +148,7 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParameters.Add("oauth_consumer_key", provider.Consumerkey);
             oauthParameters.Add("oauth_token", connectionToken.RequestToken);
             oauthParameters.Add("oauth_signature_method", provider.SignatureMethod.ToString());
-            oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
+            oauthParameters.Add("oauth_timestamps", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
             oauthParameters.Add("oauth_version", "1.0");
             oauthParameters.Add("oauth_verifier", connectionToken.OauthVerifier);
@@ -184,7 +185,7 @@ namespace Brickred.SocialAuth.NET.Core
             catch (Exception ex)
             {
                 logger.LogOauthRequestFailure(ex, oauthParameters);
-                throw;
+                throw new OAuthException("There was an error while retrieving access token from " + provider.AccessTokenEndpoint, ex);
             }
 
 
@@ -210,7 +211,7 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParams.Add("oauth_token", connectionToken.AccessToken);
             oauthParams.Add("oauth_version", "1.0");
 
-            
+
             ////1. Generate Signature
             signature = oauthHelper.GenerateSignature(new Uri(feedURL), oauthParams, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, TRANSPORT_METHOD.GET, connectionToken.TokenSecret);
             oauthParams.Add("oauth_signature", signature);
@@ -233,7 +234,7 @@ namespace Brickred.SocialAuth.NET.Core
             catch (Exception ex)
             {
                 logger.LogOauthRequestFailure(ex, oauthParams);
-                throw;
+                throw new OAuthException("There was an error while executing " + feedURL, ex);
             }
             return wr;
         }
