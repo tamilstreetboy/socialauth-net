@@ -13,7 +13,6 @@ namespace Brickred.SocialAuth.NET.Core
     {
         protected IProvider provider;
         protected SocialAuthUser user;
-        protected ILogger logger;
         protected Token connectionToken = SocialAuthUser.GetCurrentConnectionToken();
         protected bool isSuccess = false;
         public abstract void Login();

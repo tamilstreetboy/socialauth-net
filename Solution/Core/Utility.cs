@@ -328,12 +328,12 @@ namespace Brickred.SocialAuth.NET.Core
 
         internal static GENDER ParseGender(string gender)
         {
-            if (string.IsNullOrEmpty(gender))
-                return GENDER.NOT_SPECIFIED;
-            else if (gender.ToLower().StartsWith("m"))
+            if (gender.ToLower().StartsWith("m"))
                 return GENDER.MALE;
-            else
+            if (gender.ToLower().StartsWith("f"))
                 return GENDER.FEMALE;
+            else
+                return GENDER.NOT_SPECIFIED;
         }
 
 

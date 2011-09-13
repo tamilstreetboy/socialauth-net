@@ -5,38 +5,40 @@ using System.Text;
 using System.Net;
 using System.IO;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
+using log4net;
 
 namespace Brickred.SocialAuth.NET.Core
 {
 
     public class OAuth1_0a : OAuthStrategyBase, IOAuth1_0a
     {
+        static ILog logger = log4net.LogManager.GetLogger("OAuth1_0a");
 
         public OAuth1_0a(IProvider provider)
         {
             this.provider = provider;
-            this.logger = LoggerFactory.GetLogger(ProviderFactory.GetProvider(provider.ProviderType).GetType());
         }
 
         public override void Login()
         {
+            logger.Info("OAuth1.0a Authorization Flow begins...");
             RequestForRequestToken(); //(A)
             //HandleRequestTokenGrant(response); //(B) Called From within above
             DirectUserToServiceProvider(); //(C)
         }
         public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
         {
+            logger.Info("User returns from provider");
             HandleUserReturnCallback(responseCollection); //(D) 
             RequestForAccessToken(); //(E)
             //HandleAccessTokenResponse(); //(F) Called from within above
+            logger.Info("OAuth1.0a Authorization Flow ends...");
 
             //Authentication Process is through. Inform Consumer. [Set isSuccess on successful authentication]
             provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
 
         }
-
-
 
         #region IOAuth1_0a Members
 
@@ -45,6 +47,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void RequestForRequestToken()
         {
+
             QueryParameters oauthParameters = new QueryParameters();
             string signature = "";
             OAuthHelper oauthHelper = new OAuthHelper();
@@ -76,7 +79,7 @@ namespace Brickred.SocialAuth.NET.Core
 
 
             //4.Connect and obtain Token
-            logger.LogOauthRequest("RequestToken request at " + provider.RequestTokenEndpoint);
+            logger.Debug("Requesting Request Token at: " + provider.RequestTokenEndpoint);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(provider.RequestTokenEndpoint);
             request.Method = provider.TransportName.ToString();
             request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParameters));
@@ -88,7 +91,7 @@ namespace Brickred.SocialAuth.NET.Core
             try
             {
 
-
+                logger.Debug("Requesting Request Token at: " + provider.RequestTokenEndpoint);
                 using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
                 using (Stream responseStream = webResponse.GetResponseStream())
                 using (StreamReader reader = new StreamReader(responseStream))
@@ -96,7 +99,7 @@ namespace Brickred.SocialAuth.NET.Core
                     response = reader.ReadToEnd();
                     if (response.Contains("oauth_token_secret"))
                     {
-                        logger.LogOauthRequest("Request Token Recevied");
+                        logger.Debug("Request Token response: " + response.ToString());
                         var responseCollection = Utility.GetQuerystringParameters(response);
                         HandleRequestTokenGrant(responseCollection);
                     }
@@ -104,17 +107,26 @@ namespace Brickred.SocialAuth.NET.Core
             }
             catch (Exception ex)
             {
-                logger.LogOauthRequestFailure(ex, oauthParameters);
-                throw new OAuthException("There was an error while retrieving request token from " + provider.RequestTokenEndpoint, ex);
-
+                logger.Error(ErrorMessages.RequestTokenRequestError(provider.RequestTokenEndpoint, oauthParameters), ex);
+                throw new OAuthException(ErrorMessages.RequestTokenRequestError(provider.RequestTokenEndpoint, oauthParameters), ex);
             }
         }
 
         public void HandleRequestTokenGrant(QueryParameters responseCollection)
         {
-            connectionToken.RequestToken = responseCollection["oauth_token"];
-            connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
-            connectionToken.ResponseCollection.AddRange(responseCollection, false);
+            if (responseCollection.HasName("oauth_token_secret"))
+            {
+                connectionToken.RequestToken = responseCollection["oauth_token"];
+                connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
+                connectionToken.ResponseCollection.AddRange(responseCollection, false);
+                logger.Info("Request Token successully recevied");
+            }
+            else
+            {
+                logger.Error(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
+                throw new OAuthException(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
+            }
+
         }
 
         public event Action<QueryParameters> BeforeDirectingUserToServiceProvider = delegate { };
@@ -122,21 +134,41 @@ namespace Brickred.SocialAuth.NET.Core
         public void DirectUserToServiceProvider()
         {
             QueryParameters oauthParameters = new QueryParameters();
-            oauthParameters.Add(new QueryParameter("oauth_token", connectionToken.RequestToken));
-            BeforeDirectingUserToServiceProvider(oauthParameters);
-            SocialAuthUser.Redirect(provider.UserLoginEndpoint + "?" + oauthParameters.ToString());
+                
+            try
+            {
+                oauthParameters.Add(new QueryParameter("oauth_token", connectionToken.RequestToken));
+                BeforeDirectingUserToServiceProvider(oauthParameters);
+                logger.Debug("redirecting user for login to: " + provider.UserLoginEndpoint + "?" + oauthParameters.ToString());
+                SocialAuthUser.Redirect(provider.UserLoginEndpoint + "?" + oauthParameters.ToString());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.UserLoginRedirectionError(provider.UserLoginEndpoint + "?" + oauthParameters.ToString()), ex);
+                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(provider.UserLoginEndpoint + "?" + oauthParameters.ToString()), ex);
+            }
+
         }
 
-        public void HandleUserReturnCallback(QueryParameters response)
+        public void HandleUserReturnCallback(QueryParameters responseCollection)
         {
-            if (response.HasName("oauth_verifier"))
+            if (responseCollection.HasName("oauth_verifier"))
             {
-                connectionToken.OauthVerifier = response["oauth_verifier"];
-                connectionToken.AuthorizationToken = response["oauth_token"];
+                connectionToken.OauthVerifier = responseCollection["oauth_verifier"];
+                connectionToken.AuthorizationToken = responseCollection["oauth_token"];
+                logger.Info("User successfully logged in and returned");
+            }
+            else if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
+            {
+                logger.Error(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));
+                throw new OAuthException(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));
+            }
+            else
+            {
+                logger.Error(ErrorMessages.UserLoginResponseError(provider.ProviderType, responseCollection));
+                throw new OAuthException(ErrorMessages.UserLoginResponseError(provider.ProviderType, responseCollection));
             }
         }
-
-
 
         public void RequestForAccessToken()
         {
@@ -148,7 +180,7 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParameters.Add("oauth_consumer_key", provider.Consumerkey);
             oauthParameters.Add("oauth_token", connectionToken.RequestToken);
             oauthParameters.Add("oauth_signature_method", provider.SignatureMethod.ToString());
-            oauthParameters.Add("oauth_timestamps", oauthHelper.GenerateTimeStamp());
+            oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
             oauthParameters.Add("oauth_version", "1.0");
             oauthParameters.Add("oauth_verifier", connectionToken.OauthVerifier);
@@ -167,25 +199,22 @@ namespace Brickred.SocialAuth.NET.Core
 
             try
             {
-                logger.LogOauthRequest("Requesting Access Token at " + provider.AccessTokenEndpoint);
+                logger.Debug("Requesting Access Token at " + provider.AccessTokenEndpoint);
                 using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
                 using (Stream responseStream = webResponse.GetResponseStream())
                 using (StreamReader reader = new StreamReader(responseStream))
                 {
                     response = reader.ReadToEnd();
-                    if (response.Contains("oauth_token_secret"))
-                    {
-                        var responseCollection = Utility.GetQuerystringParameters(response);
-                        HandleAccessTokenResponse(responseCollection);
-                        isSuccess = true;
-                    }
+                    var responseCollection = Utility.GetQuerystringParameters(response);
+                    HandleAccessTokenResponse(responseCollection);
+
                 }
 
             }
             catch (Exception ex)
             {
-                logger.LogOauthRequestFailure(ex, oauthParameters);
-                throw new OAuthException("There was an error while retrieving access token from " + provider.AccessTokenEndpoint, ex);
+                logger.Error(ErrorMessages.AccessTokenRequestError(provider.AccessTokenEndpoint, oauthParameters), ex);
+                throw new OAuthException(ErrorMessages.AccessTokenRequestError(provider.AccessTokenEndpoint, oauthParameters), ex);
             }
 
 
@@ -193,10 +222,19 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void HandleAccessTokenResponse(QueryParameters responseCollection)
         {
-            connectionToken.AccessToken = responseCollection["oauth_token"];
-            connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
-            connectionToken.ResponseCollection.AddRange(responseCollection, true);
-            logger.LogOauthRequest("Access Token Recevied");
+            if (responseCollection.HasName("oauth_token_secret"))
+            {
+                connectionToken.AccessToken = responseCollection["oauth_token"];
+                connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
+                connectionToken.ResponseCollection.AddRange(responseCollection, true);
+                isSuccess = true;
+                logger.Info("Access token successfully recevied");
+            }
+            else
+            {
+                logger.Error(ErrorMessages.AccessTokenResponseInvalid(responseCollection));
+                throw new OAuthException(ErrorMessages.AccessTokenResponseInvalid(responseCollection));
+            }
         }
 
         public override WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod)
@@ -227,14 +265,14 @@ namespace Brickred.SocialAuth.NET.Core
             WebResponse wr;
             try
             {
-                logger.LogOauthRequest("Requesting Feed at " + feedURL + " using " + transportMethod.ToString());
+                logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString());
                 wr = (WebResponse)request.GetResponse();
-                logger.LogOauthSuccess("Feed successfully executed");
+                logger.Info("Successfully exected  " + feedURL + " using " + transportMethod.ToString());
             }
             catch (Exception ex)
             {
-                logger.LogOauthRequestFailure(ex, oauthParams);
-                throw new OAuthException("There was an error while executing " + feedURL, ex);
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, oauthParams), ex);
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, oauthParams), ex);
             }
             return wr;
         }

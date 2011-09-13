@@ -56,7 +56,7 @@ namespace Brickred.SocialAuth.NET.Core
             StringBuilder url = new StringBuilder();
             url.Append(request.Url.Scheme);
             url.Append("://");
-            
+
             if (string.IsNullOrEmpty(baseUrlInConfig))
             {
                 url.Append(request.Url.Host);
@@ -68,7 +68,7 @@ namespace Brickred.SocialAuth.NET.Core
 
 
                 url.Append(request.ApplicationPath);
-             
+
             }
             else
             {
@@ -78,7 +78,7 @@ namespace Brickred.SocialAuth.NET.Core
                     url.Append(request.Url.Port);
                 }
                 url.Append(baseUrlInConfig);
-                
+
             }
             if (!url.ToString().EndsWith("/"))
                 url.Append("/");
@@ -93,9 +93,18 @@ namespace Brickred.SocialAuth.NET.Core
             return startIndex;
         }
 
-        public static string ToStringWithoutQuotes(this Newtonsoft.Json.Linq.JToken input)
+        
+        public static string Get(this Newtonsoft.Json.Linq.JObject input, string key)
         {
-            return input.ToString().Replace("\"", "");
+            if (input.SelectToken(key) == null)
+                return "";
+            else
+            {
+                string value = input.SelectToken(key).ToString();
+                if (value.StartsWith("\"") && value.EndsWith("\""))
+                    value = value.Substring(1, value.Length - 2);
+                return value;
+            }
         }
     }
 

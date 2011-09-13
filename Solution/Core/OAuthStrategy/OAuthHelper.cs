@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using System.Security.Cryptography;
+using log4net;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -12,6 +13,7 @@ namespace Brickred.SocialAuth.NET.Core
 
     public class OAuthHelper
     {
+        public static ILog logger = log4net.LogManager.GetLogger("OAuthHelper");
         public const string OAuthVersion = "1.0";
         public const string OAuthParameterPrefix = "oauth_";
         public const string OAuthConsumerKeyKey = "oauth_consumer_key";
@@ -51,6 +53,17 @@ namespace Brickred.SocialAuth.NET.Core
             return random.Next(123400, 9999999).ToString();
         }
 
+        /// <summary>
+        /// Generate Signature
+        /// </summary>
+        /// <param name="requestURL"></param>
+        /// <param name="oauthParameters"></param>
+        /// <param name="consumerKey"></param>
+        /// <param name="consumerSecret"></param>
+        /// <param name="signatureType"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="tokenSecret"></param>
+        /// <returns></returns>
         public string GenerateSignature(Uri requestURL, QueryParameters oauthParameters, string consumerKey, string consumerSecret,
             SIGNATURE_TYPE signatureType, TRANSPORT_METHOD httpMethod, string tokenSecret)
         {
@@ -98,7 +111,7 @@ namespace Brickred.SocialAuth.NET.Core
             signatureBase.AppendFormat("{0}&", normalizedRequestUrl);
             signatureBase.AppendFormat("{0}", Utility.UrlEncode(tmpOauthParameters.ToString()));
             string sbase = signatureBase.ToString();
-
+            logger.Debug("signature base:" + sbase);
             //5. Generate Signature
             switch (signatureType)
             {
@@ -112,6 +125,7 @@ namespace Brickred.SocialAuth.NET.Core
                         HMACSHA1 hmacsha1 = new HMACSHA1();
                         hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : (tokenSecret)));
                         signature = GenerateSignatureUsingHash(sbase, hmacsha1);
+                        logger.Debug("HMACSHA1 signature:" + signature);
                         break;
                     }
                 default:
@@ -122,6 +136,11 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
+        /// <summary>
+        /// Authorization Header Generator for OAuth requests
+        /// </summary>
+        /// <param name="oauthParameters"></param>
+        /// <returns></returns>
         public string GetAuthorizationHeader(QueryParameters oauthParameters)
         {
             //Generate Authorization Header
@@ -133,6 +152,7 @@ namespace Brickred.SocialAuth.NET.Core
                     authorizationHeader += (p.Name + "=\"" + p.Value + "\", ");
 
             authorizationHeader = authorizationHeader.Replace(SIGNATURE_TYPE.HMACSHA1.ToString(), HMACSHA1SignatureType);
+            logger.Debug("Authorization Header: " + "OAuth " + authorizationHeader.Substring(0, authorizationHeader.Length - 2));
             return "OAuth " + authorizationHeader.Substring(0, authorizationHeader.Length - 2); //remove the & at end
 
         }
@@ -161,6 +181,7 @@ namespace Brickred.SocialAuth.NET.Core
             return Convert.ToBase64String(hashBytes);
         }
 
+        
         private string GenerateSignatureUsingHash(string signatureBase, HashAlgorithm hash)
         {
             return ComputeHash(hash, signatureBase);

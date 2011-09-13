@@ -14,7 +14,8 @@ namespace Brickred.SocialAuth.NET.Core
     {
         internal Action callback;
         internal Guid userGUID;
-        internal List<Token> tokens;
+        internal List<Token> connectedTokens;
+        internal Token inProgressToken;
         internal Action callbackAction
         {
             get
@@ -47,7 +48,7 @@ namespace Brickred.SocialAuth.NET.Core
                     HttpContext.Current.Session["socialauthsession"] = new SocialAuthSession()
                                 {
                                     userGUID = Guid.NewGuid(),
-                                    tokens = new List<Token>()
+                                    connectedTokens = new List<Token>()
                                 };
                 return (SocialAuthSession)HttpContext.Current.Session["socialauthsession"];
             }
@@ -66,33 +67,33 @@ namespace Brickred.SocialAuth.NET.Core
 
         internal static void AddConnectionToken(Token token)
         {
-            Token t = userSession.tokens.Find(x => x.Provider == token.Provider);
+            Token t = userSession.connectedTokens.Find(x => x.Provider == token.Provider);
             if (t != null)
-                userSession.tokens.Remove(t);
-            userSession.tokens.Add(token);
+                userSession.connectedTokens.Remove(t);
+            userSession.connectedTokens.Add(token);
         }
 
         internal static void RemoveConnectionToken(PROVIDER_TYPE providerType)
         {
-            userSession.tokens.RemoveAll(x => x.Provider == providerType);
+            userSession.connectedTokens.RemoveAll(x => x.Provider == providerType);
 
         }
 
         internal static void RemoveAllConnections()
         {
-            userSession.tokens.RemoveAll(x => true);
+            userSession.connectedTokens.RemoveAll(x => true);
         }
 
         internal static List<PROVIDER_TYPE> GetConnectedProviders()
         {
-            return userSession.tokens.Select((x) => { return x.Provider; }).ToList();
+            return userSession.connectedTokens.Select((x) => { return x.Provider; }).ToList();
         }
 
         internal static int ConnectionsCount
         {
             get
             {
-                return userSession.tokens.Count();
+                return userSession.connectedTokens.Count();
             }
         }
 
@@ -100,13 +101,13 @@ namespace Brickred.SocialAuth.NET.Core
         {
             get
             {
-                return userSession.tokens.Count() > 0;
+                return userSession.connectedTokens.Count(x => !string.IsNullOrEmpty(x.AccessToken)) > 0;
             }
         }
 
         internal static bool IsConnectedWith(PROVIDER_TYPE providerType)
         {
-            return (userSession.tokens.Exists(x => x.Provider == providerType));
+            return (userSession.connectedTokens.Exists(x => x.Provider == providerType && !string.IsNullOrEmpty(x.AccessToken)));
 
         }
 
@@ -119,7 +120,7 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (ConnectionsCount > 0)
             {
-                var lastConnection = userSession.tokens.Last();
+                var lastConnection = userSession.connectedTokens.Last();
                 return ProviderFactory.GetProvider(lastConnection.Provider);
             }
             else
@@ -132,7 +133,7 @@ namespace Brickred.SocialAuth.NET.Core
         {
             IProvider provider = null;
             //There are no connections
-            var lastConnection = userSession.tokens.Find(x => x.Provider == providerType);
+            var lastConnection = userSession.connectedTokens.Find(x => x.Provider == providerType);
             if (lastConnection != null)
             {
                 provider = ProviderFactory.GetProvider(lastConnection.Provider);
@@ -145,7 +146,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         internal static Token GetConnectionToken(PROVIDER_TYPE providerType)
         {
-            var connectionToken = userSession.tokens.Find(x => x.Provider == providerType);
+            var connectionToken = userSession.connectedTokens.Find(x => x.Provider == providerType);
             return connectionToken;
         }
 

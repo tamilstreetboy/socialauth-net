@@ -13,29 +13,31 @@ namespace Brickred.SocialAuth.NET.Core
 {
 
 
-    internal class OAuth2_0server : OAuthStrategyBase, IOAuth2_0
+    public class OAuth2_0server : OAuthStrategyBase, IOAuth2_0
     {
+        log4net.ILog logger = log4net.LogManager.GetLogger("OAuth2_0server");
+
         public OAuth2_0server(IProvider provider)
         {
             this.provider = provider;
-            this.logger = LoggerFactory.GetLogger(ProviderFactory.GetProvider(provider.ProviderType).GetType());
         }
 
         //Called Before Directing User
         public override void Login()
         {
+            logger.Info("Starting OAuth2.0 server side Authorization flow..");
             DirectUserToServiceProvider(); //(A) (B)
         }
         //Called After Directing User
-        public override void LoginCallback(QueryParameters responseCollection, Action<bool> OnAuthenticationCompletion)
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
         {
             HandleAuthorizationCode(responseCollection); //(C)
-            string response = RequestForAccessToken(); // (D)
-            HandleAccessTokenResponse(response); //(E)
-
+            RequestForAccessToken(); // (D)
+            //HandleAccessTokenResponse(response); //(E) Handled from above
+            logger.Info("OAuth2.0 server side Authorization flow ends ..");
             //Authentication Process is through. Inform Consumer.
             provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
-            OnAuthenticationCompletion(isSuccess); // Authentication process complete. Call final method
+            AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
         }
 
         #region Oauth2_0Implementation
@@ -43,23 +45,44 @@ namespace Brickred.SocialAuth.NET.Core
         public void DirectUserToServiceProvider()
         {
             UriBuilder ub = new UriBuilder(provider.UserLoginEndpoint);
-            ub.SetQueryparameter("client_id", provider.Consumerkey);
-            ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
-            ub.SetQueryparameter("response_type", "code");
-            ub.SetQueryparameter("scope", provider.GetScope());
-            //logger.LogAuthenticationRequest(ub.ToString());
-            SocialAuthUser.Redirect(ub.ToString());
+            try
+            {
+                ub.SetQueryparameter("client_id", provider.Consumerkey);
+                ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
+                ub.SetQueryparameter("response_type", "code");
+                ub.SetQueryparameter("scope", provider.GetScope());
+                //logger.LogAuthenticationRequest(ub.ToString());
+                logger.Debug("Redirecting user for login to " + ub.ToString());
+                SocialAuthUser.Redirect(ub.ToString());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.UserLoginRedirectionError(ub.ToString()), ex);
+                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(ub.ToString()), ex);
+            }
         }
 
         public void HandleAuthorizationCode(QueryParameters responseCollection)
         {
-            if (responseCollection["code"] != null)
+            if (responseCollection.HasName("code"))
             {
                 connectionToken.Code = responseCollection["code"];
+                logger.Info("User successfully logged in and returned with Authorization code");
             }
+            else if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
+            {
+                logger.Error(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
+                throw new OAuthException(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
+            }
+            else
+            {
+                logger.Error(ErrorMessages.UserLoginResponseError(provider.ProviderType, responseCollection));
+                throw new OAuthException(ErrorMessages.UserLoginResponseError(provider.ProviderType, responseCollection));
+            }
+
         }
 
-        public string RequestForAccessToken()
+        public void RequestForAccessToken()
         {
             UriBuilder ub = new UriBuilder(provider.AccessTokenEndpoint);
             ub.SetQueryparameter("client_id", provider.Consumerkey);
@@ -73,48 +96,66 @@ namespace Brickred.SocialAuth.NET.Core
             string authToken = "";
             try
             {
-                logger.LogOauthRequest("Requesting Access Token at " + ub.ToString());
+                logger.Debug("Requesting Access Token at " + ub.ToString());
                 using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
                 using (Stream responseStream = webResponse.GetResponseStream())
                 using (StreamReader reader = new StreamReader(responseStream))
+                {
                     authToken = reader.ReadToEnd();
-                return authToken;
+                    HandleAccessTokenResponse(authToken);
+                }
+
             }
             catch (Exception ex)
             {
-                throw new OAuthException("There was an error while retrieving Access Token from " + ub.ToString() + "!", ex);
+                logger.Error(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), new QueryParameters()), ex);
+                throw new OAuthException(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), new QueryParameters()), ex);
             }
         }
 
         public void HandleAccessTokenResponse(string response)
         {
-            if (response.StartsWith("{")) // access token is returned in JSON format
-            {
+            QueryParameters responseCollection = new QueryParameters();
 
-                //  {"access_token":"asasdasdAA","expires_in":3600,"scope":"wl.basic","token_type":"bearer"}
-                JObject accessTokenJson = JObject.Parse(response);
-                connectionToken.AccessToken = accessTokenJson.SelectToken("access_token").ToString().Replace("\"", "");
-                connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(accessTokenJson.SelectToken("expires_in").ToString().Replace("\"", "")) - 20);
-                //put in raw list
-                foreach (var t in accessTokenJson.AfterSelf())
-                    connectionToken.ResponseCollection.Add(t.Type.ToString(), t.ToString());
-                logger.LogOauthSuccess("Access Token Recieved");
-                isSuccess = true;
+            try
+            {
+                if (response.StartsWith("{")) // access token is returned in JSON format
+                {
+                    //  {"access_token":"asasdasdAA","expires_in":3600,"scope":"wl.basic","token_type":"bearer"}
+                    JObject accessTokenJson = JObject.Parse(response);
+                    responseCollection.Add("response", response);
+                    connectionToken.AccessToken = accessTokenJson.SelectToken("access_token").ToString().Replace("\"", "");
+                    if (accessTokenJson.SelectToken("expires_in") != null)
+                        connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(accessTokenJson.SelectToken("expires_in").ToString().Replace("\"", "")) - 20);
+                    //put in raw list
+                    foreach (var t in accessTokenJson.AfterSelf())
+                        connectionToken.ResponseCollection.Add(t.Type.ToString(), t.ToString());
+                    logger.Info("Access Token successfully received");
+                    isSuccess = true;
+                }
+                else // access token is returned as part of Query String
+                {
+
+                    responseCollection = Utility.GetQuerystringParameters(response);
+                    string keyForAccessToken = responseCollection.Single(x => x.Name.Contains("token")).Name;
+
+                    connectionToken.AccessToken = responseCollection[keyForAccessToken].Replace("\"", "");
+                    if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("expir")))
+                    {
+                        string keyForExpiry = responseCollection.Single(x => x.Name.Contains("expir")).Name;
+                        connectionToken.ExpiresOn = connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(responseCollection[keyForExpiry].Replace("\"", "")) - 20);
+                    }
+                    //put in raw list
+                    responseCollection.ToList().ForEach(x => connectionToken.ResponseCollection.Add(x.Name, x.Value));
+                    logger.Info("Access Token successfully received");
+                    isSuccess = true;
+
+                }
             }
-            else // access token is returned as part of Query String
+            catch (Exception ex)
             {
-
-                QueryParameters responseCollection = Utility.GetQuerystringParameters(response);
-                string keyForExpiry = responseCollection.Single(x => x.Name.Contains("expir")).Name;
-                string keyForAccessToken = responseCollection.Single(x => x.Name.Contains("token")).Name;
-
-                connectionToken.AccessToken = responseCollection[keyForAccessToken].Replace("\"", "");
-                connectionToken.ExpiresOn = connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(responseCollection[keyForExpiry].Replace("\"", "")) - 20);
-                //put in raw list
-                responseCollection.ToList().ForEach(x => connectionToken.ResponseCollection.Add(x.Name, x.Value));
-                logger.LogOauthSuccess("Access Token Recieved");
-                isSuccess = true;
-                //logger.LogAuthorizationResponse(response, null);
+                logger.Error(ErrorMessages.AccessTokenResponseInvalid(responseCollection), ex);
+                throw new OAuthException(ErrorMessages.AccessTokenResponseInvalid(responseCollection), ex);
             }
         }
 
@@ -137,18 +178,72 @@ namespace Brickred.SocialAuth.NET.Core
             WebResponse wr;
             try
             {
-                logger.LogOauthRequest("Requesting Feed at " + feedURL + " using " + transportMethod.ToString());
+                logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString());
                 wr = (WebResponse)request.GetResponse();
-                logger.LogOauthSuccess("Feed successfully executed");
+                logger.Info("Successfully exected  " + feedURL + " using " + transportMethod.ToString());
             }
             catch (Exception ex)
             {
-                logger.LogOauthRequestFailure(ex, new QueryParameters() { new QueryParameter("access_token", connectionToken.AccessToken) });
-                throw new OAuthException("There was an error while executing " + feedURL +"!", ex);
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null));
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null));
             }
 
             return wr;
         }
+
+        //public static WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod)
+        //{
+        //    UriBuilder ub;
+
+        //    /******** retrieve standard Fields ************/
+        //    ub = new UriBuilder(feedURL);
+        //    //if (oauthParameters != null)
+        //    //    foreach (var param in oauthParameters)
+        //    //        ub.SetQueryparameter(param.Name, param.Value);
+
+        //    HttpWebRequest webRequest = null;
+
+        //    //StreamWriter requestWriter = null;
+
+            
+        //    webRequest = System.Net.WebRequest.Create(feedURL) as HttpWebRequest;
+        //    webRequest.Method = transportMethod.ToString();
+        //    webRequest.Timeout = 20000;
+
+        //    if (transportMethod == TRANSPORT_METHOD.POST)
+        //    {
+        //        webRequest.ServicePoint.Expect100Continue = false;
+        //        webRequest.ContentType = "application/x-www-form-urlencoded";
+        //        //requestWriter = new StreamWriter(webRequest.GetRequestStream());
+        //        //try
+        //        //{
+        //        //    requestWriter.Write(string.Empty);
+        //        //}
+
+        //        //catch
+        //        //{
+        //        //    throw;
+        //        //}
+
+        //        //finally
+        //        //{
+        //        //    requestWriter.Close();
+        //        //    requestWriter = null;
+        //        //}
+
+        //    }
+
+        //    WebResponse wr;
+        //    try
+        //    {
+        //        wr = (WebResponse)webRequest.GetResponse();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new OAuthException("An Error occurred while executing " + feedURL + "!", ex);
+        //    }
+        //    return wr;
+        //}
 
 
         #region IOAuth2_0 Members

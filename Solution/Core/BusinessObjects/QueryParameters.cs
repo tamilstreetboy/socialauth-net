@@ -56,7 +56,7 @@ namespace Brickred.SocialAuth.NET.Core
     {
         List<QueryParameter> queryparameters = new List<QueryParameter>();
 
-     
+
         public string this[string key]
         {
             get { return queryparameters.Find(x => x.Name == key).Value; }
@@ -78,7 +78,7 @@ namespace Brickred.SocialAuth.NET.Core
             queryparameters.Add(new QueryParameter(name, value));
         }
 
-        public  void Sort()
+        public void Sort()
         {
             queryparameters.Sort(new QueryParameterComparer());
         }
@@ -106,6 +106,21 @@ namespace Brickred.SocialAuth.NET.Core
             return sb.ToString();
         }
 
+        public string ToEncodedString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var qp in queryparameters)
+            {
+                sb.Append("&").Append(Utility.UrlEncode(qp.Name)).Append("=").Append(Utility.UrlEncode(qp.Value));
+            }
+            return sb.ToString().Substring(1);
+        }
+
+        public string Get(string key)
+        {
+            return (HasName(key) ? queryparameters.Find(x => x.Name == key).Value : "");
+        }
+
         #region ICollection<QueryParameter> Members
 
         public void Add(QueryParameter item)
@@ -120,7 +135,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public bool Contains(QueryParameter item)
         {
-           return queryparameters.Contains(item);
+            return queryparameters.Contains(item);
         }
 
         public void CopyTo(QueryParameter[] array, int arrayIndex)
