@@ -18,7 +18,7 @@ namespace Brickred.SocialAuth.NET.Core
         void DirectUserToServiceProvider(); // (A)(B)
         void HandleAuthorizationCode(QueryParameters responseCollection); // (C)
         event Action<QueryParameters> BeforeRequestingAccessToken; //HOOK
-        string RequestForAccessToken(); // (D)
+        void RequestForAccessToken(); // (D)
         void HandleAccessTokenResponse(string response); // (E)
         WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
     }

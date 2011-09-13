@@ -37,12 +37,6 @@ namespace Brickred.SocialAuth.NET.Core
     {
         void Log(LogEventType eventType, string errorDescription, System.Exception exception);
         void Log(LogEventType eventType, string errorDescription);
-
-        //Shortcut methods for logging in SocialAuthcontext
-        void LogOauthRequest(string message);
-        void LogOauthRequestFailure(Exception ex, QueryParameters oauthParams);
-        void LogOauthSuccess(string message);
-    
     }
 
     //Type of Logging Events
@@ -164,8 +158,7 @@ namespace Brickred.SocialAuth.NET.Core
         }
 
 
-        //****Overloaded methods for Logging****//
-
+     
         //Call this method to insert custom log message
         public void Log(LogEventType eventType, string errorDescription)
         {
@@ -173,28 +166,9 @@ namespace Brickred.SocialAuth.NET.Core
             Log(eventType, errorDescription, null);
         }
 
-       
-
-        #region ILogger Members
 
 
-        public void LogOauthRequest(string message)
-        {
-            Log(LogEventType.Info, message);
-        }
-
-        public void LogOauthRequestFailure(Exception ex, QueryParameters oauthParams)
-        {
-            string errorDesc = oauthParams.ToString() + Environment.NewLine + ex.Message + "<br>" + ex.StackTrace;
-            Log(LogEventType.Error, errorDesc);
-        }
-
-        public void LogOauthSuccess(string message)
-        {
-            Log(LogEventType.Info, message);
-        }
-
-        #endregion
+     
     }
 
 }

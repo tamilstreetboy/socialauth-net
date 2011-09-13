@@ -72,15 +72,7 @@ namespace Brickred.SocialAuth.NET.Core
             //call to process response recevied from Providers
             else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("validate.sauth"))
             {
-                //ILogger logger = LoggerFactory.GetLogger(this.GetType());
-                Token token = SocialAuthUser.GetCurrentConnectionToken();
-                //if (token == null)
-                //    LogOut();
-
-                //Process response recevied post authentication call
-                (ProviderFactory.GetProvider(token.Provider)).LoginCallback(Utility.GetQuerystringParameters(current.Request.Url.ToString()),
-                    SocialAuthUser.OnAuthneticationProcessCompleted);
-
+                SocialAuthUser.LoginCallback(HttpContext.Current.Request.Url.ToString());
             }
         }
 

@@ -11,11 +11,12 @@ namespace Brickred.SocialAuth.NET.Core
     public interface IOAuth1_0Hybrid
     {
 
-        //Communication Methods (Private)
-        void PerformDiscovery();
+        
+        void PerformDiscovery(); //(A)
+        void ProcessXrdsDocument(string response); //(B)
         event Action<QueryParameters> BeforeDirectingUserToServiceProvider; //HOOK
         void DirectUserToServiceProvider(); //(C)
-        void HandleUserReturnCallback(QueryParameters response); //(D) 
+        void HandleRequestToken(QueryParameters response); //(D) 
         event Action<QueryParameters> BeforeRequestingAccessToken; //HOOK
         void RequestForAccessToken(); //(E)
         void HandleAccessTokenResponse(QueryParameters response); //(F)

@@ -51,7 +51,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     public enum TRANSPORT_METHOD
     {
         POST,
-        GET
+        GET,
+        DELETE
     }
 
     /// <summary>

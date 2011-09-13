@@ -449,7 +449,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// <param name="url"></param>
         internal static void Redirect(string url)
         {
-            HttpContext.Current.Response.Redirect(url,false);
+            HttpContext.Current.Response.Redirect(url, false);
         }
 
         /// <summary>
@@ -494,6 +494,21 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         }
 
+
+        internal static void LoginCallback(string response)
+        {
+            try
+            {
+                CurrentConnection.LoginCallback(Utility.GetQuerystringParameters(response),
+                        SocialAuthUser.OnAuthneticationProcessCompleted);
+            }
+            catch (Exception ex)
+            {
+                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
+                throw;
+            }
+
+        }
 
         #endregion
     }

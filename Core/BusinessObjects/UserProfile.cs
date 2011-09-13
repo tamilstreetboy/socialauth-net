@@ -119,10 +119,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         public string GetIdentifier()
         {
-            if (!string.IsNullOrEmpty(Email))
-                return Email;
-            else if (!string.IsNullOrEmpty(ID))
+            if (!string.IsNullOrEmpty(ID))
                 return ID;
+            else if (!string.IsNullOrEmpty(Email))
+                return Email;
             else if (string.IsNullOrEmpty(FullName))
                 return FullName + "@" + Provider.ToString();
             else
