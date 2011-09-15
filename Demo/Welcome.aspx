@@ -54,12 +54,15 @@
 
 <body>
     <form id="form1" runat="server">
-    <h3>Checout out <a href="CustomFeedDemo.aspx"> Custom Feed Demo</a> <small><sup>*NEW*</sup></small></h3>
-
+     <h3>Connections:</h3>
+    <div id="divConnections" runat="server" style="font-family:Verdana;font-size:10px;background-color:khaki;padding-bottom:2px;">
+    
+    </div>
     <div style="width:100%;text-align:right">
         <asp:LinkButton ID="btnLogout" runat="server" onclick="btnLogout_Click" >Logout</asp:LinkButton>
+        <a href="Default.aspx">Back</a>
     </div>
-    <h3>Profile:</h3>
+    <h3>Detailed profile of current connection:</h3>
     <table id="tblDetails" runat="server" border="1" cellpadding="0" >
     <tr>
     <td class="rowlabel"></td>
@@ -70,6 +73,31 @@
             <td class="rowlabel">Provider</td>
             <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().ProviderName; <br /> User.Identity.GetProvider();</td>
             <td><%=Provider %></td>
+        </tr>
+         <tr>
+            <td class="rowlabel">Identifier(Best Possible)</td>
+            <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().GetIdentifier; <br /> User.Identity.GetProvider().GetIdentifier;</td>
+            <td><%=Identifier %></td>
+        </tr>
+         <tr>
+            <td class="rowlabel">ID at provider</td>
+            <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().ID; <br /> User.Identity.GetProvider().ID;</td>
+            <td><%=ID %></td>
+        </tr>
+         <tr>
+            <td class="rowlabel">Username</td>
+            <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().Username; <br /> User.Identity.GetProvider().Username;</td>
+            <td><%=Username %></td>
+        </tr>
+         <tr>
+            <td class="rowlabel">Full Name</td>
+            <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().Fullname; <br /> User.Identity.GetProvider().Fullname;</td>
+            <td><%=Fullname %></td>
+        </tr>
+        <tr>
+            <td class="rowlabel">Display Name</td>
+            <td class="code">SocialAuthUser.GetCurrentUser().GetProfile().Displayname; <br /> User.Identity.GetProvider().Displayname;</td>
+            <td><%=Displayname %></td>
         </tr>
         <tr>
              <td class="rowlabel">Email</td>

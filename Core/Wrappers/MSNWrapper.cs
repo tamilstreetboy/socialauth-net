@@ -45,12 +45,25 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.MSN; } }
         public override string UserLoginEndpoint { get { return "https://oauth.live.com/authorize"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://oauth.live.com/token"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth2_0server(this); } }
+        public override OAuthStrategyBase AuthenticationStrategy
+        {
+            get
+            {
+                OAuth2_0server strategy = new OAuth2_0server(this);
+                strategy.BeforeDirectingUserToServiceProvider += (x) =>
+                {
+                    if (string.IsNullOrEmpty(GetScope()))
+                        x["scope"] = "wl.basic";
+                };
+                return strategy;
+            }
+        }
         public override string ProfileEndpoint { get { return "https://apis.live.net/v5.0/me"; } }
         public override string ContactsEndpoint { get { return "https://apis.live.net/v5.0/me/contacts"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
+        
 
         public override string DefaultScope { get { return "wl.emails,wl.birthday"; } }
 

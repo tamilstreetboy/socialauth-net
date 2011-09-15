@@ -54,6 +54,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
         public override string OpenIdDiscoveryEndpoint { get { return "http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds"; } }
         public override string DefaultScope { get { return ""; } }
+        public override bool IsScopeDefinedAtProvider { get { return true; } }
 
 
 

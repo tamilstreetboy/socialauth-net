@@ -71,13 +71,19 @@ namespace Brickred.SocialAuth.NET.Core
             UriBuilder ub = new UriBuilder(provider.UserLoginEndpoint);
             try
             {
-                ub.SetQueryparameter("client_id", provider.Consumerkey);
-                ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
-                ub.SetQueryparameter("response_type", "code");
-                ub.SetQueryparameter("scope", provider.GetScope());
-                //logger.LogAuthenticationRequest(ub.ToString());
-                logger.Debug("Redirecting user for login to " + ub.ToString());
-                SocialAuthUser.Redirect(ub.ToString());
+                QueryParameters oauthParams = new QueryParameters();
+                oauthParams.Add("client_id", provider.Consumerkey);
+                oauthParams.Add("redirect_uri", connectionToken.ProviderCallbackUrl);
+                oauthParams.Add("response_type", "code");
+                oauthParams.Add("scope", provider.GetScope());
+                //ub.SetQueryparameter("client_id", provider.Consumerkey);
+                //ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
+                //ub.SetQueryparameter("response_type", "code");
+                //ub.SetQueryparameter("scope", provider.GetScope());
+                
+                BeforeDirectingUserToServiceProvider(oauthParams);
+                logger.Debug("Redirecting user for login to " + ub.ToString() + "?" +  oauthParams.ToEncodedString());
+                SocialAuthUser.Redirect(ub.ToString() + "?" + oauthParams.ToEncodedString());
             }
             catch (Exception ex)
             {
@@ -229,7 +235,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         //    //StreamWriter requestWriter = null;
 
-            
+
         //    webRequest = System.Net.WebRequest.Create(feedURL) as HttpWebRequest;
         //    webRequest.Method = transportMethod.ToString();
         //    webRequest.Timeout = 20000;

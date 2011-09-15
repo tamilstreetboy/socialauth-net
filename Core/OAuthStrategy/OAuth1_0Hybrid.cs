@@ -54,10 +54,14 @@ namespace Brickred.SocialAuth.NET.Core
         public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
         {
             HandleRequestToken(responseCollection); // (D)
-            RequestForAccessToken(); // (E)
-            //HandleAccessTokenResponse(response)// (F) Handled from within above
+            if (!string.IsNullOrEmpty(provider.GetScope()) || provider.IsScopeDefinedAtProvider)
+            {
+                RequestForAccessToken(); // (E)
+                //HandleAccessTokenResponse(response)// (F) Handled from within above
+            }
+            else
+                isSuccess = true;
             logger.Info("OAuth1_0Hybrid Authorization ends..");
-
             //Authentication Process is through. Inform Consumer.
             provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
@@ -130,16 +134,18 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void HandleRequestToken(QueryParameters responseCollection)
         {
-
-            if (responseCollection.HasName("openid.oauth.request_token"))
-                connectionToken.RequestToken = responseCollection["openid.oauth.request_token"];
-            else if (responseCollection.HasName("openid.ext2.request_token"))
-                connectionToken.RequestToken = responseCollection["openid.ext2.request_token"];
-            else
-            {
-                logger.Error(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
-                throw new OAuthException(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
-            }
+            //In Hybrid protocol, OAuth may not be necessary. In such case flow ends
+            //But some providers may have scope black as scope is defined at provider directly (like Yahoo)
+            if (!string.IsNullOrEmpty(provider.GetScope()) || provider.IsScopeDefinedAtProvider)
+                if (responseCollection.HasName("openid.oauth.request_token"))
+                    connectionToken.RequestToken = responseCollection["openid.oauth.request_token"];
+                else if (responseCollection.HasName("openid.ext2.request_token"))
+                    connectionToken.RequestToken = responseCollection["openid.ext2.request_token"];
+                else
+                {
+                    logger.Error(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
+                    throw new OAuthException(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
+                }
             QueryParameters openIDValues = new QueryParameters();
             if (responseCollection.HasName("openid.ns.ext1"))
             {
@@ -216,7 +222,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void HandleAccessTokenResponse(QueryParameters responseCollection)
         {
-            if (responseCollection.HasName("oauth_token_secret"))
+            if (responseCollection.HasName("oauth_token_secret") || string.IsNullOrEmpty(provider.GetScope()))
             {
                 connectionToken.AccessToken = responseCollection["oauth_token"];
                 connectionToken.TokenSecret = responseCollection["oauth_token_secret"];

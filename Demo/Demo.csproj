@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <HintPath>..\Lib\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
@@ -57,7 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="CustomFeedDemo.aspx" />
+    <Content Include="Default.aspx" />
     <Content Include="Demo.sln" />
+    <Content Include="Global.asax" />
     <Content Include="images\SocialAuthIcons\facebook.jpg" />
     <Content Include="images\SocialAuthIcons\google.jpg" />
     <Content Include="images\SocialAuthIcons\msn.jpg" />
@@ -83,6 +88,16 @@
     <Compile Include="CustomFeedDemo.aspx.designer.cs">
       <DependentUpon>CustomFeedDemo.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
     <Compile Include="ManualLogin.aspx.cs">
       <DependentUpon>ManualLogin.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -94,6 +109,9 @@
     <Compile Include="SocialAuthLogin.ascx.cs">
       <DependentUpon>SocialAuthLogin.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SocialAuthLogin.ascx.designer.cs">
+      <DependentUpon>SocialAuthLogin.ascx</DependentUpon>
     </Compile>
     <Compile Include="Welcome.aspx.cs">
       <DependentUpon>Welcome.aspx</DependentUpon>

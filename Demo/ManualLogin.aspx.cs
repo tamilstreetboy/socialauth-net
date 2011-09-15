@@ -12,18 +12,31 @@ namespace Brickred.SocialAuth.NET.Demo
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            
-            
+            if(!SocialAuthUser.IsLoggedIn())
+                Response.Write("<font style='font-size:20px;color:red'>You are not logged in!</font>");
+            else
+                Response.Write("<font style='font-size:20px;color:green'>You are logged in!</font>");
+            SocialAuthLogin1.DefaultURL = "Welcome.aspx";
+
         }
 
         protected void btn_Click(object sender, EventArgs e)
         {
-            PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE),((Button)sender).Text.ToUpper());
+            //PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((Button)sender).Text.ToUpper());
+            //SocialAuthUser.Connect(selectedProvider, SCOPE_LEVEL.MINIMUN, "Welcome.aspx");
+
+            //We need to get user's selected provider enumerator.
+            PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((Button)sender).Text.ToUpper());
+
+            //Initialize User
             SocialAuthUser objUser = new SocialAuthUser(selectedProvider);
-            objUser.Login("Welcome.aspx"); 
+
+            //Call Login
+            objUser.Login();
             //Login method also accepts a parameter for URL to which user should be redirected after login. If not specified, 
             //automatically defaultUrl as set in Web.Config will be picked for redirection.
         }
 
+        
     }
 }
