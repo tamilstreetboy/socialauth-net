@@ -39,7 +39,7 @@
     change LoginUrl from blank to "ManualLogin.aspx" in Web.Config!
      <Authentication Enabled="true" LoginUrl="ManualLogin.aspx" DefaultUrl="Welcome.aspx" />
     !---------------------------------------------------------------->
-
+    <a href="Default.aspx">BACK</a>
     <h3>ASP.NET controls</h3>
         <asp:Button ID="btnFacebook" runat="server" onclick="btn_Click" Text="Facebook" />
         <asp:Button ID="btnGoogle" runat="server" onclick="btn_Click" Text="Google" />

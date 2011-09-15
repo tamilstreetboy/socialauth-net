@@ -31,14 +31,20 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using Newtonsoft.Json.Linq;
+using Brickred.SocialAuth.NET.Core;
 
 
 public partial class Welcome : System.Web.UI.Page
 {
     public string Provider;
+    public string ID;
+    public string Identifier;
+    public string Username;
+    public string Displayname;
     public string Email;
     public string FirstName;
     public string LastName;
+    public string Fullname;
     public string DateOfBirth;
     public string Gender;
     public string ProfileURL;
@@ -50,19 +56,36 @@ public partial class Welcome : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
+
+        //Required to be done when using custom mode
+        //if (!SocialAuthUser.IsLoggedIn())
+        //    SocialAuthUser.RedirectToLoginPage("ManualLogin.aspx");
+
+
+        foreach (PROVIDER_TYPE p in SocialAuthUser.GetConnectedProviders())
+            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetConnection(p).GetProfile().GetIdentifier() + " using email ID:" + SocialAuthUser.GetConnection(p).GetProfile().Email + "</b>");
+            
+
+        
         if (SocialAuthUser.IsLoggedIn())
         {
             IsSTSaware = HttpContext.Current.ApplicationInstance.IsSTSaware();
             Provider = User.Identity.GetProvider();
+            ID = User.Identity.GetProfile().ID;
+            Identifier = User.Identity.GetProfile().GetIdentifier();
+            Username = User.Identity.GetProfile().Username;
+            Displayname = User.Identity.GetProfile().DisplayName;
             Email = User.Identity.GetProfile().Email;
+            Fullname = User.Identity.GetProfile().FullName;
             FirstName = User.Identity.GetProfile().FirstName;
             LastName = User.Identity.GetProfile().LastName;
             DateOfBirth = User.Identity.GetProfile().DateOfBirth;
-            Gender = User.Identity.GetProfile().Gender;
+            Gender = User.Identity.GetProfile().Gender.ToString();
             ProfileURL = User.Identity.GetProfile().ProfileURL;
             ProfilePicture = User.Identity.GetProfile().ProfilePictureURL;
             Country = User.Identity.GetProfile().Country;
             Language = User.Identity.GetProfile().Language;
+            
             bool IsAlternate = false;
             User.Identity.GetContacts().ForEach(
                 x =>

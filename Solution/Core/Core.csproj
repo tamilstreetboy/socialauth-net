@@ -76,7 +76,6 @@
     <Compile Include="Interfaces\IOauth1_0Hybrid.cs" />
     <Compile Include="Interfaces\IProvider.cs" />
     <Compile Include="Interfaces\IOAuth2_0.cs" />
-    <Compile Include="LoggerFactory.cs" />
     <Compile Include="Interfaces\IOAuth1_0a.cs" />
     <Compile Include="OAuthStrategy\OAuth1_0a.cs" />
     <Compile Include="OAuthStrategy\OAuth1_0Hybrid.cs" />
@@ -93,7 +92,13 @@
     <Compile Include="SocialAuthConfiguration.cs" />
     <Compile Include="SocialAuthHttpModule.cs" />
     <Compile Include="Utility.cs" />
-    <Compile Include="Wrappers\TestWrapper.cs" />
+    <Compile Include="Wrappers\FacebookWrapper.cs" />
+    <Compile Include="Wrappers\GoogleWrapper.cs" />
+    <Compile Include="Wrappers\LinkedInWrapper.cs" />
+    <Compile Include="Wrappers\MSNWrapper.cs" />
+    <Compile Include="Wrappers\MySpaceWrapper.cs" />
+    <Compile Include="Wrappers\TwitterWrapper.cs" />
+    <Compile Include="Wrappers\YahooWrapper.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

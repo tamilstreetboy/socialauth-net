@@ -38,7 +38,7 @@ namespace Brickred.SocialAuth.NET.Core
 
     public abstract class Provider : IProvider
     {
-     
+
         #region IProvider Members
 
         //******** PROVIDER IN CONTEXT
@@ -74,7 +74,7 @@ namespace Brickred.SocialAuth.NET.Core
         public abstract string AccessTokenEndpoint
         {
             get;
-           
+
         }
         public abstract string ProfileEndpoint
         {
@@ -115,10 +115,10 @@ namespace Brickred.SocialAuth.NET.Core
             get;
             set;
         }
-       public abstract string DefaultScope
+        public abstract string DefaultScope
         {
             get;
-            
+
         }
         public virtual SCOPE_LEVEL ScopeLevel
         { get; set; }
@@ -126,23 +126,28 @@ namespace Brickred.SocialAuth.NET.Core
         public virtual bool IsProfileSupported
         {
             get { return true; }
-            
+
         }
         public virtual string ScopeDelimeter
         {
             get { return ","; }
         }
-        
+
+        public virtual bool IsScopeDefinedAtProvider
+        {
+            get { return false; }
+        }
+
         public string GetScope()
         {
 
             List<string> scopes = new List<string>();
-            scopes.AddRange(AdditionalScopes.Split(new char[] {','}).ToList<string>());
+            scopes.AddRange(AdditionalScopes.Split(new char[] { ',' }).ToList<string>());
 
-           if (ScopeLevel == SCOPE_LEVEL.DEFAULT)
+            if (ScopeLevel == SCOPE_LEVEL.DEFAULT)
                 scopes.AddRange(DefaultScope.Split(new char[] { ',' }).ToList<string>());
 
-           string strScopes = String.Join(ScopeDelimeter, scopes.ToArray());
+            string strScopes = String.Join(ScopeDelimeter, scopes.ToArray());
             if (strScopes.EndsWith(ScopeDelimeter))
                 strScopes = strScopes.Substring(0, strScopes.Length - 1);
             if (strScopes.StartsWith(ScopeDelimeter))
@@ -159,7 +164,7 @@ namespace Brickred.SocialAuth.NET.Core
         }
         public virtual void Connect(Token connectionToken)
         {
-            
+
         }
         public virtual void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler)
         {

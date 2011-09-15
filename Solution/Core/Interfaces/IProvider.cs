@@ -65,6 +65,7 @@ namespace Brickred.SocialAuth.NET.Core
         bool IsProfileSupported { get;  }
         SCOPE_LEVEL ScopeLevel { get; set; }
         string ScopeDelimeter { get; }
+        bool IsScopeDefinedAtProvider { get; }
         string GetScope();
       
         //******** PROVIDER OPERATIONS

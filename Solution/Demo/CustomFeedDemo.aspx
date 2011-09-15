@@ -16,7 +16,7 @@
 <body>
     <form id="form1" runat="server">
     <div>
-        <div style="width:100%;text-align:right"> <a href="Welcome.aspx">Back</a></div>
+        <div style="width:100%;text-align:right"> <a href="Default.aspx">Back</a></div>
         <asp:Button ID="btnCustomFeed" runat="server" OnClick="btnCustomFeed_Click" Text="Execute Custom Feed" /><br />
         <asp:Label ID="lblJson" runat="server" /><br />
         <asp:Label ID="lblAlbum" runat="server" />

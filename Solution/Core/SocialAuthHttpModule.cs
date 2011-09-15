@@ -46,6 +46,7 @@ namespace Brickred.SocialAuth.NET.Core
         {
             context.AuthenticateRequest += new EventHandler(context_AuthenticateRequest);
             context.PreRequestHandlerExecute += new EventHandler(context_PreRequestHandlerExecute);
+
         }
 
         private void context_AuthenticateRequest(object sender, EventArgs e)
@@ -82,6 +83,7 @@ namespace Brickred.SocialAuth.NET.Core
 
                 //If Url is pointing to a .aspx page, authorize it!
                 HttpCookie cookie = HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName];
+                HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
                 if (cookie != null)
                 {
                     HttpContext.Current.User = new GenericPrincipal(new FormsIdentity(FormsAuthentication.Decrypt(cookie.Value)), null);
@@ -89,7 +91,6 @@ namespace Brickred.SocialAuth.NET.Core
                 else
                 {
                     //User is not logged in
-                    HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
                     SocialAuthUser.RedirectToLoginPage();
                 }
             }
