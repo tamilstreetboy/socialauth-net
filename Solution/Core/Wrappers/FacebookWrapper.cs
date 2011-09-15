@@ -32,256 +32,144 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using log4net;
 
 
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
-    /// <summary>
-    /// Contains OAuth implementation for Facebook
-    /// </summary>
-    class FacebookWrapper : Provider, IProvider
+    public class FacebookWrapper : Provider, IProvider
     {
+        #region IProvider Members
 
-        private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(FacebookWrapper));
+        //****** PROPERTIES
+        private static readonly ILog logger = log4net.LogManager.GetLogger("FacebookWrapper");
+        public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.FACEBOOK; } }
+        public override string UserLoginEndpoint { get { return "https://www.facebook.com/dialog/oauth"; } set { } }
+        public override string AccessTokenEndpoint { get { return "https://graph.facebook.com/oauth/access_token"; } }
+        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth2_0server(this); } }
+        public override string ProfileEndpoint { get { return "https://graph.facebook.com/me"; } }
 
-        #region CONFIGURATION_PROPERTIES
+        public override string ContactsEndpoint { get { return "https://graph.facebook.com/me/friends"; } }
+        public override string ProfilePictureEndpoint { get { return "https://graph.facebook.com/me/picture?type=large"; } }
+        public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
+        public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
-        public override string RequestTokenURL
-        {
-            get { return "https://www.facebook.com/dialog/oauth"; }
-        }
-
-        public override string AuthorizationTokenURL
-        {
-            get { return ""; }
-        }
-
-        public override SIGNATURE_TYPE SignatureMethod
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public override string ContactsEndpoint
-        {
-            get { return "https://graph.facebook.com/me/friends"; }
-        }
-
-        public override string ProfileEndpoint
-        {
-            get { return "https://graph.facebook.com/me"; }
-        }
-
-        public override string AccessTokenURL
-        {
-            get { return "https://graph.facebook.com/oauth/access_token"; }
-        }
-
-        public override PROVIDER_TYPE ProviderType
-        {
-            get { return PROVIDER_TYPE.FACEBOOK; }
-        }
-
-        public override string ProfilePictureEndpoint
-        {
-            get { return "https://graph.facebook.com/me/picture"; }
-        }
-
-        public override TRANSPORT_METHOD TransportName
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override string DefaultScope { get { return "user_birthday,user_location"; } }
 
 
-        #endregion
-
-        #region OAUTH_WORKFLOW_METHODS
-
-        public override void RequestUserAuthentication()
-        {
-            UriBuilder ub = new UriBuilder(RequestTokenURL);
-            ub.SetQueryparameter("client_id", Consumerkey);
-            ub.SetQueryparameter("redirect_uri", Current.Request.GetBaseURL() + "SocialAuth/validate.sauth");
-            ub.SetQueryparameter("scope", "email" + (string.IsNullOrEmpty(AdditionalScope) ? "" : "," + AdditionalScope));
-            logger.LogAuthenticationRequest(ub.ToString());
-            HttpContext.Current.Response.Redirect(ub.ToString());
-        }
-
-        public override void AuthorizeUser()
-        {
-
-            UriBuilder ub = new UriBuilder(AccessTokenURL);
-            ub.SetQueryparameter("client_id", Consumerkey);
-            ub.SetQueryparameter("client_secret", Consumersecret);
-            ub.SetQueryparameter("code", ContextToken.RequestToken);
-            ub.SetQueryparameter("redirect_uri", Current.Request.GetBaseURL() + "SocialAuth/validate.sauth");
-            logger.LogAuthorizationRequest(ub.ToString());
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
-
-            string authToken = "";
-            try
-            {
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    authToken = reader.ReadToEnd();
-                var tokenParts = authToken.Split(new char[] { '&' });
-                ContextToken.AuthorizationToken = tokenParts[0].Replace("access_token=", "");
-                ContextToken.Expiry = tokenParts[1];
-                logger.LogAuthorizationResponse(authToken, null);
-            }
-            catch (Exception ex)
-            {
-                logger.LogAuthorizationResponse("", ex);
-            }
-        }
-
-        public override void ProcessAuthenticationResponse()
-        {
-            if (HttpContext.Current.Request["code"] != null)
-            {
-                if (Current.Request["code"] != null)
-                {
-                    logger.LogAuthenticationResponse(Current.Request.ToString(), null);
-                    ContextToken.RequestToken = Current.Request["code"];
-                    (ProviderFactory.GetProvider(PROVIDER_TYPE.FACEBOOK)).AuthorizeUser();
-                    logger.Log(LogEventType.Info, "User successully logged in at Facebook");
-                    SocialAuthUser.GetCurrentUser().HasUserLoggedIn = true;
-                    SocialAuthUser.GetCurrentUser().Profile = GetProfile();
-                    base.SetClaims();
-                }
-            }
-        }
-
-        #endregion
-
-        #region DATA_RETRIEVAL_METHODS
-
+        //****** OPERATIONS
         public override UserProfile GetProfile()
         {
+            Token token = SocialAuthUser.GetConnection(ProviderType).GetConnectionToken();
+            OAuthStrategyBase strategy = AuthenticationStrategy;
+            string response = "";
 
-            UserProfile profile = new UserProfile();
-            UriBuilder ub;
 
-            /******** retrieve standard Fields ************/
-            ub = new UriBuilder(ProfileEndpoint + "?");
-            ub.SetQueryparameter("access_token", ContextToken.AuthorizationToken);
-
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
-            logger.LogContactsRequest(ub.ToString());
-            using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-            using (Stream responseStream = webResponse.GetResponseStream())
-                try
-                {
-                    using (StreamReader reader = new StreamReader(responseStream))
-                    {
-                        string output = reader.ReadToEnd();
-                        JObject jsonObject = JObject.Parse(output);
-                        profile.FirstName = jsonObject.SelectToken("first_name").ToString();
-                        profile.LastName = jsonObject.SelectToken("last_name").ToString();
-                        string[] locale = jsonObject.SelectToken("locale").ToString().Split(new char[] { '_' });
-                        if (locale.Length > 0)
-                        {
-                            profile.Language = locale[0];
-                            profile.Country = locale[1];
-                        }
-                        profile.ProfileURL = jsonObject.SelectToken("link").ToString();
-                        profile.Email = HttpUtility.UrlDecode(jsonObject.SelectToken("email").ToString());
-                        profile.DateOfBirth = jsonObject.SelectToken("birthday") != null ? jsonObject.SelectToken("birthday").ToString().Replace(@"""", "") : string.Empty;
-                        profile.Gender = jsonObject.SelectToken("gender").ToString();
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    logger.Log(LogEventType.Debug, "GetProfile(), profile request failed: " + ex.Message);
-                    throw;
-                }
+            //If token already has profile for this provider, we can return it to avoid a call
+            if (token.Profile.IsSet)
+            {
+                logger.Debug("Profile successfully returned from session");
+                return token.Profile;
+            }
 
             try
             {
-                /******** retrieve standard picture ************/
-                ub = new UriBuilder(ProfilePictureEndpoint + "?type=large");
-                ub.SetQueryparameter("access_token", ContextToken.AuthorizationToken.Replace("access_token=", ""));
-                request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                    profile.ProfilePictureURL = webResponse.ResponseUri.AbsoluteUri;
-                logger.LogProfileResponse(null);
-                return profile;
+                logger.Debug("Executing Profile feed");
+                Stream responseStream = strategy.ExecuteFeed(ProfileEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                response = new StreamReader(responseStream).ReadToEnd();
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogProfileResponse(ex);
                 throw;
             }
 
+            try
+            {
+
+                JObject jsonObject = JObject.Parse(response);
+                token.Profile.ID = jsonObject.Get("id");
+                token.Profile.FirstName = jsonObject.Get("first_name");
+                token.Profile.LastName = jsonObject.Get("last_name");
+                token.Profile.Username = jsonObject.Get("username");
+                token.Profile.DisplayName = token.Profile.FullName;
+                string[] locale = jsonObject.Get("locale").Split(new char[] { '_' });
+                if (locale.Length > 0)
+                {
+                    token.Profile.Language = locale[0];
+                    token.Profile.Country = locale[1];
+                }
+                token.Profile.ProfileURL = jsonObject.Get("link");
+                token.Profile.Email = HttpUtility.UrlDecode(jsonObject.Get("email"));
+                if (!string.IsNullOrEmpty(jsonObject.Get("birthday")))
+                {
+                    string[] dt = jsonObject.Get("birthday").Split(new char[] { '/' });
+                    token.Profile.DateOfBirth = dt[1] + "/" + dt[0] + "/" + dt[2];
+                }
+                token.Profile.GenderType = Utility.ParseGender(jsonObject.Get("gender"));
+                //get profile picture
+                if (!string.IsNullOrEmpty(ProfileEndpoint))
+                {
+                    token.Profile.ProfilePictureURL = strategy.ExecuteFeed(ProfilePictureEndpoint, this, token, TRANSPORT_METHOD.GET).ResponseUri.AbsoluteUri.Replace("\"", "");
+                }
+                token.Profile.IsSet = true;
+                logger.Info("Profile successfully received");
+                //Session token updated with profile
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.ProfileParsingError(response), ex);
+                throw new DataParsingException(ErrorMessages.ProfileParsingError(response), ex);
+            }
+
+            return token.Profile;
+
+
 
         }
-
         public override List<Contact> GetContacts()
         {
-            UriBuilder ub;
-            /******** retrieve standard Fields ************/
+            Token token = SocialAuthUser.GetConnection(ProviderType).GetConnectionToken();
+            OAuthStrategyBase strategy = this.AuthenticationStrategy;
+            Stream responseStream = null;
+            string response = "";
             try
             {
-                ub = new UriBuilder(ContactsEndpoint + "?");
-                ub.SetQueryparameter("access_token", ContextToken.AuthorizationToken);
-                logger.LogContactsRequest(ub.ToString());
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                {
-                    JObject jsonObject = JObject.Parse(reader.ReadToEnd());
-
-                    var friends = from f in jsonObject["data"].Children()
-                                  select new Contact
-                                  {
-                                      Name = (string)f["name"],
-                                      ID = (string)f["id"],
-                                      ProfileURL = "http://www.facebook.com/profile.php?id=" + (string)f["id"]
-                                  };
-                    logger.LogContactsResponse(null);
-                    return friends.ToList<Contact>();
-                }
-
+                logger.Debug("Executing contacts feed");
+                responseStream = strategy.ExecuteFeed(ContactsEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                response = new StreamReader(responseStream).ReadToEnd();
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogContactsResponse(ex);
                 throw;
             }
 
+            try
+            {
+                JObject jsonObject = JObject.Parse(response);
+                var friends = from f in jsonObject["data"].Children()
+                              select new Contact
+                              {
+                                  Name = (string)f["name"],
+                                  ID = (string)f["id"],
+                                  ProfileURL = "http://www.facebook.com/profile.php?id=" + (string)f["id"]
+                              };
+                logger.Info("Contacts successfully received");
+                return friends.ToList<Contact>();
+            }
+
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.ContactsParsingError(response), ex);
+                throw new DataParsingException(ErrorMessages.ContactsParsingError(response), ex);
+            }
 
         }
-
-        public override string ExecuteFeed(string url)
+        public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
-            UriBuilder ub;
-            /******** retrieve standard Fields ************/
-            try
-            {
-                ub = new UriBuilder(url + "?");
-                ub.SetQueryparameter("access_token", ContextToken.AuthorizationToken);
-                logger.LogContactsRequest(ub.ToString());
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                {
-                    return reader.ReadToEnd();
-                }
-
-            }
-            catch (Exception ex)
-            {
-               
-                throw;
-            }
+            logger.Debug("Calling execution of " + feedUrl);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(ProviderType).GetConnectionToken(), transportMethod);
         }
 
         #endregion
-
-
-
     }
 }
