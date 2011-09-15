@@ -27,369 +27,167 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
-using OAuth;
 using System.Collections.Specialized;
 using System.Net;
 using System.IO;
 using System.Web;
 using System.Xml.Linq;
+using log4net;
 
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
-    /// <summary>
-    /// Contains OAuth implementation for Yahoo
-    /// </summary>
-    class YahooWrapper : Provider, IProvider
+    internal class YahooWrapper : Provider, IProvider
     {
-        private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(YahooWrapper));
+        #region IProvider Members
 
-        #region CONFIGURATION_PROPERTIES
+        //****** PROPERTIES
+        private static readonly ILog logger = log4net.LogManager.GetLogger("YahooWrapper");
+        public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.YAHOO; } }
+        public override string RequestTokenEndpoint { get { return "https://api.login.yahoo.com/oauth/v2/get_request_token"; } }
+        string userloginendpoint = "https://api.login.yahoo.com/oauth/v2/request_auth";
+        public override string UserLoginEndpoint { get { return userloginendpoint; } set { userloginendpoint = value; } }
+        public override string AccessTokenEndpoint { get { return "https://api.login.yahoo.com/oauth/v2/get_token"; } }
+        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth1_0Hybrid(this); } }
+        public override string ProfileEndpoint { get { return "http://social.yahooapis.com/v1/user/{0}/profile"; } }
+        public override string ContactsEndpoint { get { return "http://social.yahooapis.com/v1/user/{0}/contacts"; } }
+        public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
+        public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
+        public override string OpenIdDiscoveryEndpoint { get { return "http://open.login.yahooapis.com/openid20/www.yahoo.com/xrds"; } }
+        public override string DefaultScope { get { return ""; } }
 
-        public override BusinessObjects.PROVIDER_TYPE ProviderType
+
+
+        //****** OPERATIONS
+        public override UserProfile GetProfile()
         {
-            get { return BusinessObjects.PROVIDER_TYPE.YAHOO; }
-        }
+            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            UserProfile profile = new UserProfile(ProviderType);
+            string response = "";
 
-        public override string RequestTokenURL
-        {
-            get { return "https://open.login.yahooapis.com/openid/op/auth"; }
-        }
-
-        public override string AuthorizationTokenURL
-        {
-            get { return ""; }
-        }
-
-        public override SIGNATURE_TYPE SignatureMethod
-        {
-            get { return SIGNATURE_TYPE.HMACSHA1; }
-        }
-
-        public override string ProfileEndpoint
-        {
-            get { return "http://social.yahooapis.com/v1/user/{0}/profile"; }
-        }
-
-        public override BusinessObjects.TRANSPORT_METHOD TransportName
-        {
-            get { return TRANSPORT_METHOD.GET; }
-        }
-
-        public override string AccessTokenURL
-        {
-            get { return "https://api.login.yahoo.com/oauth/v2/get_token"; }
-        }
-
-        public override string ContactsEndpoint
-        {
-            get { return "http://social.yahooapis.com/v1/user/{0}/contacts"; }
-        }
-
-        public override string ProfilePictureEndpoint
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
-
-        #region OAUTH_WORKFLOW_METHODS
-
-        public override void RequestUserAuthentication()
-        {
-
-            NameValueCollection data = new NameValueCollection();
-            data.Clear();
-
-            ////TODO: Perform a google Discovery
-            data.Add("openid.ns", "http://specs.openid.net/auth/2.0");
-            data.Add("openid.mode", "checkid_setup");
-            data.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
-            data.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
-            data.Add("openid.return_to", Current.Request.GetBaseURL() + "socialAuth/Validate.sauth");
-            data.Add("openid.realm", Current.Request.GetBaseURL());
-            data.Add("openid.ns.ax", "http://openid.net/srv/ax/1.0");
-            data.Add("openid.ax.mode", "fetch_request");
-            data.Add("openid.ax.type.country", "http://axschema.org/contact/country/home");
-            data.Add("openid.ax.type.email", "http://axschema.org/contact/email");
-            data.Add("openid.ax.type.fullname", "http://axschema.org/namePerson");
-            data.Add("openid.ax.type.language", "http://axschema.org/pref/language");
-            data.Add("openid.ax.type.gender", "http://axschema.org/schema/gender");
-            data.Add("openid.ax.type.image", "http://axschema.org/media/image/default");
-            data.Add("openid.ax.required", "country,email,fullname,language,gender,image");
-
-            //add Oauth Protocols to make this call hybrid
-            data.Add("openid.ns.ext2", "http://specs.openid.net/extensions/oauth/1.0");
-            data.Add("openid.ext2.consumer", Consumerkey);
-
-            //Redirect user
-            string processedLoginUrl = Utility.http_build_query(data);
-            logger.LogAuthenticationRequest(processedLoginUrl);
-            Current.Response.Redirect(RequestTokenURL + "?" + processedLoginUrl);
-        }
-
-        public override void AuthorizeUser()
-        {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-            string sig = oAuth.GenerateSignature(new Uri(AccessTokenURL),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AuthorizationToken), string.Empty,
-                TransportName.ToString(), timeStamp, nonce,
-                SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-            string authToken = Utility.HttpTransferEncode(ContextToken.AuthorizationToken);
-
-            StringBuilder sb = new StringBuilder(AccessTokenURL + "?");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AuthorizationToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-            logger.LogAuthorizationRequest(sb.ToString());
+            //If token already has profile for this provider, we can return it to avoid a call
+            if (token.Profile.IsSet)
+                return token.Profile;
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    authToken = reader.ReadToEnd();
-                ContextToken.AccessToken = HttpUtility.ParseQueryString(authToken)["oauth_token"];
-                ContextToken.AccessTokenSecret = HttpUtility.ParseQueryString(authToken)["oauth_token_secret"];
-                ContextToken.SessionGUID = HttpUtility.ParseQueryString(authToken)["xoauth_yahoo_guid"];
-                logger.LogAuthorizationResponse(authToken, null);
+                logger.Debug("Executing Profile feed");
+                Stream responseStream = AuthenticationStrategy.ExecuteFeed(
+                    string.Format(ProfileEndpoint, token.ResponseCollection["xoauth_yahoo_guid"]), this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                response = new StreamReader(responseStream).ReadToEnd();
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogAuthorizationResponse("", ex);
                 throw;
             }
-        }
-
-        public override void ProcessAuthenticationResponse()
-        {
-            //Authenticated
-            if (HttpContext.Current.Request["openid.oauth.request_token"] != null)
-            {
-                logger.LogAuthenticationResponse(Current.Request.ToString(), null);
-                //In Hybrid mode, token recevied is both authenticated and authorized
-
-                SocialAuthUser.GetCurrentUser().contextToken.RequestToken = Current.Request["openid.oauth.request_token"];
-                SocialAuthUser.GetCurrentUser().contextToken.AuthorizationToken = Current.Request["openid.oauth.request_token"];
-                string Email = Current.Request["openid.ax.value.email"];
-                ////Access Token Required
-                (ProviderFactory.GetProvider(PROVIDER_TYPE.YAHOO)).AuthorizeUser();
-                SocialAuthUser.GetCurrentUser().Profile = (ProviderFactory.GetProvider(PROVIDER_TYPE.YAHOO)).GetProfile();
-                SocialAuthUser.GetCurrentUser().Profile.Email = Email;
-                SocialAuthUser.GetCurrentUser().HasUserLoggedIn = true;
-
-            }
-        }
-
-        #endregion
-
-        #region DATA_RETRIEVAL_METHODS
-
-        public override BusinessObjects.UserProfile GetProfile()
-        {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-
-            string sig = oAuth.GenerateSignature(new Uri(string.Format(ProfileEndpoint, ContextToken.SessionGUID)),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
-                TransportName.ToString(), timeStamp, nonce,
-                SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-
-            string rawProfileData = "";
-            StringBuilder sb = new StringBuilder(string.Format(ProfileEndpoint, ContextToken.SessionGUID) + "?");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-
-            logger.LogProfileRequest(sb.ToString());
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    rawProfileData = reader.ReadToEnd();
 
-                //Parse raw response
-                XDocument xDoc = XDocument.Parse(rawProfileData);
-                UserProfile profile = new UserProfile();
+                XDocument xDoc = XDocument.Parse(response);
                 XNamespace xn = xDoc.Root.GetDefaultNamespace();
+                profile.ID = xDoc.Root.Element(xn + "guid") != null ? xDoc.Root.Element(xn + "guid").Value : string.Empty;
                 profile.FirstName = xDoc.Root.Element(xn + "givenName") != null ? xDoc.Root.Element(xn + "givenName").Value : string.Empty;
                 profile.LastName = xDoc.Root.Element(xn + "familyName") != null ? xDoc.Root.Element(xn + "familyName").Value : string.Empty;
-                profile.DateOfBirth = xDoc.Root.Element(xn + "birthdate") != null ? xDoc.Root.Element(xn + "birthdate").Value : string.Empty;
+                profile.DateOfBirth = xDoc.Root.Element(xn + "birthdate") != null ? xDoc.Root.Element(xn + "birthdate").Value : "/";
+                profile.DateOfBirth = xDoc.Root.Element(xn + "birthyear") != null ? "/" + xDoc.Root.Element(xn + "birthyear").Value : "/";
                 profile.Country = xDoc.Root.Element(xn + "location") != null ? xDoc.Root.Element(xn + "location").Value : string.Empty;
                 profile.ProfileURL = xDoc.Root.Element(xn + "profileUrl") != null ? xDoc.Root.Element(xn + "profileUrl").Value : string.Empty;
                 profile.ProfilePictureURL = xDoc.Root.Element(xn + "image") != null ? xDoc.Root.Element(xn + "image").Element(xn + "imageUrl").Value : string.Empty;
                 profile.Language = xDoc.Root.Element(xn + "lang") != null ? xDoc.Root.Element(xn + "lang").Value : string.Empty;
-                profile.Gender = xDoc.Root.Element(xn + "gender") != null ? xDoc.Root.Element(xn + "gender").Value : string.Empty;
-                logger.LogProfileResponse(null);
-                return profile;
+                if (xDoc.Root.Element(xn + "gender") != null)
+                    profile.GenderType = Utility.ParseGender(xDoc.Root.Element(xn + "gender").Value);
+
+                if (string.IsNullOrEmpty(profile.FirstName))
+                    profile.FirstName = token.ResponseCollection["openid.ax.value.firstname"];
+                if (string.IsNullOrEmpty(profile.FirstName))
+                    profile.LastName = token.ResponseCollection["openid.ax.value.lastname"];
+                profile.Email = token.ResponseCollection.Get("openid.ax.value.email");
+                profile.Country = token.ResponseCollection.Get("openid.ax.value.country");
+                profile.Language = token.ResponseCollection.Get("openid.ax.value.language");
+                profile.IsSet = true;
+
+                profile.IsSet = true;
+                token.Profile = profile;
+                logger.Info("Profile successfully received");
             }
             catch (Exception ex)
             {
-                logger.LogProfileResponse(ex);
-                throw;
+                logger.Error(ErrorMessages.ProfileParsingError(response), ex);
+                throw new DataParsingException(ErrorMessages.ProfileParsingError(response), ex);
             }
-
-
+            return profile;
         }
-
-        public override List<BusinessObjects.Contact> GetContacts()
+        public override List<Contact> GetContacts()
         {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-
-            string sig = oAuth.GenerateSignature(new Uri(string.Format(ContactsEndpoint, ContextToken.SessionGUID)),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
-                TransportName.ToString(), timeStamp, nonce,
-                SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-
-            string rawContactsData = "";
-            StringBuilder sb = new StringBuilder(string.Format(ContactsEndpoint, ContextToken.SessionGUID) + "?");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-
-            logger.LogContactsRequest(sb.ToString());
+            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            List<Contact> contacts = new List<Contact>();
+            string response = "";
+            try
+            {
+                logger.Debug("Executing contacts feed");
+                Stream responseStream = AuthenticationStrategy.ExecuteFeed(
+                    string.Format(ContactsEndpoint, token.ResponseCollection["xoauth_yahoo_guid"]), this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                response = new StreamReader(responseStream).ReadToEnd();
+            }
+            catch { throw; }
 
             try
             {
 
-
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    rawContactsData = reader.ReadToEnd();
-
                 //Extract information from XML
-                List<Contact> contacts = new List<Contact>();
-                XDocument xdoc = XDocument.Parse(rawContactsData);
+
+                XDocument xdoc = XDocument.Parse(response);
                 XNamespace xn = xdoc.Root.GetDefaultNamespace();
                 XNamespace attxn = "http://www.yahooapis.com/v1/base.rng";
 
                 xdoc.Root.Descendants(xdoc.Root.GetDefaultNamespace() + "contact").ToList().ForEach(x =>
-                 {
-                     IEnumerable<XElement> contactFields = x.Elements(xn + "fields").ToList();
-                     foreach (var field in contactFields)
-                     {
-                         Contact contact = new Contact();
+                {
+                    IEnumerable<XElement> contactFields = x.Elements(xn + "fields").ToList();
+                    foreach (var field in contactFields)
+                    {
+                        Contact contact = new Contact();
 
-                         if (field.Attribute(attxn + "uri").Value.Contains("/yahooid/"))
-                         {
-                             //contact.Name = field.Element(xn + "value").Value;
-                             //contact.Email = field.Element(xn + "value").Value + "@yahoo.com";
-                         }
-                         else if (field.Attribute(attxn + "uri").Value.Contains("/name/"))
-                         {
-                             //Contact c = contacts.Last<Contact>();
-                             //c.Name = field.Element(xn + "value").Element(xn + "givenName").Value + " " + field.Element(xn + "value").Element(xn + "familyName").Value;
-                             //contacts[contacts.Count - 1] = c;
-                             //continue;
-                         }
-                         else if (field.Attribute(attxn + "uri").Value.Contains("/email/"))
-                         {
-                             contact.Name = field.Element(xn + "value").Value.Replace("@yahoo.com", "");
-                             contact.Email = field.Element(xn + "value").Value;
-                         }
-                         if (!string.IsNullOrEmpty(contact.Name) && !contacts.Exists(y => y.Email == contact.Email))
-                             contacts.Add(contact);
-                     }
-
-                 }
-                     );
-                logger.LogContactsResponse(null);
-                return contacts;
+                        if (field.Attribute(attxn + "uri").Value.Contains("/yahooid/"))
+                        {
+                            //contact.Name = field.Element(xn + "value").Value;
+                            //contact.Email = field.Element(xn + "value").Value + "@yahoo.com";
+                        }
+                        else if (field.Attribute(attxn + "uri").Value.Contains("/name/"))
+                        {
+                            //Contact c = contacts.Last<Contact>();
+                            //c.Name = field.Element(xn + "value").Element(xn + "givenName").Value + " " + field.Element(xn + "value").Element(xn + "familyName").Value;
+                            //contacts[contacts.Count - 1] = c;
+                            //continue;
+                        }
+                        else if (field.Attribute(attxn + "uri").Value.Contains("/email/"))
+                        {
+                            contact.Name = field.Element(xn + "value").Value.Replace("@yahoo.com", "");
+                            contact.Email = field.Element(xn + "value").Value;
+                        }
+                        if (!string.IsNullOrEmpty(contact.Name) && !contacts.Exists(y => y.Email == contact.Email))
+                            contacts.Add(contact);
+                    }
+                });
+                logger.Info("Contacts successfully received");
             }
             catch (Exception ex)
             {
-                logger.LogContactsResponse(ex);
-                throw;
+                logger.Error(ErrorMessages.ContactsParsingError(response), ex);
+                throw new DataParsingException(ErrorMessages.ContactsParsingError(response), ex);
             }
+            return contacts;
         }
-
-        public override string  ExecuteFeed(string url)
+        public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-
-            string sig = oAuth.GenerateSignature(new Uri(string.Format(url, ContextToken.SessionGUID)),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
-                TransportName.ToString(), timeStamp, nonce,
-                SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-
-            string feedOutput = "";
-            StringBuilder sb = new StringBuilder(string.Format(url, ContextToken.SessionGUID) + "?");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-
-            logger.LogContactsRequest(sb.ToString());
-
-            try
-            {
-
-
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    feedOutput = reader.ReadToEnd();
-                return feedOutput;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken(), transportMethod);
+        }
+        public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
+        {
+            YahooWrapper wrapper = new YahooWrapper();
+            return wrapper.AuthenticationStrategy.ExecuteFeed(feedUrl, wrapper, new Token() { AccessToken = accessToken, TokenSecret = tokenSecret }, transportMethod);
         }
 
         #endregion
-
-
-
-
-
     }
+
 }

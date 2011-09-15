@@ -26,300 +26,165 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using OAuth;
 using System.Web;
 using System.Net;
 using System.IO;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using System.Collections.Specialized;
 using System.Xml.Linq;
+using log4net;
+using Newtonsoft.Json.Linq;
 
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
-    /// <summary>
-    /// Contains OAuth implementation for Google
-    /// </summary>
-    public class GoogleWrapper : Provider, IProvider
+    internal class GoogleWrapper : Provider, IProvider
     {
-        private static readonly ILogger logger = LoggerFactory.GetLogger(typeof(GoogleWrapper));
-        #region CONFIGURATION_PROPERTIES
+        #region IProvider Members
 
-        public override BusinessObjects.PROVIDER_TYPE ProviderType
+        //****** PROPERTIES
+        private static readonly ILog logger = log4net.LogManager.GetLogger("GoogleWrapper");
+        public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.GOOGLE; } }
+        public override string OpenIdDiscoveryEndpoint { get { return "https://www.google.com/accounts/o8/id"; } }
+        public override string RequestTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetRequestToken"; } }
+        string userloginendpoint = "https://www.google.com/accounts/OAuthAuthorizeToken";
+        public override string UserLoginEndpoint { get { return userloginendpoint; } set { userloginendpoint = value; } }
+        public override string AccessTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetAccessToken"; } }
+        public override OAuthStrategyBase AuthenticationStrategy
         {
-            get { return BusinessObjects.PROVIDER_TYPE.GOOGLE; }
-        }
-
-        public override string ProfilePictureEndpoint
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public override TRANSPORT_METHOD TransportName
-        {
-            get { return TRANSPORT_METHOD.GET; }
-        }
-
-        public override string RequestTokenURL
-        {
-            get { return "https://www.google.com/accounts/o8/ud"; }
-        }
-
-        public override string AuthorizationTokenURL
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public override string AccessTokenURL
-        {
-            get { return "https://www.google.com/accounts/OAuthGetAccessToken"; ;}
-        }
-
-        public override SIGNATURE_TYPE SignatureMethod
-        {
-            get { return SIGNATURE_TYPE.HMACSHA1; }
-        }
-
-        public override string ContactsEndpoint
-        {
-            get { return "http://www.google.com/m8/feeds/contacts/default/full/"; }
-        }
-
-        public override string ProfileEndpoint
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
-
-        #region OAUTH_WORKFLOW_METHODS
-
-        public override void RequestUserAuthentication()
-        {
-
-            NameValueCollection data = new NameValueCollection();
-            data.Clear();
-
-            //TODO: Perform a google Discovery
-            data.Add("openid.ns", "http://specs.openid.net/auth/2.0");
-            data.Add("openid.mode", "associate");
-            data.Add("openid.assoc_type", "HMAC-SHA1");
-            data.Add("openid.session_type", "no-encryption");
-            string assocHandle = Utility.getAssociationHandle("https://www.google.com/accounts/o8/ud" + "?" + Utility.http_build_query(data));
-            data.Clear();
-            data.Add("openid.ns", "http://specs.openid.net/auth/2.0");
-            data.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
-            data.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
-            data.Add("openid.return_to", Current.Request.GetBaseURL() + "socialAuth/Validate.sauth");
-            data.Add("openid.realm", Current.Request.GetBaseURL());
-            data.Add("openid.assoc_handle", assocHandle);
-            data.Add("openid.mode", "checkid_setup");
-            SocialAuthUser.GetCurrentUser().contextToken.AssocHandle = assocHandle;
-            data.Add("openid.ns.pape", "http://specs.openid.net/extensions/pape/1.0");
-            data.Add("openid.ns.max_auth_age", "0");
-            data.Add("openid.ns.ax", "http://openid.net/srv/ax/1.0");
-            data.Add("openid.ax.mode", "fetch_request");
-            data.Add("openid.ax.type.country", "http://axschema.org/contact/country/home");
-            data.Add("openid.ax.type.email", "http://axschema.org/contact/email");
-            data.Add("openid.ax.type.firstname", "http://axschema.org/namePerson/first");
-            data.Add("openid.ax.type.language", "http://axschema.org/pref/language");
-            data.Add("openid.ax.type.lastname", "http://axschema.org/namePerson/last");
-            data.Add("openid.ax.required", "country,email,firstname,language,lastname");
-            //ADDING OAUTH PROTOCOLS
-            data.Add("openid.ns.ext2", "http://specs.openid.net/extensions/oauth/1.0");
-            data.Add("openid.ext2.consumer", Consumerkey);
-            data.Add("openid.ext2.scope", "http://www.google.com/m8/feeds/");
-            string processedUrl = Utility.http_build_query(data);
-            logger.LogAuthenticationRequest(processedUrl);
-            Current.Response.Redirect(RequestTokenURL + "?" + processedUrl);
-
-        }
-
-        public override void AuthorizeUser()
-        {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-            string sig = oAuth.GenerateSignature(new Uri(AccessTokenURL),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AuthorizationToken), string.Empty,
-                TransportName.ToString(), timeStamp, nonce,
-                SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-            string authToken = Utility.HttpTransferEncode(ContextToken.AuthorizationToken);
-
-            StringBuilder sb = new StringBuilder(AccessTokenURL + "?");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AuthorizationToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-            logger.LogAuthorizationRequest(sb.ToString());
-            try
+            get
             {
-
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    authToken = reader.ReadToEnd();
-                ContextToken.AccessToken = HttpUtility.ParseQueryString(authToken)["oauth_token"];
-                ContextToken.AccessTokenSecret = HttpUtility.ParseQueryString(authToken)["oauth_token_secret"];
-                logger.LogAuthorizationResponse(authToken, null);
+                OAuth1_0Hybrid oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
+                //[OAUTH 1.0a] oauth1_0astrategy.BeforeRequestingRequestToken += (x) => { x.Add(new QueryParameter("scope", GetScope())); };
+                oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider += (x) => { x.Add(new QueryParameter("openid.ext2.scope", GetScope())); };
+                return oauth1_0HybridStrategy;
             }
-            catch (Exception ex)
+        }
+        public override string ProfileEndpoint { get { return "http://www-opensocial.googleusercontent.com/api/people/@me"; } }
+        public override string ContactsEndpoint { get { return "http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000&"; } }
+        public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
+        public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
+        public override string ScopeDelimeter
+        {
+            get
             {
-                logger.LogAuthorizationResponse("", ex);
-                throw;
+                return " ";
+            }
+        }
+        public override bool IsProfileSupported
+        {
+            get
+            {
+                return true;
             }
         }
 
-        public override void ProcessAuthenticationResponse()
+        public override string DefaultScope { get { return "https://www-opensocial.googleusercontent.com/api/people/ http://www.google.com/m8/feeds/"; } }
+
+
+
+        //****** OPERATIONS
+        public override UserProfile GetProfile()
         {
-            //Authenticated
-            if (HttpContext.Current.Request["openid.ext2.request_token"] != null)
+
+            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            UserProfile profile = new UserProfile(ProviderType);
+            string response = "";
+            //If token already has profile for this provider, we can return it to avoid a call
+            if (token.Profile.IsSet || !IsProfileSupported)
+                return token.Profile;
+
+            var provider = ProviderFactory.GetProvider(token.Provider);
+
+            if (GetScope().Contains("https://www-opensocial.googleusercontent.com/api/people/"))
             {
-                logger.LogAuthenticationResponse(Current.Request.ToString(), null);
-                //In Hybrid mode, token recevied is both authenticated and authorized
+                try
+                {
+                    logger.Debug("Executing profile feed");
+                    Stream responseStream = AuthenticationStrategy.ExecuteFeed(ProfileEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                    response = new StreamReader(responseStream).ReadToEnd();
+                }
+                catch
+                { throw; }
 
-                SocialAuthUser.GetCurrentUser().contextToken.RequestToken = Current.Request["openid.ext2.request_token"];
-                SocialAuthUser.GetCurrentUser().contextToken.AuthorizationToken = Current.Request["openid.ext2.request_token"];
-                SocialAuthUser.GetCurrentUser().Profile = new UserProfile();
-                SocialAuthUser.GetCurrentUser().Profile.FirstName = Current.Request["openid.ext1.value.firstname"];
-                SocialAuthUser.GetCurrentUser().Profile.LastName = Current.Request["openid.ext1.value.lastname"];
-                SocialAuthUser.GetCurrentUser().Profile.Email = Current.Request["openid.ext1.value.email"];
-                SocialAuthUser.GetCurrentUser().Profile.Country = Current.Request["openid.ext1.value.country"];
-                SocialAuthUser.GetCurrentUser().Profile.Language = Current.Request["openid.ext1.value.language"];
-                logger.Log(LogEventType.Info, "User's profile extracted from authentication response.");
-                //Access Token Required
-                (ProviderFactory.GetProvider(PROVIDER_TYPE.GOOGLE)).AuthorizeUser();
-                SocialAuthUser.GetCurrentUser().HasUserLoggedIn = true;
-
+                try
+                {
+                    JObject profileJson = JObject.Parse(response);
+                    //{"entry":{"profileUrl":"https://plus.google.com/103908432244378021535","isViewer":true,"id":"103908432244378021535",
+                    //    "name":{"formatted":"deepak Aggarwal","familyName":"Aggarwal","givenName":"deepak"},
+                    //    "thumbnailUrl":"http://www.,"urls":[{"value":"https://plus.google.com/103908432244378021535","type":"profile"}],
+                    //    "photos":[{"value":"http://www.google.com/ig/c/photos/public/AIbEiAIAAABDCJ_d1payzeKeNiILdmNhcmRfcGhvdG8qKGFjM2RmMzQ1ZDc4Nzg5NmI5NmFjYTc1NDNjOTA3MmQ5MmNmOTYzZWIwAe0HZMa7crOI_laYBG7LxYvlAvqe","type":"thumbnail"}],"displayName":"deepak Aggarwal"}}
+                    profile.Provider = ProviderType;
+                    profile.ID = profileJson.Get("entry.id");
+                    profile.ProfileURL = profileJson.Get("entry.profileUrl");
+                    profile.FirstName = profileJson.Get("entry.name.givenName");
+                    profile.LastName = profileJson.Get("entry.name.familyName");
+                    profile.ProfilePictureURL = profileJson.Get("entry.thumbnailUrl");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ErrorMessages.ProfileParsingError(response), ex);
+                    throw new DataParsingException(response, ex);
+                }
             }
             else
             {
-                LoggerFactory.GetLogger(this.GetType()).Log(LogEventType.Info, "User declined request for sharing information");
-                throw new Exception("User declined request for sharing information");
+                profile.FirstName = token.ResponseCollection["openid.ext1.value.firstname"];
+                profile.LastName = token.ResponseCollection["openid.ext1.value.lastname"];
             }
+            profile.Email = token.ResponseCollection.Get("openid.ext1.value.email");
+            profile.Country = token.ResponseCollection.Get("openid.ext1.value.country");
+            profile.Language = token.ResponseCollection.Get("openid.ext1.value.language");
+            profile.IsSet = true;
+            token.Profile = profile;
+            logger.Info("Profile successfully received");
+
+            return profile;
+
         }
-
-        #endregion
-
-        #region DATA_RETRIEVAL_METHODS
-
-        public override BusinessObjects.UserProfile GetProfile()
-        {
-            throw new NotImplementedException();
-        }
-
         public override List<Contact> GetContacts()
         {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = "3543bfafc7e949982c06765580b4e876"; //oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-
-            string sig = oAuth.GenerateSignature(new Uri("http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000"),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
-                TransportName.ToString(), timeStamp, nonce,
-               SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-
-            string rawContactsData = "";
-            StringBuilder sb = new StringBuilder("http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000&");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-
-            logger.LogContactsRequest(sb.ToString());
-
+            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            IEnumerable<Contact> contacts;
+            string response = "";
             try
             {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                request.Headers.Add("GData-Version: 2");
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    rawContactsData = reader.ReadToEnd();
-
-                XDocument contactsXML = XDocument.Parse(rawContactsData);
+                logger.Debug("Executing contacts feed");
+                Stream responseStream = AuthenticationStrategy.ExecuteFeed(ContactsEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                response = new StreamReader(responseStream).ReadToEnd();
+            }
+            catch { throw; }
+            try
+            {
+                XDocument contactsXML = XDocument.Parse(response);
                 XNamespace xn = "http://schemas.google.com/g/2005";
-                var contacts = from c in contactsXML.Descendants(contactsXML.Root.GetDefaultNamespace() + "entry")
-                               select new Contact()
-                               {
-                                   ID = c.Element(contactsXML.Root.GetDefaultNamespace() + "id").Value,
-                                   Name = c.Element(contactsXML.Root.GetDefaultNamespace() + "title").Value,
-                                   Email = (c.Element(xn + "email") == null) ? "" : c.Element(xn + "email").Attribute("address").Value
-                               };
-                logger.LogContactsResponse(null);
-                return contacts.ToList<Contact>();
+                contacts = from c in contactsXML.Descendants(contactsXML.Root.GetDefaultNamespace() + "entry")
+                           select new Contact()
+                           {
+                               ID = c.Element(contactsXML.Root.GetDefaultNamespace() + "id").Value,
+                               Name = c.Element(contactsXML.Root.GetDefaultNamespace() + "title").Value,
+                               Email = (c.Element(xn + "email") == null) ? "" : c.Element(xn + "email").Attribute("address").Value
+                           };
+                logger.Info("Contacts successfully received");
             }
             catch (Exception ex)
             {
-                logger.LogContactsResponse(ex);
-                throw;
+                logger.Error(ErrorMessages.ContactsParsingError(response), ex);
+                throw new DataParsingException(ErrorMessages.ContactsParsingError(response), ex);
             }
+            return contacts.ToList();
+
+
         }
-
-        public override string ExecuteFeed(string url)
+        public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
-            OAuthBase oAuth = new OAuthBase();
-            string nonce = "3543bfafc7e949982c06765580b4e876"; //oAuth.GenerateNonce();
-            string timeStamp = oAuth.GenerateTimeStamp();
-            string outUrl = "";
-            string queryString = "";
-
-            string sig = oAuth.GenerateSignature(new Uri(url),
-               Consumerkey, Consumersecret,
-               Utility.UrlEncode(ContextToken.AccessToken), Utility.UrlEncodeForSigningRequest(ContextToken.AccessTokenSecret),
-                TransportName.ToString(), timeStamp, nonce,
-               SignatureMethod, "", "", out outUrl, out queryString);
-
-            sig = Utility.UrlEncodeForSigningRequest(sig);
-
-            string feedOutput = "";
-            StringBuilder sb = new StringBuilder(url + "&");
-            sb.AppendFormat("oauth_consumer_key={0}&", Consumerkey);
-            sb.AppendFormat("oauth_token={0}&", Utility.UrlEncodeForSigningRequest(ContextToken.AccessToken));
-            sb.AppendFormat("oauth_signature_method={0}&", "HMAC-SHA1");
-            sb.AppendFormat("oauth_signature={0}&", sig);
-            sb.AppendFormat("oauth_timestamp={0}&", timeStamp);
-            sb.AppendFormat("oauth_nonce={0}&", nonce);
-            sb.AppendFormat("oauth_version=1.0");
-
-            try
-            {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(sb.ToString());
-                request.Headers.Add("GData-Version: 2");
-                using (HttpWebResponse webResponse = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = webResponse.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                    feedOutput = reader.ReadToEnd();
-
-                return feedOutput;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken(), transportMethod);
+        }
+        public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
+        {
+            GoogleWrapper wrapper = new GoogleWrapper();
+            return wrapper.AuthenticationStrategy.ExecuteFeed(feedUrl, wrapper, new Token() { AccessToken = accessToken, TokenSecret = tokenSecret }, transportMethod);
         }
 
         #endregion
-
-
-
-
-
     }
 }
