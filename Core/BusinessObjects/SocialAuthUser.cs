@@ -92,7 +92,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     returnURL = HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
 
 
-                SessionManager.AddConnectionToken(new Token()
+                SessionManager.InProgressToken = (new Token()
                 {
                     Provider = providerType,
                     Domain = HttpContext.Current.Request.GetBaseURL(),
@@ -101,14 +101,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     Profile = new UserProfile() { Provider = providerType }
 
                 });
-
-                GetCurrentConnectionToken().Profile.Provider = providerType;
+                SessionManager.InProgressToken.Profile.Provider = providerType;
 
                 ProviderFactory.GetProvider(providerType).Connect(providerType);
             }
             catch (Exception ex)
             {
-                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
                 throw;
             }
         }
@@ -377,38 +375,30 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         {
 
 
-            if (!isSuccess)
+
+            SessionManager.AddConnectionToken(SessionManager.InProgressToken);
+            //LoadProfile
+            SessionManager.GetCurrentConnection().GetConnectionToken().Profile = SessionManager.GetCurrentConnection().GetProfile();
+            SetClaims();
+
+
+
+            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
+               Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
             {
-                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
+                FormsAuthenticationTicket ticket =
+                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, 60);
+
+                string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
+                HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
+                HttpContext.Current.Response.Cookies.Add(cookie);
+                SessionManager.ExecuteCallback();
+                SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
             }
-            else
+            else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
             {
-
-                //LoadProfile
-                SessionManager.GetCurrentConnection().GetConnectionToken().Profile = SessionManager.GetCurrentConnection().GetProfile();
-                SetClaims();
-
-
-
-                if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
-                   Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
-                {
-                    FormsAuthenticationTicket ticket =
-                        new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, 60);
-
-                    string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
-                    HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
-                    HttpContext.Current.Response.Cookies.Add(cookie);
-                    SessionManager.ExecuteCallback();
-                    SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
-                }
-                else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
-                {
-                    SessionManager.ExecuteCallback();
-                    FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
-                }
-
-
+                SessionManager.ExecuteCallback();
+                FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
             }
 
 
@@ -477,7 +467,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
             //* If AuthenticationMode = SocialAuth and LoginUrl <> empty, redirect to LoginUrl
             else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN)
-                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + loginUrlInConfigFile + redirectTo);
+                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + loginUrlInConfigFile + (redirectTo.EndsWith(loginUrlInConfigFile) ? "" : redirectTo));
 
             //* If AuthenticationMode = FormsAuthentication call RedirectToLoginPage()
             else if (option == AUTHENTICATION_OPTION.FORMS_AUTHENTICATION)
@@ -494,17 +484,20 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         }
 
+        internal static Token InProgressToken()
+        {
+            return SessionManager.InProgressToken;
+        }
 
         internal static void LoginCallback(string response)
         {
             try
             {
-                CurrentConnection.LoginCallback(Utility.GetQuerystringParameters(response),
+                ProviderFactory.GetProvider(InProgressToken().Provider).LoginCallback(Utility.GetQuerystringParameters(response),
                         SocialAuthUser.OnAuthneticationProcessCompleted);
             }
             catch (Exception ex)
             {
-                SessionManager.RemoveConnectionToken(CurrentConnection.ProviderType);
                 throw;
             }
 

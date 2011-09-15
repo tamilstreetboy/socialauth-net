@@ -114,7 +114,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// <summary>
         /// Gets displayname of profile. Often same as Name.
         /// </summary>
-        public string Displayname { get; set; }
+        public string DisplayName { get; set; }
 
 
         public string GetIdentifier()
