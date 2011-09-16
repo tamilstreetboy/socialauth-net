@@ -20,6 +20,7 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
 
     public string Height { get; set; }
     public string Width { get; set; }
+    public string BackgroundColor { get; set; }
 
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -36,6 +37,11 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
         {
             providerContainer.Style["Width"] = Width;
         }
+
+        if (!string.IsNullOrEmpty(BackgroundColor))
+            providerContainer.Style["background-color"] = BackgroundColor;
+        else
+            providerContainer.Style["background-color"] = "purple";
 
         ProviderFactory.Providers.ForEach(p =>
             this.FindControl("providerContainer").Controls.Add(constructControl(p))
@@ -61,7 +67,7 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
             HtmlGenericControl tickspan = new HtmlGenericControl("span");
             tickspan.InnerHtml = "<img src='images/socialauthicons/" + (iscurrent ? "currentyes" : "yes") + ".png' style='top:0px;left:0px;z-index:100'/>";
             tickspan.Style.Add("position", "absolute");
-            
+
             providerDiv.Controls.Add(tickspan);
         }
         //if (iscurrent)

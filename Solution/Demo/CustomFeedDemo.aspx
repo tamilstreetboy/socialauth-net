@@ -1,26 +1,30 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="CustomFeedDemo.aspx.cs"
-    Inherits="Brickred.SocialAuth.NET.Demo.CustomFeedDemo" %>
+    Inherits="Brickred.SocialAuth.NET.Demo.CustomFeedDemo" MasterPageFile="~/DemoSite.Master" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <title></title>
+<asp:Content ContentPlaceHolderID="head" runat="server">
     <style type="text/css">
-        div
+        .largecontent
         {
-            font-family: Tahoma;
-            font-size: 12px;
+            width:700px;
+            font-size:12px;
+            word-wrap:break-word;
         }
     </style>
-</head>
-<body>
-    <form id="form1" runat="server">
+</asp:Content>
+<asp:Content ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div>
+
+    To try this demo, you must be logged into Facebook. <br />
+    Also, add an additional scope "user_photos" to Web.config:<br /><br />
+    <div style="background:#EEEEF7;padding:10px 0px 10px 0px">
+    <code>
+    &lt;add WrapperName="FacebookWrapper" ConsumerKey="152190004803645" ConsumerSecret="64c94bd02180b0ade85889b44b2ba7c4" AdditionalScopes="user_photos"/&gt;
+    </code>
+    </div>
         <div style="width:100%;text-align:right"> <a href="Default.aspx">Back</a></div>
         <asp:Button ID="btnCustomFeed" runat="server" OnClick="btnCustomFeed_Click" Text="Execute Custom Feed" /><br />
-        <asp:Label ID="lblJson" runat="server" /><br />
+        <asp:Label ID="lblJson" runat="server" class="largecontent" /><br />
         <asp:Label ID="lblAlbum" runat="server" />
     </div>
-    </form>
-</body>
-</html>
+    
+</asp:Content>

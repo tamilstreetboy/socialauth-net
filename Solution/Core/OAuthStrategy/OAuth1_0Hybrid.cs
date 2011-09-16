@@ -102,7 +102,7 @@ namespace Brickred.SocialAuth.NET.Core
                 oauthParameters.Add("openid.ns", "http://specs.openid.net/auth/2.0");
                 oauthParameters.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
                 oauthParameters.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
-                oauthParameters.Add("openid.return_to", connectionToken.ProviderCallbackUrl + "socialAuth/Validate.sauth");
+                oauthParameters.Add("openid.return_to", connectionToken.ProviderCallbackUrl);
                 oauthParameters.Add("openid.realm", connectionToken.Domain);
                 oauthParameters.Add("openid.mode", "checkid_setup");
                 oauthParameters.Add("openid.ns.pape", "http://specs.openid.net/extensions/pape/1.0");

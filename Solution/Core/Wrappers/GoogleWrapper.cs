@@ -144,6 +144,11 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override List<Contact> GetContacts()
         {
             Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+
+            //If only OpenID is used and also there is no scope for contacts, return blank list straight away
+            if (string.IsNullOrEmpty(token.AccessToken) || !(GetScope().Contains("m8/feeds/contacts/")))
+                return new List<Contact>();
+
             IEnumerable<Contact> contacts;
             string response = "";
             try

@@ -11,7 +11,7 @@
        
     }
 </style>
-<div ID="providerContainer" runat="server" style="background-color: #c0c0c0; border: 2px solid darkgrey; font-family: verdana;
+<div ID="providerContainer" runat="server" style="background-color: #c0c0c0;  font-family: verdana;
         font-size: small; font-weight: bold">
  </div>
 

@@ -100,6 +100,13 @@ namespace Brickred.SocialAuth.NET.Core
 
         protected void context_PreRequestHandlerExecute(object sender, EventArgs e)
         {
+            //Often, Forms Cookie persist even where there is no connection. To avoid that!!
+            if (HttpContext.Current.Session != null)
+                if (SessionManager.ConnectionsCount == 0)
+                    if (HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName] != null && Utility.GetAuthenticationOption() != AUTHENTICATION_OPTION.FORMS_AUTHENTICATION)
+                        if (SessionManager.GetUserSessionGUID().ToString() != FormsAuthentication.Decrypt(HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName].Value).Name)
+                            SocialAuthUser.Disconnect();
+            
             if (HttpContext.Current.ApplicationInstance.IsSTSaware())
                 if (HttpContext.Current.Session != null)
                     if (SocialAuthUser.IsLoggedIn())

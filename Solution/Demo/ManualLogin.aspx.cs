@@ -12,12 +12,7 @@ namespace Brickred.SocialAuth.NET.Demo
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if(!SocialAuthUser.IsLoggedIn())
-                Response.Write("<font style='font-size:20px;color:red'>You are not logged in!</font>");
-            else
-                Response.Write("<font style='font-size:20px;color:green'>You are logged in!</font>");
-            SocialAuthLogin1.DefaultURL = "Welcome.aspx";
-
+            
         }
 
         protected void btn_Click(object sender, EventArgs e)

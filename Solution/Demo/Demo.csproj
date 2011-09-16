@@ -59,6 +59,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CallBackDemo.aspx" />
     <Content Include="CustomFeedDemo.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="Demo.sln" />
@@ -68,6 +69,7 @@
     <Content Include="images\SocialAuthIcons\msn.jpg" />
     <Content Include="images\SocialAuthIcons\Yahoo.jpg" />
     <Content Include="ManualLogin.aspx" />
+    <Content Include="Protocols.aspx" />
     <Content Include="SocialAuthLogin.ascx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -81,6 +83,13 @@
     <Content Include="Welcome.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CallBackDemo.aspx.cs">
+      <DependentUpon>CallBackDemo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CallBackDemo.aspx.designer.cs">
+      <DependentUpon>CallBackDemo.aspx</DependentUpon>
+    </Compile>
     <Compile Include="CustomFeedDemo.aspx.cs">
       <DependentUpon>CustomFeedDemo.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -95,6 +104,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="DemoSite.Master.cs">
+      <DependentUpon>DemoSite.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DemoSite.Master.designer.cs">
+      <DependentUpon>DemoSite.Master</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -106,6 +122,13 @@
       <DependentUpon>ManualLogin.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocols.aspx.cs">
+      <DependentUpon>Protocols.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Protocols.aspx.designer.cs">
+      <DependentUpon>Protocols.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SocialAuthLogin.ascx.cs">
       <DependentUpon>SocialAuthLogin.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -120,6 +143,9 @@
     <Compile Include="Welcome.aspx.designer.cs">
       <DependentUpon>Welcome.aspx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DemoSite.Master" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

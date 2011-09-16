@@ -188,7 +188,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         internal static Guid GetUserSessionGUID()
         {
-            return userSession.userGUID;
+            return  userSession.userGUID;
         }
 
 
