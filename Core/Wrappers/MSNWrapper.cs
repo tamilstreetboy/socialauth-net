@@ -53,7 +53,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 strategy.BeforeDirectingUserToServiceProvider += (x) =>
                 {
                     if (string.IsNullOrEmpty(GetScope()))
-                        x["scope"] = "wl.basic";
+                        x["scope"] = "wl.signin";
                 };
                 return strategy;
             }
@@ -61,6 +61,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string ProfileEndpoint { get { return "https://apis.live.net/v5.0/me"; } }
         public override string ContactsEndpoint { get { return "https://apis.live.net/v5.0/me/contacts"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
+        public override string ProfilePictureEndpoint { get { return "https://apis.live.net/v5.0/me/picture"; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
         
@@ -106,6 +107,10 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 token.Profile.ProfilePictureURL = profileJson.Get("ThumbnailImageLink");
                 token.Profile.Email = profileJson.Get("emails.account");
                 token.Profile.GenderType = Utility.ParseGender(profileJson.Get("gender"));
+                if (!string.IsNullOrEmpty(ProfileEndpoint))
+                {
+                    token.Profile.ProfilePictureURL = strategy.ExecuteFeed(ProfilePictureEndpoint, this, token, TRANSPORT_METHOD.GET).ResponseUri.AbsoluteUri.Replace("\"", "");
+                }
                 token.Profile.IsSet = true;
                 logger.Info("Profile successfully received");
                 return token.Profile;

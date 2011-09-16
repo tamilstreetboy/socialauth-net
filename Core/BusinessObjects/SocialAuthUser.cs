@@ -77,6 +77,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             try
             {
 
+                if (IsConnectedWith(providerType))
+                    return;
 
                 AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
 
@@ -105,7 +107,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
                 ProviderFactory.GetProvider(providerType).Connect(providerType);
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
@@ -119,9 +121,11 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         public static void Disconnect(string loginUrl = "", Action callback = null)
         {
             //Remove all tokens
-            SessionManager.RemoveAllConnections();
+            if (HttpContext.Current.Session != null)
+                SessionManager.RemoveAllConnections();
 
             //cleanup any cookie
+            HttpContext.Current.Request.Cookies.Remove(FormsAuthentication.FormsCookieName);
             FormsAuthentication.SignOut();
 
             //Redirect to login Page
@@ -242,7 +246,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
                 if (SessionManager.IsConnectedWith(providerType))
                 {
-                    if (GetConnection(providerType).GetConnectionToken().Profile.ID != null)
+                    if (GetConnection(providerType).GetConnectionToken().Profile.IsSet)
                         return GetConnection(providerType).GetConnectionToken().Profile;
                     else
                         return SessionManager.GetConnection(providerType).GetProfile();
@@ -256,7 +260,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             {
                 if (SessionManager.IsConnected)
                 {
-                    if (GetCurrentConnectionToken().Profile.ID != null)
+                    if (GetCurrentConnectionToken().Profile.IsSet)
                         return GetCurrentConnectionToken().Profile;
                     else
                         return SessionManager.GetCurrentConnection().GetProfile();
@@ -281,10 +285,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
                 if (SessionManager.IsConnectedWith(providerType))
                 {
-                    if (GetConnection(providerType).GetConnectionToken().Profile.ID != null)
-                        return GetConnection(providerType).GetContacts();
-                    else
-                        return SessionManager.GetConnection(providerType).GetContacts();
+                    return GetConnection(providerType).GetContacts();
                 }
                 else
                 {
@@ -295,10 +296,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             {
                 if (SessionManager.IsConnected)
                 {
-                    if (GetCurrentConnectionToken().Profile.ID != null)
-                        return CurrentConnection.GetContacts();
-                    else
-                        return CurrentConnection.GetContacts();
+
+                    return CurrentConnection.GetContacts();
                 }
 
                 else
@@ -387,7 +386,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
             {
                 FormsAuthenticationTicket ticket =
-                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, 60);
+                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
 
                 string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
                 HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
