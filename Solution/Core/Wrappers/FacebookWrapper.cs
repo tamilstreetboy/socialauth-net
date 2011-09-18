@@ -60,7 +60,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         //****** OPERATIONS
         public override UserProfile GetProfile()
         {
-            Token token = SocialAuthUser.GetConnection(ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = AuthenticationStrategy;
             string response = "";
 
@@ -128,7 +128,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetConnection(ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = this.AuthenticationStrategy;
             Stream responseStream = null;
             string response = "";
@@ -167,7 +167,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
         }
 
         #endregion

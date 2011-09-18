@@ -75,13 +75,5 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     }
 
 
-    //public class UserToken
-    //{
-    //    public string AccessToken { get; }
-    //    public string Provider { get; }
-    //    public DateTime IssuedOn { get; }
-    //    public DateTime ExpiresOn { get; }
-    //    public string UserIdentifier { get; }
-    //}
-
+   
 }

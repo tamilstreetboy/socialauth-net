@@ -42,6 +42,7 @@
         {
             font-style: italic;
             font-size: 10px;
+            
         }
     </style>
 </asp:Content>
@@ -115,7 +116,7 @@
                 SocialAuthUser.GetCurrentUser().AccessToken
                 
             </td>
-            <td>
+            <td style="word-wrap:break-word;width:500px;">
                 <%=AccessToken %>
             </td>
         </tr>

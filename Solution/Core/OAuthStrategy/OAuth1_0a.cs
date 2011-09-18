@@ -59,7 +59,7 @@ namespace Brickred.SocialAuth.NET.Core
             logger.Info("OAuth1.0a Authorization Flow ends...");
 
             //Authentication Process is through. Inform Consumer. [Set isSuccess on successful authentication]
-            provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
+            
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
 
         }
@@ -182,7 +182,7 @@ namespace Brickred.SocialAuth.NET.Core
                 connectionToken.AuthorizationToken = responseCollection["oauth_token"];
                 logger.Info("User successfully logged in and returned");
             }
-            else if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
+            else if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
             {
                 logger.Error(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));
                 throw new OAuthException(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));

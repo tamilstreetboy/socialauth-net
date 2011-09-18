@@ -96,9 +96,9 @@ namespace Brickred.SocialAuth.NET.Core
             foreach (var param in oauthParameters)
             {
                 if (param.Value.ToLower().Contains("http://") || param.Value.ToLower().Contains("https://"))
-                    tmpOauthParameters.Add(new QueryParameter(param.Name, Utility.UrlEncode(param.Value)));
+                    tmpOauthParameters.Add(new QueryParameter(param.Key, Utility.UrlEncode(param.Value)));
                 else
-                    tmpOauthParameters.Add(new QueryParameter(param.Name, param.Value));
+                    tmpOauthParameters.Add(new QueryParameter(param.Key, param.Value));
             }
 
             tmpOauthParameters[OAuthSignatureMethodKey] = ParseSignatureEnum(signatureType);
@@ -125,7 +125,7 @@ namespace Brickred.SocialAuth.NET.Core
             //tmpOauthParameters["scope"] = Utility.UrlEncode(tmpOauthParameters["scope"]);
 
             foreach (var p in Utility.GetQuerystringParameters(requestURL.ToString()))
-                tmpOauthParameters.Add(p.Name, p.Value);
+                tmpOauthParameters.Add(p.Key, p.Value);
 
             //3. Perform Lexographic Sorting
             tmpOauthParameters.Sort();
@@ -170,10 +170,10 @@ namespace Brickred.SocialAuth.NET.Core
             //Generate Authorization Header
             string authorizationHeader = "";
             foreach (var p in oauthParameters)
-                if (p.Name == "oauth_signature")
-                    authorizationHeader += (p.Name + "=\"" + Utility.UrlEncode(p.Value) + "\", ");
+                if (p.Key == "oauth_signature")
+                    authorizationHeader += (p.Key + "=\"" + Utility.UrlEncode(p.Value) + "\", ");
                 else
-                    authorizationHeader += (p.Name + "=\"" + p.Value + "\", ");
+                    authorizationHeader += (p.Key + "=\"" + p.Value + "\", ");
 
             authorizationHeader = authorizationHeader.Replace(SIGNATURE_TYPE.HMACSHA1.ToString(), HMACSHA1SignatureType);
             logger.Debug("Authorization Header: " + "OAuth " + authorizationHeader.Substring(0, authorizationHeader.Length - 2));

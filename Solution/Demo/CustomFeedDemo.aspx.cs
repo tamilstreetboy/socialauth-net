@@ -49,7 +49,7 @@ namespace Brickred.SocialAuth.NET.Demo
                 foreach (var item in albums)
                 {
                     Label lbl = new Label();
-                    lbl.Text = "<h3>" + item.Name + "</h3>(" + item.PhotoCount + ") : " + "<img src='https://graph.facebook.com/" + item.CoverPhoto + "/picture?type=album&access_token=" + SocialAuthUser.GetConnection(PROVIDER_TYPE.FACEBOOK).GetConnectionToken().AccessToken + "'>";
+                    lbl.Text = "<h3>" + item.Name + "</h3>(" + item.PhotoCount + ") : " + "<img src='https://graph.facebook.com/" + item.CoverPhoto + "/picture?type=album&access_token=" + SocialAuthUser.GetCurrentUser().GetAccessToken() + "'>";
                     lbl.CssClass = "album";
                     lblAlbum.Controls.Add(lbl);
 
