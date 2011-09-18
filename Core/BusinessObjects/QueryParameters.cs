@@ -28,20 +28,21 @@ using System.Collections;
 
 namespace Brickred.SocialAuth.NET.Core
 {
+
     public class QueryParameter
     {
-        private string name = null;
+        private string key = null;
         private string value = null;
 
-        public QueryParameter(string name, string value)
+        public QueryParameter(string key, string value)
         {
-            this.name = name;
+            this.key = key;
             this.value = value;
         }
 
-        public string Name
+        public string Key
         {
-            get { return name; }
+            get { return key; }
         }
 
         public string Value
@@ -61,13 +62,13 @@ namespace Brickred.SocialAuth.NET.Core
 
         public int Compare(QueryParameter x, QueryParameter y)
         {
-            if (x.Name == y.Name)
+            if (x.Key == y.Key)
             {
                 return string.Compare(x.Value, y.Value);
             }
             else
             {
-                return string.Compare(x.Name, y.Name);
+                return string.Compare(x.Key, y.Key);
             }
         }
 
@@ -81,17 +82,17 @@ namespace Brickred.SocialAuth.NET.Core
 
         public string this[string key]
         {
-            get { return queryparameters.Find(x => x.Name == key).Value; }
-            set { queryparameters.RemoveAll(x => x.Name == key); queryparameters.Add(new QueryParameter(key, value)); }
+            get { return queryparameters.Find(x => x.Key == key).Value; }
+            set { queryparameters.RemoveAll(x => x.Key == key); queryparameters.Add(new QueryParameter(key, value)); }
         }
 
         public void AddRange(QueryParameters range, bool shouldOverride)
         {
             foreach (var item in range)
             {
-                if (shouldOverride && queryparameters.Exists(x => x.Name == item.Name))
-                    queryparameters.RemoveAll(x => x.Name == item.Name);
-                queryparameters.Add(new QueryParameter(item.Name, item.Value));
+                if (shouldOverride && queryparameters.Exists(x => x.Key == item.Key))
+                    queryparameters.RemoveAll(x => x.Key == item.Key);
+                queryparameters.Add(new QueryParameter(item.Key, item.Value));
             }
         }
 
@@ -107,7 +108,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public bool HasName(string name)
         {
-            return queryparameters.Exists(x => x.Name == name);
+            return queryparameters.Exists(x => x.Key == name);
         }
 
         public override string ToString()
@@ -117,7 +118,7 @@ namespace Brickred.SocialAuth.NET.Core
             for (int i = 0; i < queryparameters.Count; i++)
             {
                 p = queryparameters[i];
-                sb.AppendFormat("{0}={1}", p.Name, p.Value);
+                sb.AppendFormat("{0}={1}", p.Key, p.Value);
 
                 if (i < queryparameters.Count - 1)
                 {
@@ -133,14 +134,14 @@ namespace Brickred.SocialAuth.NET.Core
             StringBuilder sb = new StringBuilder();
             foreach (var qp in queryparameters)
             {
-                sb.Append("&").Append(Utility.UrlEncode(qp.Name)).Append("=").Append(Utility.UrlEncode(qp.Value));
+                sb.Append("&").Append(Utility.UrlEncode(qp.Key)).Append("=").Append(Utility.UrlEncode(qp.Value));
             }
             return sb.ToString().Substring(1);
         }
 
         public string Get(string key)
         {
-            return (HasName(key) ? queryparameters.Find(x => x.Name == key).Value : "");
+            return (HasName(key) ? queryparameters.Find(x => x.Key == key).Value : "");
         }
 
         #region ICollection<QueryParameter> Members

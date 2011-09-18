@@ -60,7 +60,6 @@ namespace Brickred.SocialAuth.NET.Core
             //HandleAccessTokenResponse(response); //(E) Handled from above
             logger.Info("OAuth2.0 server side Authorization flow ends ..");
             //Authentication Process is through. Inform Consumer.
-            provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
         }
 
@@ -99,7 +98,7 @@ namespace Brickred.SocialAuth.NET.Core
                 connectionToken.Code = responseCollection["code"];
                 logger.Info("User successfully logged in and returned with Authorization code");
             }
-            else if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
+            else if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
             {
                 logger.Error(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
                 throw new OAuthException(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
@@ -167,16 +166,16 @@ namespace Brickred.SocialAuth.NET.Core
                 {
 
                     responseCollection = Utility.GetQuerystringParameters(response);
-                    string keyForAccessToken = responseCollection.Single(x => x.Name.Contains("token")).Name;
+                    string keyForAccessToken = responseCollection.Single(x => x.Key.Contains("token")).Key;
 
                     connectionToken.AccessToken = responseCollection[keyForAccessToken].Replace("\"", "");
-                    if (responseCollection.ToList().Exists(x => x.Name.ToLower().Contains("expir")))
+                    if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("expir")))
                     {
-                        string keyForExpiry = responseCollection.Single(x => x.Name.Contains("expir")).Name;
+                        string keyForExpiry = responseCollection.Single(x => x.Key.Contains("expir")).Key;
                         connectionToken.ExpiresOn = connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(responseCollection[keyForExpiry].Replace("\"", "")) - 20);
                     }
                     //put in raw list
-                    responseCollection.ToList().ForEach(x => connectionToken.ResponseCollection.Add(x.Name, x.Value));
+                    responseCollection.ToList().ForEach(x => connectionToken.ResponseCollection.Add(x.Key, x.Value));
                     logger.Info("Access Token successfully received");
                     isSuccess = true;
 
@@ -214,8 +213,8 @@ namespace Brickred.SocialAuth.NET.Core
             }
             catch (Exception ex)
             {
-                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null));
-                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null));
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null),ex);
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null),ex);
             }
 
             return wr;

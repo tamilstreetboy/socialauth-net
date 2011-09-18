@@ -51,18 +51,67 @@ namespace Brickred.SocialAuth.NET.Core
 
         private void context_AuthenticateRequest(object sender, EventArgs e)
         {
+            ///*************************
+            // * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
+            // * If Request is of LoginURL, skip
+            // * OTHERWISE:::::::::::::::::::::
+            // * <<<<IF USER IS NOT LOGGED IN>>>
+            // * If AuthenticationOption = SocialAuth
+            // *          Redirect in Priority - ConfigurationLoginURL,  "LoginForm.sauth"
+            // * If AuthenticationOption = FormsAuthentication
+            // *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
+            // * If AuthenticationOption = Everything Custom
+            // *          Don't do anything. User will put checking code on everypage himself.
+            // * **********************/
+
+            //AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
+
+
+            //if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+            //{
+            //    //block any .aspx page. Rest all is allowed.
+            //    //TODO: Better Implementation of this
+            //    if (VirtualPathUtility.GetExtension(HttpContext.Current.Request.RawUrl) != ".aspx")
+            //        return;
+
+            //    //If requested page is login URL only, allow it
+            //    string currentUrl = HttpContext.Current.Request.Url.AbsolutePath;
+            //    string loginurl = Utility.GetSocialAuthConfiguration().Authentication.LoginUrl;
+            //    loginurl = string.IsNullOrEmpty(loginurl) ? "socialauth/loginform.sauth" : loginurl;
+            //    if (currentUrl.EndsWith(loginurl))
+            //        return;
+
+            //    //If Url is pointing to a .aspx page, authorize it!
+            //    HttpCookie cookie = HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName];
+            //    HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            //    if (cookie != null)
+            //    {
+            //        HttpContext.Current.User = new GenericPrincipal(new FormsIdentity(FormsAuthentication.Decrypt(cookie.Value)), null);
+            //    }
+            //    else
+            //    {
+            //        //User is not logged in
+            //        SocialAuthUser.RedirectToLoginPage();
+            //    }
+            //}
+
+        }
+
+
+        protected void context_PreRequestHandlerExecute(object sender, EventArgs e)
+        {
             /*************************
-             * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
-             * If Request is of LoginURL, skip
-             * OTHERWISE:::::::::::::::::::::
-             * <<<<IF USER IS NOT LOGGED IN>>>
-             * If AuthenticationOption = SocialAuth
-             *          Redirect in Priority - ConfigurationLoginURL,  "LoginForm.sauth"
-             * If AuthenticationOption = FormsAuthentication
-             *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
-             * If AuthenticationOption = Everything Custom
-             *          Don't do anything. User will put checking code on everypage himself.
-             * **********************/
+     * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
+     * If Request is of LoginURL, skip
+     * OTHERWISE:::::::::::::::::::::
+     * <<<<IF USER IS NOT LOGGED IN>>>
+     * If AuthenticationOption = SocialAuth
+     *          Redirect in Priority - ConfigurationLoginURL,  "LoginForm.sauth"
+     * If AuthenticationOption = FormsAuthentication
+     *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
+     * If AuthenticationOption = Everything Custom
+     *          Don't do anything. User will put checking code on everypage himself.
+     * **********************/
 
             AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
 
@@ -93,24 +142,31 @@ namespace Brickred.SocialAuth.NET.Core
                     //User is not logged in
                     SocialAuthUser.RedirectToLoginPage();
                 }
+
+
+                if (SocialAuthUser.IsLoggedIn() && HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName] == null)
+                {
+                    FormsAuthenticationTicket ticket =
+                new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
+
+                    string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
+                    cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
+                    HttpContext.Current.Response.Cookies.Add(cookie);
+
+                }
             }
 
-        }
-
-
-        protected void context_PreRequestHandlerExecute(object sender, EventArgs e)
-        {
             //Often, Forms Cookie persist even where there is no connection. To avoid that!!
             if (HttpContext.Current.Session != null)
                 if (SessionManager.ConnectionsCount == 0)
                     if (HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName] != null && Utility.GetAuthenticationOption() != AUTHENTICATION_OPTION.FORMS_AUTHENTICATION)
                         if (SessionManager.GetUserSessionGUID().ToString() != FormsAuthentication.Decrypt(HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName].Value).Name)
                             SocialAuthUser.Disconnect();
-            
+
             if (HttpContext.Current.ApplicationInstance.IsSTSaware())
                 if (HttpContext.Current.Session != null)
                     if (SocialAuthUser.IsLoggedIn())
-                        if (SocialAuthUser.GetProfile() != null)
+                        if (SocialAuthUser.GetCurrentUser().GetProfile() != null)
                             SocialAuthUser.SetClaims();
         }
     }

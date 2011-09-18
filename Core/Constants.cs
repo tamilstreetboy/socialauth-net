@@ -101,12 +101,12 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string ProfileParsingError(string response)
         {
-            return "";
+            return "An error occurred while parsing profile data." + Environment.NewLine + "Provider returned: " + response;
         }
 
         public static string ContactsParsingError(string response)
         {
-            return "";
+            return "An error occurred while parsing contacts data." + Environment.NewLine + "Provider returned: " + response ;
         }
 
         public static string CustomFeedExecutionError(string feedUrl, QueryParameters collection)
@@ -116,7 +116,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string CustomFeedResultParsingError()
         {
-            return "";
+            return "An error occurred while parsing result of feed execution";
         }
 
         public static string UserLoginRedirectionError(string url)
@@ -126,7 +126,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string UserLoginResponseError(PROVIDER_TYPE providerType, QueryParameters collection)
         {
-            return "";
+            return "An error occurred in user login." + Environment.NewLine  + "Provider returned: " + collection.ToString();
         }
 
 

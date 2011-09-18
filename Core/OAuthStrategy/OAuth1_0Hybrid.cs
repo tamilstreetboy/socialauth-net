@@ -63,7 +63,6 @@ namespace Brickred.SocialAuth.NET.Core
                 isSuccess = true;
             logger.Info("OAuth1_0Hybrid Authorization ends..");
             //Authentication Process is through. Inform Consumer.
-            provider.AuthenticationCompleting(isSuccess); // Let Provider Know authentication process is through
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
         }
 
@@ -215,8 +214,8 @@ namespace Brickred.SocialAuth.NET.Core
             }
             catch (Exception ex)
             {
-                logger.Debug(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), oauthParameters));
-                throw new OAuthException(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), oauthParameters));
+                logger.Debug(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), oauthParameters), ex);
+                throw new OAuthException(ErrorMessages.AccessTokenRequestError(request.RequestUri.ToString(), oauthParameters), ex);
             }
         }
 

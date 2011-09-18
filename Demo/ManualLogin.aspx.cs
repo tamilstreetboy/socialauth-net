@@ -12,15 +12,13 @@ namespace Brickred.SocialAuth.NET.Demo
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            SocialAuthUser objUser = new SocialAuthUser();
+            
             
         }
 
         protected void btn_Click(object sender, EventArgs e)
         {
-            //PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((Button)sender).Text.ToUpper());
-            //SocialAuthUser.Connect(selectedProvider, SCOPE_LEVEL.MINIMUN, "Welcome.aspx");
-
+         
             //We need to get user's selected provider enumerator.
             PROVIDER_TYPE selectedProvider = (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((Button)sender).Text.ToUpper());
 

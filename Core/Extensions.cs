@@ -129,8 +129,8 @@ public static class IdentityExtensions
 
     public static Brickred.SocialAuth.NET.Core.BusinessObjects.UserProfile GetProfile(this IIdentity identity)
     {
-        if (SocialAuthUser.CurrentConnection != null)
-            return SocialAuthUser.GetProfile();
+        if (SocialAuthUser.IsLoggedIn())
+            return SocialAuthUser.GetCurrentUser().GetProfile();
         else
             return null;
     }
@@ -138,7 +138,7 @@ public static class IdentityExtensions
     public static List<Brickred.SocialAuth.NET.Core.BusinessObjects.Contact> GetContacts(this IIdentity identity)
     {
         if (SocialAuthUser.IsLoggedIn())
-            return SocialAuthUser.GetContacts();
+            return SocialAuthUser.GetCurrentUser().GetContacts();
         else
             return null;
     }

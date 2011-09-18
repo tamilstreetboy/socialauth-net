@@ -86,7 +86,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override UserProfile GetProfile()
         {
 
-            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
             UserProfile profile = new UserProfile(ProviderType);
             string response = "";
             //If token already has profile for this provider, we can return it to avoid a call
@@ -143,10 +143,10 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
 
             //If only OpenID is used and also there is no scope for contacts, return blank list straight away
-            if (string.IsNullOrEmpty(token.AccessToken) || !(GetScope().Contains("m8/feeds/contacts/")))
+            if (string.IsNullOrEmpty(token.AccessToken) || !(GetScope().ToLower().Contains("/m8/feeds")))
                 return new List<Contact>();
 
             IEnumerable<Contact> contacts;
@@ -182,7 +182,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
         }
         public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
         {

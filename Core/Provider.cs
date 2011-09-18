@@ -36,7 +36,7 @@ using System.Net;
 namespace Brickred.SocialAuth.NET.Core
 {
 
-    public abstract class Provider : IProvider
+    public abstract class Provider : IProvider, IProviderConnect
     {
 
         #region IProvider Members
@@ -158,10 +158,11 @@ namespace Brickred.SocialAuth.NET.Core
 
 
         //******** PROVIDER OPERATIONS
-        public virtual void Connect(PROVIDER_TYPE provider)
+        public virtual void Connect()
         {
             AuthenticationStrategy.Login();
         }
+
         public virtual void Connect(Token connectionToken)
         {
 
@@ -176,9 +177,6 @@ namespace Brickred.SocialAuth.NET.Core
         public Token GetConnectionToken()
         {
             return SessionManager.GetConnectionToken(this.ProviderType);
-        }
-        public virtual void Logout()
-        {
         }
         public virtual void AuthenticationCompleting(bool isSuccess)
         {

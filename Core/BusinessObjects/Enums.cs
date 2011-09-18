@@ -65,6 +65,9 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         RSASHA1
     }
 
+    /// <summary>
+    /// Configuration Option for SocialAuth.NET
+    /// </summary>
     internal enum AUTHENTICATION_OPTION
     {
         SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN, //Everything by socialauth including screen generation
@@ -74,12 +77,20 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         NOT_SUPPORTED //Error
     }
 
+    /// <summary>
+    /// Level of sccope set for provider. 
+    /// DEFAULT => All Features scope 
+    /// CUSTOM=>User specified scope only
+    /// </summary>
     public enum SCOPE_LEVEL
     {
         DEFAULT,
         CUSTOM
     }
 
+    /// <summary>
+    /// Enumeration for GENDER
+    /// </summary>
     public enum GENDER
     {
         NOT_SPECIFIED = 0,

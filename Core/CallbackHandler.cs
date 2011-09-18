@@ -56,6 +56,7 @@ namespace Brickred.SocialAuth.NET.Core
                 string returnUrl = "";
                 if (current.Request["returnUrl"] != null)
                     returnUrl = current.Request["returnUrl"];
+                
                 if (current.Request["p"] != null)
                 {
                     SocialAuthUser.Connect((PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), HttpContext.Current.Request["p"].ToUpper()), returnURL:returnUrl);

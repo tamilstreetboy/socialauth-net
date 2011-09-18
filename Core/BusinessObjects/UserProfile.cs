@@ -55,6 +55,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// Gets last name of user
         /// </summary>
         public string LastName { get; internal set; }
+
+        /// <summary>
+        /// Full Name of User (Firstname + Lastname)
+        /// </summary>
         public string FullName
         {
             get{
@@ -116,7 +120,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         public string DisplayName { get; set; }
 
-
+        /// <summary>
+        /// Best possible option to identify user
+        /// </summary>
+        /// <returns></returns>
         public string GetIdentifier()
         {
             if (!string.IsNullOrEmpty(ID))

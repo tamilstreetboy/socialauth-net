@@ -63,7 +63,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusinessObjects\Album.cs" />
+    <Compile Include="BusinessObjects\Album.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="BusinessObjects\Contact.cs" />
     <Compile Include="BusinessObjects\Enums.cs" />
     <Compile Include="BusinessObjects\QueryParameters.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="Interfaces\IProvider.cs" />
     <Compile Include="Interfaces\IOAuth2_0.cs" />
     <Compile Include="Interfaces\IOAuth1_0a.cs" />
+    <Compile Include="Interfaces\IProviderConnect.cs" />
     <Compile Include="OAuthStrategy\OAuth1_0a.cs" />
     <Compile Include="OAuthStrategy\OAuth1_0Hybrid.cs" />
     <Compile Include="OAuthStrategy\OAuthHelper.cs" />

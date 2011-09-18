@@ -30,19 +30,25 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string DefaultScope { get { return ""; } }
 
 
-
-        public override void AuthenticationCompleting(bool isSuccess)
+        bool isAuthenticated = false;
+        public void OnAuthenticationCompleting(bool isSuccess)
         {
+            isAuthenticated = isSuccess;
             Token token = SocialAuthUser.InProgressToken();
             token.Profile.DisplayName = token.ResponseCollection["screen_name"];
             token.Profile.ID = token.ResponseCollection["user_id"];
         }
 
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler)
+        {
+            AuthenticationStrategy.LoginCallback(responseCollection, OnAuthenticationCompleting);
+            AuthenticationHandler(isAuthenticated);
+        }
 
         //****** OPERATIONS
         public override UserProfile GetProfile()
         {
-            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
             UserProfile profile = new UserProfile(ProviderType);
             string response = "";
             //If token already has profile for this provider, we can return it to avoid a call
@@ -97,7 +103,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             string response = "";
             List<string> sets = new List<string>();
 
-            Token token = SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
             string friendsUrl = string.Format(ContactsEndpoint, token.Profile.Email);
             try
             {
@@ -150,7 +156,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetConnection(this.ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
         }
         public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
         {

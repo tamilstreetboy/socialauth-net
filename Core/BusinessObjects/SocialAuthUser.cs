@@ -52,6 +52,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             this.providerType = providerType;
         }
 
+        public SocialAuthUser() { }
+
 
         //--------- Authentication Methods
         /// <summary>
@@ -59,83 +61,19 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="returnUrl">URL where user should return after login.</param>
         /// <param name="callback">Delegate invoked just before redirecting user after successful login</param>
-        public void Login(string returnUrl = "", Action callback = null)
+        public void Login(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, string returnUrl = "", Action callback = null)
         {
+
+            if (this.providerType == PROVIDER_TYPE.NOT_SPECIFIED && providerType == PROVIDER_TYPE.NOT_SPECIFIED)
+                throw new Exception("Provider not specified. Either pass provider as parameter to Login or pass it in constructor");
             if (callback != null)
                 SessionManager.SetCallback(callback);
+            if (providerType == PROVIDER_TYPE.NOT_SPECIFIED && this.providerType != PROVIDER_TYPE.NOT_SPECIFIED)
+                providerType = this.providerType;
             Connect(providerType, returnUrl);
         }
 
-        /// <summary>
-        /// Connects to a provider (Same as Login())
-        /// </summary>
-        /// <param name="providerType">Provider to which connection has to be established</param>
-        /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
-        public static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
-        {
-
-            try
-            {
-
-                if (IsConnectedWith(providerType))
-                    return;
-
-                AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
-
-                //Set where user should be redirected after successful login
-                if (Utility.GetAuthenticationOption() == AUTHENTICATION_OPTION.CUSTOM_SECURITY_CUSTOM_SCREEN
-                     && string.IsNullOrEmpty(returnURL))
-                    throw new Exception("Please specify return URL");
-                else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-                    returnURL = HttpContext.Current.Request.GetBaseURL() + Utility.GetSocialAuthConfiguration().Authentication.DefaultUrl;
-                else
-                    returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
-                if (HttpContext.Current.Request["ReturnUrl"] != null)
-                    returnURL = HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
-
-
-                SessionManager.InProgressToken = (new Token()
-                {
-                    Provider = providerType,
-                    Domain = HttpContext.Current.Request.GetBaseURL(),
-                    UserReturnURL = returnURL,
-                    SessionGUID = SessionManager.GetUserSessionGUID(),
-                    Profile = new UserProfile() { Provider = providerType }
-
-                });
-                SessionManager.InProgressToken.Profile.Provider = providerType;
-
-                ProviderFactory.GetProvider(providerType).Connect(providerType);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Logs user out of local application (User may still remain logged in at provider)
-        /// </summary>
-        /// <param name="loginUrl">Where should user be redirected after logout. (Only applicable when using custom authentication)</param>
-        /// <param name="callback">Delegate invoked (if specified) just before redirecting user to login page</param>
-        public static void Disconnect(string loginUrl = "", Action callback = null)
-        {
-            //Remove all tokens
-            if (HttpContext.Current.Session != null)
-                SessionManager.RemoveAllConnections();
-
-            //cleanup any cookie
-            HttpContext.Current.Request.Cookies.Remove(FormsAuthentication.FormsCookieName);
-            FormsAuthentication.SignOut();
-
-            //Redirect to login Page
-            if (callback != null)
-                callback.Invoke();
-
-            RedirectToLoginPage(loginUrl);
-
-        }
-
+        
         /// <summary>
         /// Logs user out of local application (User may still remain logged in at provider)
         /// </summary>
@@ -145,6 +83,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         {
             Disconnect(loginUrl, callback);
         }
+
 
         /// <summary>
         /// If callback was specified in Login(), use this method to stop invoking delegate.
@@ -184,15 +123,39 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         public static bool IsLoggedIn() { return SessionManager.IsConnected; }
 
         /// <summary>
-        /// Returns connection for last connected provider
+        /// Get Access Token for Current or specified provider
         /// </summary>
-        public static IProvider CurrentConnection
+        /// <param name="providerType"></param>
+        /// <returns></returns>
+        public string GetAccessToken(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        {
+            if (providerType == PROVIDER_TYPE.NOT_SPECIFIED)
+            {
+                return SessionManager.GetConnectionToken(SessionManager.GetCurrentConnection().ProviderType).AccessToken;
+            }
+            else
+            {
+                if (IsConnectedWith(providerType))
+                    return SessionManager.GetConnectionToken(providerType).AccessToken;
+                else
+                    throw new InvalidSocialAuthConnectionException(providerType);
+            }
+        }
+
+        /// <summary>
+        /// PROVIDER_TYPE for last connected
+        /// </summary>
+        public static PROVIDER_TYPE CurrentProvider
         {
             get
             {
-                return SessionManager.GetCurrentConnection();
+                if (IsLoggedIn())
+                    return SessionManager.GetCurrentConnection().ProviderType;
+                else
+                    return PROVIDER_TYPE.NOT_SPECIFIED;
             }
         }
+
 
         /// <summary>
         /// specifies whether user is connected with specified provider
@@ -205,20 +168,11 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         }
 
         /// <summary>
-        /// Returns Connection Token of last connected provider
-        /// </summary>
-        /// <returns></returns>
-        public static Token GetCurrentConnectionToken()
-        {
-            return SessionManager.GetConnectionToken(SessionManager.GetCurrentConnection().ProviderType);
-        }
-
-        /// <summary>
         /// Returns connection for specified provider. (throws exception is not connected)
         /// </summary>
         /// <param name="provider">Provider Type</param>
         /// <returns></returns>
-        public static IProvider GetConnection(PROVIDER_TYPE provider)
+        public IProvider GetConnection(PROVIDER_TYPE provider)
         {
             return ProviderFactory.GetProvider(provider);
         }
@@ -239,7 +193,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="providerType">Provider Type (Connection should exist else exception is thrown)</param>
         /// <returns></returns>
-        public static UserProfile GetProfile(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        public UserProfile GetProfile(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
         {
             if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
             {
@@ -278,7 +232,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="providerType">Provider Type (Connection should exist else exception is thrown)</param>
         /// <returns></returns>
-        public static List<Contact> GetContacts(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        public List<Contact> GetContacts(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
         {
             if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
             {
@@ -307,13 +261,13 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             }
         }
 
-        /// <summary>
-        /// Execute data feed with current or specified provider
-        /// </summary>
-        /// <param name="feedUrl"></param>
-        /// <param name="transportMethod"></param>
-        /// <returns></returns>
-        public static WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        ///// <summary>
+        ///// Execute data feed with current or specified provider
+        ///// </summary>
+        ///// <param name="feedUrl"></param>
+        ///// <param name="transportMethod"></param>
+        ///// <returns></returns>
+        public WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
         {
             if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
             {
@@ -321,7 +275,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 if (SessionManager.IsConnectedWith(providerType))
                 {
                     IProvider provider = ProviderFactory.GetProvider(providerType);
-                    return provider.AuthenticationStrategy.ExecuteFeed(feedUrl, provider, GetConnection(providerType).GetConnectionToken(), transportMethod);
+                    return provider.ExecuteFeed(feedUrl, transportMethod);
                 }
                 else
                 {
@@ -347,19 +301,110 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
 
         //------------ Future Methods
-        //public static void Disconnect(PROVIDER_TYPE providerType);
-        //public static void RefreshToken()
-        //public static void Connect(Access Token)
-        //public static void SwitchConnection(PROVIDER_TYPE)
+        //internal static void Disconnect(PROVIDER_TYPE providerType);
+        //internal static void RefreshToken()
+        //internal static void Connect(Access Token)
+        //internal static void SwitchConnection(PROVIDER_TYPE)
         // & more....
 
         #endregion
 
         #region InternalStuff
 
-        private SocialAuthUser() { }
+
         PROVIDER_TYPE providerType { get; set; }
         internal Token contextToken { get; set; }
+
+        /// <summary>
+        /// Connects to a provider (Same as Login())
+        /// </summary>
+        /// <param name="providerType">Provider to which connection has to be established</param>
+        /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
+        internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
+        {
+
+            try
+            {
+
+                if (IsConnectedWith(providerType))
+                {
+                    if (!string.IsNullOrEmpty(returnURL))
+                        SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + returnURL);
+                    return;
+                }
+                AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
+
+                //Set where user should be redirected after successful login
+                if (Utility.GetAuthenticationOption() == AUTHENTICATION_OPTION.CUSTOM_SECURITY_CUSTOM_SCREEN
+                     && string.IsNullOrEmpty(returnURL))
+                    throw new Exception("Please specify return URL");
+                else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
+                    returnURL = HttpContext.Current.Request.GetBaseURL() + Utility.GetSocialAuthConfiguration().Authentication.DefaultUrl;
+                else
+                    returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
+                if (HttpContext.Current.Request["ReturnUrl"] != null)
+                {
+                    string ret = HttpContext.Current.Request["ReturnUrl"];
+                    if (!ret.ToLower().StartsWith("http"))
+                        returnURL = HttpContext.Current.Request.GetBaseURL() + HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
+                    else
+                        returnURL = ret;
+                }
+
+                SessionManager.InProgressToken = (new Token()
+                {
+                    Provider = providerType,
+                    Domain = HttpContext.Current.Request.GetBaseURL(),
+                    UserReturnURL = returnURL,
+                    SessionGUID = SessionManager.GetUserSessionGUID(),
+                    Profile = new UserProfile() { Provider = providerType }
+
+                });
+                SessionManager.InProgressToken.Profile.Provider = providerType;
+
+                ((IProviderConnect)ProviderFactory.GetProvider(providerType)).Connect();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Returns connection for last connected provider
+        /// </summary>
+        internal static IProvider CurrentConnection
+        {
+            get
+            {
+                return SessionManager.GetCurrentConnection();
+            }
+        }
+
+
+        /// <summary>
+        /// Logs user out of local application (User may still remain logged in at provider)
+        /// </summary>
+        /// <param name="loginUrl">Where should user be redirected after logout. (Only applicable when using custom authentication)</param>
+        /// <param name="callback">Delegate invoked (if specified) just before redirecting user to login page</param>
+        internal static void Disconnect(string loginUrl = "", Action callback = null)
+        {
+            //Remove all tokens
+            if (HttpContext.Current.Session != null)
+                SessionManager.RemoveAllConnections();
+
+            //cleanup any cookie
+            HttpContext.Current.Request.Cookies.Remove(FormsAuthentication.FormsCookieName);
+            FormsAuthentication.SignOut();
+
+            //Redirect to login Page
+            if (callback != null)
+                callback.Invoke();
+
+            RedirectToLoginPage(loginUrl);
+
+        }
+
 
         /// <summary>
         /// Returns a GUID to identify current user
@@ -492,14 +537,26 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         {
             try
             {
-                ProviderFactory.GetProvider(InProgressToken().Provider).LoginCallback(Utility.GetQuerystringParameters(response),
+                ((IProviderConnect)ProviderFactory.GetProvider(InProgressToken().Provider)).LoginCallback(Utility.GetQuerystringParameters(response),
                         SocialAuthUser.OnAuthneticationProcessCompleted);
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
 
+        }
+
+        /// <summary>
+        /// Returns Connection Token of last connected provider
+        /// </summary>
+        /// <returns></returns>
+        internal static Token GetCurrentConnectionToken()
+        {
+            if (SessionManager.IsConnected)
+                return SessionManager.GetConnectionToken(SessionManager.GetCurrentConnection().ProviderType);
+            else
+                return null;
         }
 
         #endregion

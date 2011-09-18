@@ -38,45 +38,37 @@ namespace Brickred.SocialAuth.NET.Core
 
         //******** PROVIDER IN CONTEXT
         PROVIDER_TYPE ProviderType { get; }
-        
-        //******** AUTHENTICATION STRATEGY
-        OAuthStrategyBase AuthenticationStrategy { get; }
-        
+
+
         //******** END POINTS
         string OpenIdDiscoveryEndpoint { get; }
-        string AssocHandleEndpoint { get;  }
-        string RequestTokenEndpoint { get;  }
+        string AssocHandleEndpoint { get; }
+        string RequestTokenEndpoint { get; }
         string UserLoginEndpoint { get; set; }
-        string AccessTokenEndpoint { get;  }
-        string ProfileEndpoint { get;  }
-        string ContactsEndpoint { get;  }
+        string AccessTokenEndpoint { get; }
+        string ProfileEndpoint { get; }
+        string ContactsEndpoint { get; }
         string ProfilePictureEndpoint { get; }
 
         //******** PROVIDER PROPERTIES
         string Consumerkey { get; set; }
         string Consumersecret { get; set; }
-        SIGNATURE_TYPE SignatureMethod { get;  }
-        TRANSPORT_METHOD TransportName { get;  }
+        SIGNATURE_TYPE SignatureMethod { get; }
+        TRANSPORT_METHOD TransportName { get; }
 
 
         //******** SCOPE MANAGEMENT
         string DefaultScope { get; } //What are default scopes covering all features
         string AdditionalScopes { get; set; } // Any additional scopes? Automatically set!
-        bool IsProfileSupported { get;  }
         SCOPE_LEVEL ScopeLevel { get; set; }
-        string ScopeDelimeter { get; }
         bool IsScopeDefinedAtProvider { get; }
         string GetScope();
-      
-        //******** PROVIDER OPERATIONS
-        void Connect(PROVIDER_TYPE provider); //Connect to a provider 1st time
-        void Connect(Token accessToken); //Reload a persisted access token
-        void AuthenticationCompleting(bool isSuccess);
-        void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler);// used internally to handle external login by user
+
+        
         UserProfile GetProfile(); //Data Feed Access of last connected provider
         List<Contact> GetContacts(); //Data Feed Access of last connected provider
         Token GetConnectionToken();
         WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
-        void Logout();
+        //void Logout();
     }
 }
