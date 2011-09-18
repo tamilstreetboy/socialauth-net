@@ -48,12 +48,12 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
             );
     }
 
-    private HtmlGenericControl constructControl(Provider provider)
+    private HtmlGenericControl constructControl(IProvider provider)
     {
 
         string iconPath = Utility.GetSocialAuthConfiguration().IconFolder.Path + provider.ProviderType.ToString() + ".png";
         bool isconnected = SocialAuthUser.IsConnectedWith(provider.ProviderType);
-        bool iscurrent = (SocialAuthUser.CurrentConnection) != null ? (SocialAuthUser.CurrentConnection.ProviderType == provider.ProviderType) : false;
+        bool iscurrent = (SocialAuthUser.CurrentProvider == provider.ProviderType);
         HtmlGenericControl providerDiv = new HtmlGenericControl("div");
         providerDiv.Attributes.Add("class", "provider");
         ImageButton imgB = new ImageButton()
@@ -79,8 +79,8 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
 
     private void imgB_Command(object sender, EventArgs e)
     {
-        SocialAuthUser.Connect(
-            (PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((CommandEventArgs)e).CommandArgument.ToString()), DefaultURL);
+
+        SocialAuthUser.GetCurrentUser().Login((PROVIDER_TYPE)Enum.Parse(typeof(PROVIDER_TYPE), ((CommandEventArgs)e).CommandArgument.ToString()), DefaultURL);
 
     }
 }

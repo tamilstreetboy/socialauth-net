@@ -33,7 +33,7 @@ namespace Brickred.SocialAuth.NET.Demo
 
 
             foreach (var provider in providers)
-                profiles.Add(SocialAuthUser.GetProfile(provider));
+                profiles.Add(SocialAuthUser.GetCurrentUser().GetProfile(provider));
 
             foreach (UserProfile p in profiles)
             {
@@ -170,7 +170,7 @@ namespace Brickred.SocialAuth.NET.Demo
 
 
             foreach (var provider in providers)
-                profiles.Add(SocialAuthUser.GetProfile(provider));
+                profiles.Add(SocialAuthUser.GetCurrentUser().GetProfile(provider));
 
             Table tbl = new Table() { CellSpacing = 0 };
             //Header Row

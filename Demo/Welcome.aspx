@@ -53,7 +53,7 @@
     </div>
     <div style="width: 100%; text-align: right">
         <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click">Logout</asp:LinkButton>
-        <a href="Default.aspx">Back</a>
+        
     </div>
     <h3>
         Detailed profile of current connection:</h3>
@@ -104,7 +104,19 @@
                 User.Identity.GetProvider().ID;
             </td>
             <td>
-                <%=ID %>
+                <%=Pid %>
+            </td>
+        </tr>
+        <tr>
+            <td class="rowlabel">
+                Access Token
+            </td>
+            <td class="code">
+                SocialAuthUser.GetCurrentUser().AccessToken
+                
+            </td>
+            <td>
+                <%=AccessToken %>
             </td>
         </tr>
         <tr>

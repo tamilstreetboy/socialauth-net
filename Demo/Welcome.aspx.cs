@@ -37,7 +37,7 @@ using Brickred.SocialAuth.NET.Core;
 public partial class Welcome : System.Web.UI.Page
 {
     public string Provider;
-    public string ID;
+    public string Pid;
     public string Identifier;
     public string Username;
     public string Displayname;
@@ -53,6 +53,7 @@ public partial class Welcome : System.Web.UI.Page
     public string Language;
     public string ContactsCount;
     public bool IsSTSaware;
+    public string AccessToken;
 
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -71,7 +72,7 @@ public partial class Welcome : System.Web.UI.Page
         {
             IsSTSaware = HttpContext.Current.ApplicationInstance.IsSTSaware();
             Provider = User.Identity.GetProvider();
-            ID = User.Identity.GetProfile().ID;
+            Pid = User.Identity.GetProfile().ID;
             Identifier = User.Identity.GetProfile().GetIdentifier();
             Username = User.Identity.GetProfile().Username;
             Displayname = User.Identity.GetProfile().DisplayName;
@@ -85,7 +86,7 @@ public partial class Welcome : System.Web.UI.Page
             ProfilePicture = User.Identity.GetProfile().ProfilePictureURL;
             Country = User.Identity.GetProfile().Country;
             Language = User.Identity.GetProfile().Language;
-            
+            AccessToken = SocialAuthUser.GetCurrentUser().GetAccessToken();
             bool IsAlternate = false;
             User.Identity.GetContacts().ForEach(
                 x =>

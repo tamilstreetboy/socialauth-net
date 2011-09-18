@@ -59,11 +59,14 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CallBackDemo.aspx" />
     <Content Include="CustomFeedDemo.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="Demo.sln" />
     <Content Include="Global.asax" />
+    <Content Include="images\hybrid_small.png" />
+    <Content Include="images\notavailable.png" />
+    <Content Include="images\OAuth2_small.png" />
+    <Content Include="images\OAuth_small.png" />
     <Content Include="images\SocialAuthIcons\facebook.jpg" />
     <Content Include="images\SocialAuthIcons\google.jpg" />
     <Content Include="images\SocialAuthIcons\msn.jpg" />
@@ -83,13 +86,6 @@
     <Content Include="Welcome.aspx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CallBackDemo.aspx.cs">
-      <DependentUpon>CallBackDemo.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="CallBackDemo.aspx.designer.cs">
-      <DependentUpon>CallBackDemo.aspx</DependentUpon>
-    </Compile>
     <Compile Include="CustomFeedDemo.aspx.cs">
       <DependentUpon>CustomFeedDemo.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
