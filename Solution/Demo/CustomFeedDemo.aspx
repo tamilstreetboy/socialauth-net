@@ -18,10 +18,10 @@
     Also, add an additional scope "user_photos" to Web.config:<br /><br />
     <div style="background:#EEEEF7;padding:10px 0px 10px 0px">
     <code>
-    &lt;add WrapperName="FacebookWrapper" ConsumerKey="152190004803645" ConsumerSecret="64c94bd02180b0ade85889b44b2ba7c4" AdditionalScopes="user_photos"/&gt;
+    &lt;add WrapperName="FacebookWrapper" ConsumerKey="152190004803645" ConsumerSecret="64c94bd02180b0ade85889b44b2ba7c4" <b>AdditionalScopes="user_photos"</b>/&gt;
     </code>
     </div>
-        <div style="width:100%;text-align:right"> <a href="Default.aspx">Back</a></div>
+        
         <asp:Button ID="btnCustomFeed" runat="server" OnClick="btnCustomFeed_Click" Text="Execute Custom Feed" /><br />
         <asp:Label ID="lblJson" runat="server" class="largecontent" /><br />
         <asp:Label ID="lblAlbum" runat="server" />

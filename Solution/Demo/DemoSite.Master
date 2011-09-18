@@ -103,11 +103,11 @@
 <body>
     <form id="form2" runat="server">
     <div class="header">
-        <div style="font-size: 20px; float: left; width: 15%; font-weight: bold">
-            SocialAuth 2.0</div>
+        <div style="font-size: 20px; float: left; width: 15%; font-weight: bold;margin-top:15px">
+            <center>SocialAuth 2.0</center></div>
         <div style="width: 85%; float: left;">
             <div style="float: left;">
-                <uc1:SocialAuthLogin ID="SocialAuthLogin1" runat="server" Width="500px" Height="60px" BackgroundColor="#EEEEE7" />
+                <uc1:SocialAuthLogin ID="SocialAuthLogin1" runat="server" Width="490px" Height="60px" BackgroundColor="purple" />
             </div>
             <span id="logoutspan" runat="server" style="float: right; vertical-align: top; height: 50px;">
              
@@ -126,7 +126,7 @@
         </ul>
         <br />
         <center>
-    <img src="images/brickred-logo.jpg" alt="Passionate about technology" /></center>
+    <a href="http://www.brickred.com" target="_blank"><img src="images/brickred-logo.jpg" alt="Passionate about technology" border="0" /></a></center>
     </div>
     <div class="content" id="divContent" runat="server">
         <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">

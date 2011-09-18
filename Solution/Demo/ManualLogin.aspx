@@ -5,12 +5,12 @@
 <asp:Content ContentPlaceHolderID="head" runat="server">
     <script type="text/javascript">
         function Login(providerName) {
-            window.location.href = 'login.sauth?p=' + providerName
+            window.location.href = 'socialauth/login.sauth?returnUrl=ManualLogin.aspx&p=' + providerName 
         }
 
     </script>
     <style type="text/css">
-        TD
+        .tdControl
         {
             background-color: Purple;
             color: White;
@@ -18,11 +18,11 @@
             text-align: center;
         }
         
-        TD:Hover
+         .tdControl :hover
         {
             background-color: Yellow;
             color: black;
-            cursor: hand;
+            cursor:hand;
         }
     </style>
 </asp:Content>
@@ -47,19 +47,19 @@
         <table border="0" style="background: orange; font-size: 12px;"
             cellpadding="5" cellspacing="2">
             <tr>
-                <td onclick="Login('facebook')">
+                <td class="tdControl" onclick="Login('facebook')">
                     Facebook
                 </td>
-                <td onclick="Login('google')">
+                <td class="tdControl"  onclick="Login('google')">
                     Google
                 </td>
-                <td onclick="Login('yahoo')">
+                <td  class="tdControl" onclick="Login('yahoo')">
                     Yahoo
                 </td>
-                <td onclick="Login('msn')">
+                <td  class="tdControl" onclick="Login('msn')">
                     MSN
                 </td>
-                <td onclick="Login('twitter')">
+                <td  class="tdControl" onclick="Login('twitter')">
                     Twitter
                 </td>
             </tr>

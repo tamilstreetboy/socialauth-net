@@ -24,10 +24,10 @@ namespace Brickred.SocialAuth.NET.Demo
 
         protected void btnCustomFeed_Click(object sender, EventArgs e)
         {
-            if (SocialAuthUser.IsLoggedIn())
+            if (SocialAuthUser.IsConnectedWith(PROVIDER_TYPE.FACEBOOK))
             {
 
-                WebResponse wr = SocialAuthUser.ExecuteFeed("https://graph.facebook.com/me/albums", TRANSPORT_METHOD.GET, PROVIDER_TYPE.FACEBOOK);
+                WebResponse wr = SocialAuthUser.GetCurrentUser().ExecuteFeed("https://graph.facebook.com/me/albums", TRANSPORT_METHOD.GET, PROVIDER_TYPE.FACEBOOK);
                 StreamReader reader = new StreamReader(wr.GetResponseStream());
                 string albumJson = reader.ReadToEnd();
                 JObject jsonObject = JObject.Parse(albumJson);
@@ -55,7 +55,7 @@ namespace Brickred.SocialAuth.NET.Demo
 
                 }
 
-                lblJson.Text = albumJson;
+                lblJson.Text = "Executed custom feed: <b>https://graph.facebook.com/me/albums</b><br>Result:<br>" + albumJson;
             }
         }
     }

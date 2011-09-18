@@ -12,6 +12,7 @@ namespace Brickred.SocialAuth.NET.Demo
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            SocialAuthUser objUser = new SocialAuthUser();
             
         }
 
