@@ -64,7 +64,7 @@ public partial class Welcome : System.Web.UI.Page
 
 
         foreach (PROVIDER_TYPE p in SocialAuthUser.GetConnectedProviders())
-            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier() + " using email ID:" + SocialAuthUser.GetCurrentUser().GetProfile().Email + "</b>");
+            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier()  + "</b>");
             
 
         
