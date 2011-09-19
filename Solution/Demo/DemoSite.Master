@@ -25,10 +25,7 @@
         
         .leftNav a
         {
-            
-            
             font-size: 12px;
-            
             text-decoration: none;
         }
         
@@ -54,8 +51,9 @@
         
         .header
         {
-            background-color:#EEEEE7;
+            background: #EEEEE7;
             width: 100%;
+            height:63px;
         }
         TH
         {
@@ -104,7 +102,7 @@
     <form id="form2" runat="server">
     <div class="header">
         <div style="font-size: 20px; float: left; width: 15%; font-weight: bold;margin-top:15px">
-            <center>SocialAuth 2.0</center></div>
+            <center><a href="http://code.google.com/p/socialauth-net/">SocialAuth 2.0</a></center></div>
         <div style="width: 85%; float: left;">
             <div style="float: left;">
                 <uc1:SocialAuthLogin ID="SocialAuthLogin1" runat="server" Width="490px" Height="60px" BackgroundColor="purple" />
@@ -118,7 +116,7 @@
     </div>
     <div class="leftNav">
         <ul>
-            <li><a href="Default.aspx">Home</a></li>
+            <li><a href="Default.aspx">Demo Home</a></li>
             <li><a href="welcome.aspx">Detailed Profile & Contacts of Current Connection</a></li>
             <li><a href="ManualLogin.aspx">Supported Controls Demo</a></li>
             <li><a href="CustomFeedDemo.aspx">Custom Feeds Demo</a></li>
