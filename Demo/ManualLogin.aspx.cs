@@ -26,7 +26,7 @@ namespace Brickred.SocialAuth.NET.Demo
             SocialAuthUser objUser = new SocialAuthUser(selectedProvider);
 
             //Call Login
-            objUser.Login();
+            objUser.Login(returnUrl:"ManualLogin.aspx");
             //Login method also accepts a parameter for URL to which user should be redirected after login. If not specified, 
             //automatically defaultUrl as set in Web.Config will be picked for redirection.
         }

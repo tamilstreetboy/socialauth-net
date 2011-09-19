@@ -73,7 +73,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             Connect(providerType, returnUrl);
         }
 
-        
+
         /// <summary>
         /// Logs user out of local application (User may still remain logged in at provider)
         /// </summary>
@@ -322,16 +322,21 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
         internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
         {
+            returnURL = returnURL ?? "";
+            if (!returnURL.ToLower().StartsWith("http"))
+                returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
 
             try
             {
 
+                //User is already connected. return or redirect
                 if (IsConnectedWith(providerType))
                 {
                     if (!string.IsNullOrEmpty(returnURL))
-                        SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + returnURL);
+                        SocialAuthUser.Redirect(returnURL);
                     return;
                 }
+
                 AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
 
                 //Set where user should be redirected after successful login
@@ -339,9 +344,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                      && string.IsNullOrEmpty(returnURL))
                     throw new Exception("Please specify return URL");
                 else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN || option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-                    returnURL = HttpContext.Current.Request.GetBaseURL() + Utility.GetSocialAuthConfiguration().Authentication.DefaultUrl;
-                else
-                    returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
+                {   //User has not specified and explicit return url. redirect to url from configuration
+                    if (string.IsNullOrEmpty(returnURL))
+                        returnURL = HttpContext.Current.Request.GetBaseURL() + Utility.GetSocialAuthConfiguration().Authentication.DefaultUrl;
+                }
+
+                //ReturnURL in request takes all priority
                 if (HttpContext.Current.Request["ReturnUrl"] != null)
                 {
                     string ret = HttpContext.Current.Request["ReturnUrl"];
