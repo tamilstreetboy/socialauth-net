@@ -88,7 +88,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// <summary>
         /// If callback was specified in Login(), use this method to stop invoking delegate.
         /// </summary>
-        public static void ResetCallback()
+        public void ResetCallback()
         {
             SessionManager.SetCallback(null);
         }
@@ -515,7 +515,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
             //* If AuthenticationMode = SocialAuth and LoginUrl == empty, redirect to loginform.sauth
             if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN)
-                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + "loginForm.sauth" + redirectTo);
+                SocialAuthUser.Redirect(HttpContext.Current.Request.GetBaseURL() + "socialauth/loginForm.sauth" + redirectTo);
 
             //* If AuthenticationMode = SocialAuth and LoginUrl <> empty, redirect to LoginUrl
             else if (option == AUTHENTICATION_OPTION.SOCIALAUTH_SECURITY_CUSTOM_SCREEN)

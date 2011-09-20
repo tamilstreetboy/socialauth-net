@@ -127,7 +127,7 @@ namespace Brickred.SocialAuth.NET.Core
                 string currentUrl = HttpContext.Current.Request.Url.AbsolutePath;
                 string loginurl = Utility.GetSocialAuthConfiguration().Authentication.LoginUrl;
                 loginurl = string.IsNullOrEmpty(loginurl) ? "socialauth/loginform.sauth" : loginurl;
-                if (currentUrl.EndsWith(loginurl))
+                if (currentUrl.ToLower().EndsWith(loginurl.ToLower()))
                     return;
 
                 //If Url is pointing to a .aspx page, authorize it!
