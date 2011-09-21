@@ -37,9 +37,6 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetOpenAuth">
-      <HintPath>C:\Users\daggarwal\Downloads\DotNetOpenAuth-3.4.6.10357\DotNetOpenAuth-3.4.6.10357\Bin\DotNetOpenAuth.dll</HintPath>
-    </Reference>
     <Reference Include="log4net">
       <HintPath>C:\Users\daggarwal\Downloads\FXGS.Solution\FXGS.Solution\FXGS.DCP\FXGS.DCP.Logger\bin\Debug\log4net.dll</HintPath>
     </Reference>
