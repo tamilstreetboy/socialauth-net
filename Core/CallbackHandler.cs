@@ -70,7 +70,7 @@ namespace Brickred.SocialAuth.NET.Core
                 HttpContext.Current.Response.End();
             }
 
-            //call to process response recevied from Providers
+            //call to process response received from Providers
             else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("validate.sauth"))
             {
                 SocialAuthUser.LoginCallback(HttpContext.Current.Request.Url.ToString());
