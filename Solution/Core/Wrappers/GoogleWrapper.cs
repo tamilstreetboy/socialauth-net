@@ -54,8 +54,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             get
             {
                 OAuth1_0Hybrid oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
-                //[OAUTH 1.0a] oauth1_0astrategy.BeforeRequestingRequestToken += (x) => { x.Add(new QueryParameter("scope", GetScope())); };
-                oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider += (x) => { x.Add(new QueryParameter("openid.ext2.scope", GetScope())); };
+                oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider += (x) => { x.Add(new QueryParameter("openid.oauth.scope", GetScope())); };
                 return oauth1_0HybridStrategy;
             }
         }
@@ -78,7 +77,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
         }
 
-        public override string DefaultScope { get { return "https://www-opensocial.googleusercontent.com/api/people/ http://www.google.com/m8/feeds/"; } }
+        public override string DefaultScope { get { return "https://www-opensocial.googleusercontent.com/api/people/"; } }
 
 
 
