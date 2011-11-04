@@ -323,7 +323,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
         {
             returnURL = returnURL ?? "";
-            if (!returnURL.ToLower().StartsWith("http"))
+            if (!returnURL.ToLower().StartsWith("http") && returnURL.Length > 0)
                 returnURL = HttpContext.Current.Request.GetBaseURL() + returnURL;
 
             try
