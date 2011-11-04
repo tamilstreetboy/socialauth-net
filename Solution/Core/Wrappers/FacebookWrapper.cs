@@ -50,7 +50,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string ProfileEndpoint { get { return "https://graph.facebook.com/me"; } }
 
         public override string ContactsEndpoint { get { return "https://graph.facebook.com/me/friends"; } }
-        public override string ProfilePictureEndpoint { get { return "https://graph.facebook.com/me/picture?type=large"; } }
+        public override string ProfilePictureEndpoint { get { return "https://graph.facebook.com/me/picture"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
@@ -107,7 +107,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 }
                 token.Profile.GenderType = Utility.ParseGender(jsonObject.Get("gender"));
                 //get profile picture
-                if (!string.IsNullOrEmpty(ProfileEndpoint))
+                if (!string.IsNullOrEmpty(ProfilePictureEndpoint))
                 {
                     token.Profile.ProfilePictureURL = strategy.ExecuteFeed(ProfilePictureEndpoint, this, token, TRANSPORT_METHOD.GET).ResponseUri.AbsoluteUri.Replace("\"", "");
                 }
