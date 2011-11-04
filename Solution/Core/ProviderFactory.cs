@@ -52,7 +52,7 @@ namespace Brickred.SocialAuth.NET.Core
         }
 
         //Returns a provider object for specified PROVIDER_TYPE
-        internal static IProvider GetProvider(PROVIDER_TYPE requestedProvider)
+        public static IProvider GetProvider(PROVIDER_TYPE requestedProvider)
         {
             //Provider's list not initialized yet
             if (availableProviders == null)
