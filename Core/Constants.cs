@@ -72,7 +72,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string RequestTokenResponseInvalid(QueryParameters collection)
         {
-            return "Invalid Request Token recevied." + Environment.NewLine + "Provider returned: " + collection.ToString();
+            return "Invalid Request Token received." + Environment.NewLine + "Provider returned: " + collection.ToString();
         }
 
         public static string AccessTokenRequestError(string url, QueryParameters collection)
@@ -86,7 +86,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string AccessTokenResponseInvalid(QueryParameters collection)
         {
-            return "Invalid Access Token recevied." + Environment.NewLine + "Provider returned: " + collection.ToString();
+            return "Invalid Access Token received." + Environment.NewLine + "Provider returned: " + collection.ToString();
         }
 
         public static string UserDeniedAccess(PROVIDER_TYPE providerType, QueryParameters collection)

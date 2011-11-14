@@ -25,10 +25,11 @@ THE SOFTWARE.
 using System.Collections.Generic;
 using System.Text;
 using System.Collections;
+using System;
 
 namespace Brickred.SocialAuth.NET.Core
 {
-
+   [Serializable]
     public class QueryParameter
     {
         private string key = null;
@@ -51,7 +52,7 @@ namespace Brickred.SocialAuth.NET.Core
             set { this.value = value; }
         }
     }
-
+    
     /// <summary>
     /// Comparer class used to perform the sorting of the query parameters
     /// </summary>
@@ -75,6 +76,7 @@ namespace Brickred.SocialAuth.NET.Core
         #endregion
     }
 
+    [Serializable]
     public class QueryParameters : ICollection<QueryParameter>
     {
         List<QueryParameter> queryparameters = new List<QueryParameter>();

@@ -7,5 +7,7 @@
             Please select one or more provider(s) from above!</h3> 
             <i><small>To enable automatic UI, Set LoginURL="" in Web.Config.</small></i>
 <div id="divContent" runat="server"></div>
-    
+    <br /><br />
+
+   
 </asp:Content>

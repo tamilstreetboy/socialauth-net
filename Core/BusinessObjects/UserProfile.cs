@@ -29,9 +29,11 @@ using System.Text;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
+
     /// <summary>
     /// Contains information about context user
     /// </summary>
+    [Serializable]
     public class UserProfile
     {
         public UserProfile()

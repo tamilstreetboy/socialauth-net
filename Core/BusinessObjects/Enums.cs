@@ -78,7 +78,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     }
 
     /// <summary>
-    /// Level of sccope set for provider. 
+    /// Level of scope set for provider. 
     /// DEFAULT => All Features scope 
     /// CUSTOM=>User specified scope only
     /// </summary>

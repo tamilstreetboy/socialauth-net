@@ -52,7 +52,7 @@ namespace Brickred.SocialAuth.NET.Core
         private void context_AuthenticateRequest(object sender, EventArgs e)
         {
             ///*************************
-            // * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
+            // * If Request is of type .sauth OR any type as specified in Config, allow and skip.
             // * If Request is of LoginURL, skip
             // * OTHERWISE:::::::::::::::::::::
             // * <<<<IF USER IS NOT LOGGED IN>>>
@@ -61,7 +61,7 @@ namespace Brickred.SocialAuth.NET.Core
             // * If AuthenticationOption = FormsAuthentication
             // *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
             // * If AuthenticationOption = Everything Custom
-            // *          Don't do anything. User will put checking code on everypage himself.
+            // *          Don't do anything. User will put checking code on every page himself.
             // * **********************/
 
             //AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
@@ -101,7 +101,7 @@ namespace Brickred.SocialAuth.NET.Core
         protected void context_PreRequestHandlerExecute(object sender, EventArgs e)
         {
             /*************************
-     * If Request is of type .sauth OR any type as specified in Config, alloow and skip.
+     * If Request is of type .sauth OR any type as specified in Config, allow and skip.
      * If Request is of LoginURL, skip
      * OTHERWISE:::::::::::::::::::::
      * <<<<IF USER IS NOT LOGGED IN>>>
@@ -110,7 +110,7 @@ namespace Brickred.SocialAuth.NET.Core
      * If AuthenticationOption = FormsAuthentication
      *          Don't do anything. Let .NET handle it as per user's setting in Web.Config
      * If AuthenticationOption = Everything Custom
-     *          Don't do anything. User will put checking code on everypage himself.
+     *          Don't do anything. User will put checking code on every page himself.
      * **********************/
 
             AUTHENTICATION_OPTION option = Utility.GetAuthenticationOption();
@@ -143,17 +143,17 @@ namespace Brickred.SocialAuth.NET.Core
                     SocialAuthUser.RedirectToLoginPage();
                 }
 
+                if (HttpContext.Current.Session != null)
+                    if (SocialAuthUser.IsLoggedIn() && HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName] == null)
+                    {
+                        FormsAuthenticationTicket ticket =
+                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
 
-                if (SocialAuthUser.IsLoggedIn() && HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName] == null)
-                {
-                    FormsAuthenticationTicket ticket =
-                new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
+                        string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
+                        cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
+                        HttpContext.Current.Response.Cookies.Add(cookie);
 
-                    string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
-                    cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
-                    HttpContext.Current.Response.Cookies.Add(cookie);
-
-                }
+                    }
             }
 
             //Often, Forms Cookie persist even where there is no connection. To avoid that!!
