@@ -56,6 +56,7 @@
         1. Generally token received from providers are short lived. In order to use this feature, request for a long lived token. For example, Facebook requires "offline_access" scope to be added for a long lived token. Application will throw an exception when trying to execute a data feed with an expired token.<br />
         2. When storing tokens, it is a good practice to encrypt them before saving<br />
         3. Remember, using token and logging in user automatically is definitely not a good approach for site with sensitive data.
-        4. SocialAuth.NET doesn't automatically refresh access token if it has expired. You can check ExpiresOn property to check when does the token expires and then call LoadToken accordingly.
+        4. SocialAuth.NET doesn't automatically refresh access token if it has expired. You can check ExpiresOn property to check when does the token expires and then call LoadToken accordingly. However, SocialAuth.NET too checks this and throws "Token has expired!" error. As a note, some providers do not provide expiry information. This usually happens when token is long lived. In such cases ExpiresOn property will contain DateTime.MinValue.
+        
     </div>
 </asp:Content>
