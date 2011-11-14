@@ -121,8 +121,8 @@
             <li><a href="ManualLogin.aspx">Supported Controls Demo</a></li>
             <li><a href="CustomFeedDemo.aspx">Custom Feeds Demo</a></li>
             <li><a href="Protocols.aspx">Supported Protocols</a></li>
-            <li><a href="GetToken.aspx">Download Token</a></li>
-            <li><a href="postdemo.aspx">Custom Post Demo</a></li>
+            <li><a href="GetToken.aspx">Save/Load Token</a></li>
+            <li><a href="postdemo.aspx">Tweets Post Demo</a></li>
         </ul>
         <br />
         <center>
