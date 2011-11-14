@@ -143,7 +143,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     contacts.Add(new Contact()
                     {
                         ID = x.SelectToken("id").ToString(),
-                        Name = x.SelectToken("first_name").ToString().Replace("\"","") + " " + x.SelectToken("last_name").ToString().Replace("\"","")
+                        Name = getName(x)
                     });
                 }
                     );
@@ -156,6 +156,24 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 throw new DataParsingException(ErrorMessages.ContactsParsingError(response), ex);
             }
         }
+
+        string getName(JToken contactJT)
+        {
+            string firstName = "";
+            string lastName = "";
+            if(contactJT.SelectToken("first_name")!=null)
+                firstName =  contactJT.SelectToken("first_name").ToString().Replace("\"","");
+
+            if (contactJT.SelectToken("last_name") != null)
+                lastName = " " + contactJT.SelectToken("last_name").ToString().Replace("\"", "");
+            
+            if(firstName=="" && lastName=="")
+                return  "";
+            else if(firstName=="" & lastName!="")
+                return lastName.Substring(1);
+            else return firstName + lastName;
+        }
+
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
