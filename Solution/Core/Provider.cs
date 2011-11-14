@@ -174,6 +174,15 @@ namespace Brickred.SocialAuth.NET.Core
         public abstract UserProfile GetProfile();
         public abstract List<Contact> GetContacts();
         public abstract WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
+
+        public virtual WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null)
+        {
+            if (AuthenticationStrategy != null)
+                return AuthenticationStrategy.ExecuteFeed(feedURL, (IProvider)this, GetConnectionToken(), transportMethod, content, headers);
+            else
+                throw new NotImplementedException("This method is not implemented!;");
+        }
+
         public Token GetConnectionToken()
         {
             return SessionManager.GetConnectionToken(this.ProviderType);

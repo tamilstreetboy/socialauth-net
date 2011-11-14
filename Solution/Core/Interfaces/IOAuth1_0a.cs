@@ -34,7 +34,7 @@ namespace Brickred.SocialAuth.NET.Core
 {
     internal interface IOAuth1_0a
     {
-        
+
         //Communication Methods (Private)
         event Action<QueryParameters> BeforeRequestingRequestToken; //HOOK
         void RequestForRequestToken(); //(A)
@@ -46,7 +46,6 @@ namespace Brickred.SocialAuth.NET.Core
         void RequestForAccessToken(); //(E)
         void HandleAccessTokenResponse(QueryParameters response); //(F)
         WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
-
     }
 
 }

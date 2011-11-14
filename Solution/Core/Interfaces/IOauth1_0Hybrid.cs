@@ -45,5 +45,6 @@ namespace Brickred.SocialAuth.NET.Core
         void RequestForAccessToken(); //(E)
         void HandleAccessTokenResponse(QueryParameters response); //(F)
         WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
+        WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null);
     }
 }

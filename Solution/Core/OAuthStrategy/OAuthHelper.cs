@@ -29,6 +29,7 @@ using System.Text;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using System.Security.Cryptography;
 using log4net;
+using System.Web;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -72,7 +73,7 @@ namespace Brickred.SocialAuth.NET.Core
         /// <returns></returns>
         public string GenerateNonce()
         {
-            Random random = new Random();
+            Random random = new Random(DateTime.Now.Millisecond);
             // Just a simple implementation of a random number between 123400 and 9999999
             return random.Next(123400, 9999999).ToString();
         }
@@ -105,7 +106,7 @@ namespace Brickred.SocialAuth.NET.Core
 
 
             string signature = "";
-          
+
             StringBuilder signatureBase = new StringBuilder();
 
             //1. URL encode and process Request URL
@@ -125,7 +126,7 @@ namespace Brickred.SocialAuth.NET.Core
             //tmpOauthParameters["scope"] = Utility.UrlEncode(tmpOauthParameters["scope"]);
 
             foreach (var p in Utility.GetQuerystringParameters(requestURL.ToString()))
-                tmpOauthParameters.Add(p.Key, p.Value);
+                tmpOauthParameters.Add(p.Key, UrlEncode(HttpUtility.UrlDecode(p.Value)));
 
             //3. Perform Lexographic Sorting
             tmpOauthParameters.Sort();
@@ -147,7 +148,7 @@ namespace Brickred.SocialAuth.NET.Core
                 case SIGNATURE_TYPE.HMACSHA1:
                     {
                         HMACSHA1 hmacsha1 = new HMACSHA1();
-                        hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : (tokenSecret)));
+                        hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : tokenSecret));
                         signature = GenerateSignatureUsingHash(sbase, hmacsha1);
                         logger.Debug("HMACSHA1 signature:" + signature);
                         break;
@@ -205,7 +206,7 @@ namespace Brickred.SocialAuth.NET.Core
             return Convert.ToBase64String(hashBytes);
         }
 
-        
+
         private string GenerateSignatureUsingHash(string signatureBase, HashAlgorithm hash)
         {
             return ComputeHash(hash, signatureBase);

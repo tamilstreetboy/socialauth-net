@@ -31,6 +31,7 @@ using System.Web.Security;
 using Microsoft.IdentityModel.Claims;
 using System.Threading;
 using System.Net;
+using log4net;
 
 namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 {
@@ -41,6 +42,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     {
 
         #region ConsumerMethods&Properties
+        ILog logger = LogManager.GetLogger("SocialAuthUser");
 
         //--------- Constructor (Optional and is for backward compatibility)
         /// <summary>
@@ -50,6 +52,27 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         public SocialAuthUser(PROVIDER_TYPE providerType)
         {
             this.providerType = providerType;
+        }
+
+
+        public void LoadToken(Token token, string returnUrl)
+        {
+            //TODO: If expiresOn is specified and token has expired, refresh token!! Currently, exception thrown!
+            if (token.ExpiresOn != null)
+                if (token.ExpiresOn < DateTime.Now)
+                {
+                    logger.Error("Token has expired");
+                    throw new OAuthException("Token has expired.");
+                }
+
+            //If user is already connected with provider specified in token, ignore this request!
+            if (SocialAuthUser.IsConnectedWith(token.Provider))
+                return;
+
+            //Load token
+            token.UserReturnURL = returnUrl;
+            SessionManager.AddConnectionToken(token);
+            SetUserAsLoggedIn();
         }
 
         public SocialAuthUser() { }
@@ -267,38 +290,36 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         ///// <param name="feedUrl"></param>
         ///// <param name="transportMethod"></param>
         ///// <returns></returns>
-        public WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
+        public WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, byte[] content = null, Dictionary<string, string> headers = null)
         {
-            if (providerType != PROVIDER_TYPE.NOT_SPECIFIED)
-            {
 
-                if (SessionManager.IsConnectedWith(providerType))
-                {
-                    IProvider provider = ProviderFactory.GetProvider(providerType);
-                    return provider.ExecuteFeed(feedUrl, transportMethod);
-                }
-                else
-                {
-                    throw new InvalidSocialAuthConnectionException(providerType);
-                }
-            }
-            else
+            IProvider provider = null;
+            //provider is not specified explicitly. Pick connected provider.
+            if (providerType == PROVIDER_TYPE.NOT_SPECIFIED)
             {
                 if (SessionManager.IsConnected)
-                {
-                    IProvider p = CurrentConnection;
-                    return p.ExecuteFeed(feedUrl, transportMethod);
-                }
+                    provider = SessionManager.GetCurrentConnection();
+            }
+            else //provider explicitly specified 
+            {
+                if (SessionManager.IsConnectedWith(providerType))
+                    provider = ProviderFactory.GetProvider(providerType);
 
-                else
-                {
-                    throw new InvalidSocialAuthConnectionException();
-                }
             }
 
+            if (provider == null)
+                throw new InvalidSocialAuthConnectionException(providerType);
+
+
+            //Call ExecuteFeed
+            WebResponse response;
+            if (headers == null && content == null)
+                response = provider.ExecuteFeed(feedUrl, transportMethod);
+            else
+                response = provider.ExecuteFeed(feedUrl, transportMethod, content, headers);
+            return response;
+
         }
-
-
 
         //------------ Future Methods
         //internal static void Disconnect(PROVIDER_TYPE providerType);
@@ -420,7 +441,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         public Guid Identifier { get { return SessionManager.GetUserSessionGUID(); } }
 
         /// <summary>
-        /// Callbed by Authentication Strategy at end of authentication process
+        /// Called by Authentication Strategy at end of authentication process
         /// </summary>
         /// <param name="isSuccess">Is authentication successful</param>
         internal static void OnAuthneticationProcessCompleted(bool isSuccess)
@@ -429,35 +450,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
 
             SessionManager.AddConnectionToken(SessionManager.InProgressToken);
-            //LoadProfile
-            SessionManager.GetCurrentConnection().GetConnectionToken().Profile = SessionManager.GetCurrentConnection().GetProfile();
-            SetClaims();
-
-
-
-            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
-               Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
-            {
-                FormsAuthenticationTicket ticket =
-                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
-
-                string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
-                HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
-                HttpContext.Current.Response.Cookies.Add(cookie);
-                SessionManager.ExecuteCallback();
-                SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
-            }
-            else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
-            {
-                SessionManager.ExecuteCallback();
-                FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
-            }
-
+            SetUserAsLoggedIn();
 
         }
 
         /// <summary>
-        /// Sets Windows Identify Foundatin Claims
+        /// Sets Windows Identify Foundation Claims
         /// </summary>
         internal static void SetClaims()
         {
@@ -565,6 +563,38 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 return SessionManager.GetConnectionToken(SessionManager.GetCurrentConnection().ProviderType);
             else
                 return null;
+        }
+
+        /// <summary>
+        /// When authentication is successful OR token is provided, so final steps to mark
+        /// user as logged in.
+        /// </summary>
+        private static void SetUserAsLoggedIn()
+        {
+            //LoadProfile
+            SessionManager.GetCurrentConnection().GetConnectionToken().Profile = SessionManager.GetCurrentConnection().GetProfile();
+            SetClaims();
+
+
+
+            if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
+               Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
+            {
+                FormsAuthenticationTicket ticket =
+                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
+
+                string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
+                HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
+                HttpContext.Current.Response.Cookies.Add(cookie);
+                SessionManager.ExecuteCallback();
+                SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
+            }
+            else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
+            {
+                SessionManager.ExecuteCallback();
+                FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+            }
+
         }
 
         #endregion

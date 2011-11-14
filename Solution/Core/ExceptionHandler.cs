@@ -105,7 +105,7 @@ namespace Brickred.SocialAuth.NET.Core
                     }
                     else if (ex.Message.Contains("502")) //SERVICE UNAVAILABLE
                     {
-                        additionalDetails += Environment.NewLine + " Possibly provider is down. Request broke with errror: " + ex.Message;
+                        additionalDetails += Environment.NewLine + " Possibly provider is down. Request broke with error: " + ex.Message;
                     }
                     else if (ex.Message.Contains("503")) //SERVICE UNAVAILABLE
                     {

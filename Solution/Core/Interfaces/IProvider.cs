@@ -69,6 +69,7 @@ namespace Brickred.SocialAuth.NET.Core
         List<Contact> GetContacts(); //Data Feed Access of last connected provider
         Token GetConnectionToken();
         WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
+        WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null);
         //void Logout();
     }
 }

@@ -79,9 +79,9 @@ namespace Brickred.SocialAuth.NET.Core
                 //ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
                 //ub.SetQueryparameter("response_type", "code");
                 //ub.SetQueryparameter("scope", provider.GetScope());
-                
+
                 BeforeDirectingUserToServiceProvider(oauthParams);
-                logger.Debug("Redirecting user for login to " + ub.ToString() + "?" +  oauthParams.ToEncodedString());
+                logger.Debug("Redirecting user for login to " + ub.ToString() + "?" + oauthParams.ToEncodedString());
                 SocialAuthUser.Redirect(ub.ToString() + "?" + oauthParams.ToEncodedString());
             }
             catch (Exception ex)
@@ -196,28 +196,83 @@ namespace Brickred.SocialAuth.NET.Core
 
             /******** retrieve standard Fields ************/
             ub = new UriBuilder(feedURL);
-            //if (oauthParameters != null)
-            //    foreach (var param in oauthParameters)
-            //        ub.SetQueryparameter(param.Name, param.Value);
-
+   
             ub.SetQueryparameter("access_token", connectionToken.AccessToken);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
             request.Method = transportMethod.ToString();
+            
             //logger.LogContactsRequest(ub.ToString());
             WebResponse wr;
             try
             {
                 logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString());
                 wr = (WebResponse)request.GetResponse();
-                logger.Info("Successfully exected  " + feedURL + " using " + transportMethod.ToString());
+                logger.Info("Successfully executed  " + feedURL + " using " + transportMethod.ToString());
             }
             catch (Exception ex)
             {
-                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null),ex);
-                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null),ex);
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null), ex);
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null), ex);
             }
 
             return wr;
+        }
+
+        public override WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null)
+        {
+
+
+            HttpWebRequest request;
+            request = (HttpWebRequest)HttpWebRequest.Create(feedURL);
+            request.ServicePoint.Expect100Continue = false;
+            request.Method = transportMethod.ToString();
+           
+            //if headers are specified, set/append them
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                    switch (header.Key)
+                    {
+                        case "ContentLength":
+                            {
+                                request.ContentLength = long.Parse(header.Value);
+                                break;
+                            }
+
+                        case "ContentType":
+                            {
+                                request.ContentType = header.Value;
+                                break;
+                            }
+                        default:
+                            {
+                                request.Headers[header.Key] = header.Value;
+                                break;
+                            }
+                    }
+
+                }
+
+            }
+
+            if (request.ContentLength == 0 & content.Length > 0)
+                request.ContentLength = content.Length;
+            request.GetRequestStream().Write(content, 0, content.Length);
+            WebResponse wr = null;
+            try
+            {
+                logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString());
+                wr = (WebResponse)request.GetResponse();
+                logger.Info("Successfully executed  " + feedURL + " using " + transportMethod.ToString());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, null), ex);
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, null), ex);
+            }
+            return wr;
+
         }
 
         //public static WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod)
@@ -273,6 +328,60 @@ namespace Brickred.SocialAuth.NET.Core
         //    }
         //    return wr;
         //}
+
+        public static WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod)
+        {
+            UriBuilder ub;
+
+            /******** retrieve standard Fields ************/
+            ub = new UriBuilder(feedURL);
+            //if (oauthParameters != null)
+            //    foreach (var param in oauthParameters)
+            //        ub.SetQueryparameter(param.Name, param.Value);
+
+            HttpWebRequest webRequest = null;
+
+            //StreamWriter requestWriter = null;
+
+
+            webRequest = System.Net.WebRequest.Create(feedURL) as HttpWebRequest;
+            webRequest.Method = transportMethod.ToString();
+            webRequest.Timeout = 20000;
+
+            if (transportMethod == TRANSPORT_METHOD.POST)
+            {
+                webRequest.ServicePoint.Expect100Continue = false;
+                webRequest.ContentType = "application/x-www-form-urlencoded";
+                //requestWriter = new StreamWriter(webRequest.GetRequestStream());
+                //try
+                //{
+                //    requestWriter.Write(string.Empty);
+                //}
+
+                //catch
+                //{
+                //    throw;
+                //}
+
+                //finally
+                //{
+                //    requestWriter.Close();
+                //    requestWriter = null;
+                //}
+
+            }
+
+            WebResponse wr;
+            try
+            {
+                wr = (WebResponse)webRequest.GetResponse();
+            }
+            catch (Exception ex)
+            {
+                throw new OAuthException("An Error occurred while executing " + feedURL + "!", ex);
+            }
+            return wr;
+        }
 
 
         #region IOAuth2_0 Members

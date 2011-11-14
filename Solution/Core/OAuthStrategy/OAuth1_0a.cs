@@ -59,7 +59,7 @@ namespace Brickred.SocialAuth.NET.Core
             logger.Info("OAuth1.0a Authorization Flow ends...");
 
             //Authentication Process is through. Inform Consumer. [Set isSuccess on successful authentication]
-            
+
             AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
 
         }
@@ -143,7 +143,7 @@ namespace Brickred.SocialAuth.NET.Core
                 connectionToken.RequestToken = responseCollection["oauth_token"];
                 connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
                 connectionToken.ResponseCollection.AddRange(responseCollection, false);
-                logger.Info("Request Token successully recevied");
+                logger.Info("Request Token successfully received");
             }
             else
             {
@@ -158,7 +158,7 @@ namespace Brickred.SocialAuth.NET.Core
         public void DirectUserToServiceProvider()
         {
             QueryParameters oauthParameters = new QueryParameters();
-                
+
             try
             {
                 oauthParameters.Add(new QueryParameter("oauth_token", connectionToken.RequestToken));
@@ -252,7 +252,7 @@ namespace Brickred.SocialAuth.NET.Core
                 connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
                 connectionToken.ResponseCollection.AddRange(responseCollection, true);
                 isSuccess = true;
-                logger.Info("Access token successfully recevied");
+                logger.Info("Access token successfully received");
             }
             else
             {
@@ -291,7 +291,77 @@ namespace Brickred.SocialAuth.NET.Core
             {
                 logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString());
                 wr = (WebResponse)request.GetResponse();
-                logger.Info("Successfully exected  " + feedURL + " using " + transportMethod.ToString());
+                logger.Info("Successfully executed  " + feedURL + " using " + transportMethod.ToString());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ErrorMessages.CustomFeedExecutionError(feedURL, oauthParams), ex);
+                throw new OAuthException(ErrorMessages.CustomFeedExecutionError(feedURL, oauthParams), ex);
+            }
+            return wr;
+        }
+
+        public override System.Net.WebResponse ExecuteFeed(string feedURL, IProvider provider, BusinessObjects.Token connectionToken, BusinessObjects.TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null)
+        {
+
+            string signature = "";
+            OAuthHelper oauthHelper = new OAuthHelper();
+
+
+            string timestamp = oauthHelper.GenerateTimeStamp();
+            QueryParameters oauthParams = new QueryParameters();
+            oauthParams.Add("oauth_consumer_key", provider.Consumerkey);
+            oauthParams.Add("oauth_nonce", oauthHelper.GenerateNonce());
+            oauthParams.Add("oauth_signature_method", provider.SignatureMethod.ToString());
+            oauthParams.Add("oauth_timestamp", timestamp);
+            oauthParams.Add("oauth_token", connectionToken.AccessToken);
+            oauthParams.Add("oauth_version", "1.0");
+            signature = oauthHelper.GenerateSignature(new Uri(feedURL), oauthParams, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, TRANSPORT_METHOD.POST, connectionToken.TokenSecret);
+
+            
+            
+
+            oauthParams.Add("oauth_signature", signature);
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(feedURL);
+            request.Method = transportMethod.ToString();
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                    switch (header.Key.ToLower())
+                    {
+                        case "contentlength":
+                            {
+                                request.ContentLength = long.Parse(header.Value);
+                                break;
+                            }
+
+                        case "contenttype":
+                            {
+                                request.ContentType = header.Value;
+                                break;
+                            }
+                        default:
+                            {
+                                request.Headers[header.Key] = header.Value;
+                                break;
+                            }
+                    }
+
+                }
+
+            }
+            
+            request.ContentLength = (content == null) ? 0 : content.Length;
+            request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParams));
+            if (content != null) 
+                request.GetRequestStream().Write(content, 0, content.Length);
+            WebResponse wr = null;
+            try
+            {
+                logger.Debug("Executing " + feedURL + " using " + transportMethod.ToString() + Environment.NewLine + "Request Parameters: " + oauthParams.ToString());
+                wr = (WebResponse)request.GetResponse();
+                logger.Info("Successfully executed  " + feedURL + " using " + transportMethod.ToString());
             }
             catch (Exception ex)
             {
