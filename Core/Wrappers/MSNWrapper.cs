@@ -143,7 +143,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     contacts.Add(new Contact()
                     {
                         ID = x.SelectToken("id").ToString(),
-                        Name = x.SelectToken("first_name").ToString() + " " + x.SelectToken("last_name").ToString()
+                        Name = x.SelectToken("first_name").ToString().Replace("\"","") + " " + x.SelectToken("last_name").ToString().Replace("\"","")
                     });
                 }
                     );
