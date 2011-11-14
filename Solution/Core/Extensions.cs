@@ -72,7 +72,8 @@ namespace Brickred.SocialAuth.NET.Core
             }
             else
             {
-                if (request.Url.Port != 80)
+                //if port is not default 80 and there is no information about port in web.config as well
+                if (request.Url.Port != 80 && !baseUrlInConfig.Contains(":"))
                 {
                     url.Append(":");
                     url.Append(request.Url.Port);
