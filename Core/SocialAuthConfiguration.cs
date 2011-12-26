@@ -89,6 +89,14 @@ namespace Brickred.SocialAuth.NET.Core
             get { return (BaseURLElement)this["BaseURL"]; }
         }
 
+        [ConfigurationProperty("Allow")]
+        public AllowElement Allow { 
+            get
+            {
+                return (AllowElement)this["Allow"];
+            }
+        }
+    
     }
 
 
@@ -268,6 +276,23 @@ namespace Brickred.SocialAuth.NET.Core
             get { return (string)this["Domain"]; }
             set { this["Domain"] = value; }
 
+        }
+    }
+
+    public class AllowElement : ConfigurationElement
+    {
+        [ConfigurationProperty("Files")]
+        public string Files
+        {
+            get { return (string)this["Files"]; }
+            set { this["Files"] = value; }
+        }
+
+        [ConfigurationProperty("Folders")]
+        public string Folders
+        {
+            get { return (string)this["Folders"]; }
+            set { this["Folders"] = value; }
         }
     }
 }

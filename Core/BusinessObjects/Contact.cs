@@ -51,5 +51,9 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// Gets Profile URL of a contact (if provided by provider)
         /// </summary>
         public string ProfileURL { get; internal set; }
+        /// <summary>
+        /// Gets Profile Picture of a contact (if provided by provider)
+        /// </summary>
+        public string ProfilePictureURL { get; internal set; }
     }
 }

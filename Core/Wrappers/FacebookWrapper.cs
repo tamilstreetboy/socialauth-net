@@ -151,7 +151,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                               {
                                   Name = (string)f["name"],
                                   ID = (string)f["id"],
-                                  ProfileURL = "http://www.facebook.com/profile.php?id=" + (string)f["id"]
+                                  ProfileURL = "http://www.facebook.com/profile.php?id=" + (string)f["id"],
+                                  ProfilePictureURL = "https://graph.facebook.com/" + (string)f["id"] + "/picture"
                               };
                 logger.Info("Contacts successfully received");
                 return friends.ToList<Contact>();

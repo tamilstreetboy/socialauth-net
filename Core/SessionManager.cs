@@ -54,6 +54,7 @@ namespace Brickred.SocialAuth.NET.Core
                 callback = value;
             }
         }
+        internal string errorURL;
     }
 
 
@@ -191,6 +192,10 @@ namespace Brickred.SocialAuth.NET.Core
             return  userSession.userGUID;
         }
 
-
+        public static string ErrorURL
+        {
+            get { return userSession.errorURL; }
+            set { userSession.errorURL = value; }
+        }
     }
 }
