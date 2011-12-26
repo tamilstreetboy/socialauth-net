@@ -31,6 +31,7 @@ using System.Web.Security;
 using System.Web.SessionState;
 using System.Security.Principal;
 using Brickred.SocialAuth.NET.Core.BusinessObjects;
+using System.Text.RegularExpressions;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -120,8 +121,32 @@ namespace Brickred.SocialAuth.NET.Core
             {
                 //block any .aspx page. Rest all is allowed.
                 //TODO: Better Implementation of this
-                if (VirtualPathUtility.GetExtension(HttpContext.Current.Request.RawUrl) != ".aspx")
+                string requestUrlExtension = VirtualPathUtility.GetExtension(HttpContext.Current.Request.RawUrl);
+                string urlWithoutParameters = (new Uri(HttpContext.Current.Request.Url.ToString()).GetLeftPart(UriPartial.Path)).ToLower();
+                string host = (new Uri(HttpContext.Current.Request.GetBaseURL())).ToString().ToLower();
+                if (requestUrlExtension != ".aspx" && !string.IsNullOrEmpty(requestUrlExtension))
                     return;
+                //Check for excludes
+                //Allowed Folders
+                if (!string.IsNullOrEmpty(Utility.GetSocialAuthConfiguration().Allow.Folders))
+                {
+                    string[] foldersToExclude = Utility.GetSocialAuthConfiguration().Allow.Folders.Split(new char[] { '|' });
+                    foreach (string folderName in foldersToExclude)
+                        if (urlWithoutParameters.Contains(host + (host.EndsWith("/") ? "" : "/") + folderName))
+                            return;
+                }
+                
+                //Allowed Files
+                if (!string.IsNullOrEmpty(Utility.GetSocialAuthConfiguration().Allow.Files))
+                {
+
+                    string[] filesToExclude = Utility.GetSocialAuthConfiguration().Allow.Files.Split(new char[] { '|' });
+                    foreach (string fileName in filesToExclude)
+                        if (Regex.IsMatch(urlWithoutParameters, "/" + fileName.ToLower() + "$"))
+                            return;
+                }
+
+
 
                 //If requested page is login URL only, allow it
                 string currentUrl = HttpContext.Current.Request.Url.AbsolutePath;

@@ -66,6 +66,7 @@
     <Content Include="GetToken.aspx" />
     <Content Include="Global.asax" />
     <Content Include="images\brickred-logo.jpg" />
+    <Content Include="images\err.gif" />
     <Content Include="images\hybrid_small.png" />
     <Content Include="images\notavailable.png" />
     <Content Include="images\OAuth2_small.png" />
@@ -79,9 +80,15 @@
     <Content Include="images\SocialAuthIcons\twitter.png" />
     <Content Include="images\SocialAuthIcons\yahoo.png" />
     <Content Include="images\SocialAuthIcons\yes.png" />
+    <Content Include="images\waiting.gif" />
+    <Content Include="jquery.ui.all.css" />
     <Content Include="ManualLogin.aspx" />
+    <Content Include="PopupDemo.aspx" />
+    <Content Include="PopupProcess.aspx" />
     <Content Include="POSTdemo.aspx" />
     <Content Include="Protocols.aspx" />
+    <Content Include="scripts\jquery-ui.min.js" />
+    <Content Include="scripts\jquery.min.js" />
     <Content Include="SocialAuthLogin.ascx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -132,6 +139,20 @@
     </Compile>
     <Compile Include="ManualLogin.aspx.designer.cs">
       <DependentUpon>ManualLogin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PopupDemo.aspx.cs">
+      <DependentUpon>PopupDemo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PopupDemo.aspx.designer.cs">
+      <DependentUpon>PopupDemo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PopupProcess.aspx.cs">
+      <DependentUpon>PopupProcess.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PopupProcess.aspx.designer.cs">
+      <DependentUpon>PopupProcess.aspx</DependentUpon>
     </Compile>
     <Compile Include="POSTdemo.aspx.cs">
       <DependentUpon>POSTdemo.aspx</DependentUpon>

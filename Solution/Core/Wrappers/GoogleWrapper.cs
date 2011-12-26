@@ -58,7 +58,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 return oauth1_0HybridStrategy;
             }
         }
-        public override string ProfileEndpoint { get { return "http://www-opensocial.googleusercontent.com/api/people/@me"; } }
+        public override string ProfileEndpoint { get { return "https://www.google.com/m8/feeds"; } }
         public override string ContactsEndpoint { get { return "http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000&"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
@@ -77,7 +77,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
         }
 
-        public override string DefaultScope { get { return "https://www-opensocial.googleusercontent.com/api/people/"; } }
+        public override string DefaultScope { get { return "http://www.google.com/m8/feeds/"; } }
 
 
 
@@ -166,7 +166,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                            {
                                ID = c.Element(contactsXML.Root.GetDefaultNamespace() + "id").Value,
                                Name = c.Element(contactsXML.Root.GetDefaultNamespace() + "title").Value,
-                               Email = (c.Element(xn + "email") == null) ? "" : c.Element(xn + "email").Attribute("address").Value
+                               Email = (c.Element(xn + "email") == null) ? "" : c.Element(xn + "email").Attribute("address").Value,
+                               ProfilePictureURL = ""
                            };
                 logger.Info("Contacts successfully received");
             }

@@ -84,7 +84,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="returnUrl">URL where user should return after login.</param>
         /// <param name="callback">Delegate invoked just before redirecting user after successful login</param>
-        public void Login(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, string returnUrl = "", Action callback = null)
+        public void Login(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, string returnUrl = "", Action callback = null, string errorRedirectURL = "")
         {
 
             if (this.providerType == PROVIDER_TYPE.NOT_SPECIFIED && providerType == PROVIDER_TYPE.NOT_SPECIFIED)
@@ -93,7 +93,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 SessionManager.SetCallback(callback);
             if (providerType == PROVIDER_TYPE.NOT_SPECIFIED && this.providerType != PROVIDER_TYPE.NOT_SPECIFIED)
                 providerType = this.providerType;
-            Connect(providerType, returnUrl);
+            Connect(providerType, returnUrl,errorRedirectURL);
         }
 
 
@@ -341,7 +341,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="providerType">Provider to which connection has to be established</param>
         /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
-        internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "")
+        internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "", string errorURL = "")
         {
             returnURL = returnURL ?? "";
             if (!returnURL.ToLower().StartsWith("http") && returnURL.Length > 0)
@@ -374,8 +374,11 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 if (HttpContext.Current.Request["ReturnUrl"] != null)
                 {
                     string ret = HttpContext.Current.Request["ReturnUrl"];
-                    if (!ret.ToLower().StartsWith("http"))
+                    if (ret.ToLower().Contains("wa=wsignin"))
+                        returnURL = HttpContext.Current.Request.GetBaseURL() + HttpContext.Current.Request["ReturnUrl"];
+                    else if (!ret.ToLower().StartsWith("http"))
                         returnURL = HttpContext.Current.Request.GetBaseURL() + HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
+
                     else
                         returnURL = ret;
                 }
@@ -390,6 +393,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
                 });
                 SessionManager.InProgressToken.Profile.Provider = providerType;
+                if (!string.IsNullOrEmpty(errorURL))
+                    SessionManager.ErrorURL = HttpContext.Current.Request.GetBaseURL() + errorURL;
 
                 ((IProviderConnect)ProviderFactory.GetProvider(providerType)).Connect();
             }
@@ -546,9 +551,18 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 ((IProviderConnect)ProviderFactory.GetProvider(InProgressToken().Provider)).LoginCallback(Utility.GetQuerystringParameters(response),
                         SocialAuthUser.OnAuthneticationProcessCompleted);
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                //User has specified to redirect here upon error instead fo throwing an error
+                if (!string.IsNullOrEmpty(SessionManager.ErrorURL))
+                {
+                    UriBuilder errorUri = new UriBuilder(SessionManager.ErrorURL);
+                    errorUri.SetQueryparameter("error_message", ex.Message);
+                    errorUri.SetQueryparameter("error_type", ex.GetType().ToString());
+                    HttpContext.Current.Response.Redirect(errorUri.ToString());
+                }
+                else
+                    throw;
             }
 
         }
