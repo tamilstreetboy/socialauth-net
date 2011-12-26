@@ -1,0 +1,14 @@
+﻿@using Brickred.SocialAuth.NET.Core.BusinessObjects
+@{
+    ViewBag.Title = "About Us";
+}
+<h2>
+    About</h2>
+<p>
+<h2>
+    @{ 
+    <img alt="" src="@SocialAuthUser.GetCurrentUser().GetProfile().ProfilePictureURL" />
+    @SocialAuthUser.GetCurrentUser().GetProfile().FullName;        
+    }
+</h2>    
+</p>
