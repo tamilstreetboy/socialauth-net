@@ -40,8 +40,7 @@
         function login(providername) {
             setStatus("connecting with " + providername, "waiting");
             //add a progress logo
-            //var hWin = window.open("socialauth/login.sauth?returnUrl=popupdemo.aspx?loggedin=y&p=" + providername, "socialauthlogin", "height=500,width=400,left=750,screenX=750,top=100,screenY=100", true);
-            var hWin = window.open("popupProcess.aspx?provider=" + providername, "socialauthlogin", "height=500,width=400,left=750,screenX=750,top=100,screenY=100", true);
+            var hWin = window.open("popupProcess.aspx?provider=" + providername, "socialauthlogin", "height=500,width=400,left=750,screenX=750,top=100,screenY=100, scrollbars=yes", true);
             var timerID = setInterval(function () {
 
                 isPopupClosed = (hWin.closed); //hWin == null || 
