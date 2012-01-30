@@ -1,0 +1,74 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "SocialAuthSTS", "SocialAuthSTS\", "{13147F95-ACC9-4098-91E0-1681266CB9B1}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/SocialAuthSTS"
+		Debug.AspNetCompiler.PhysicalPath = "SocialAuthSTS\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\SocialAuthSTS\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/SocialAuthSTS"
+		Release.AspNetCompiler.PhysicalPath = "SocialAuthSTS\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\SocialAuthSTS\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "1603"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "SocialAuthSTSconsumer", "SocialAuthSTSconsumer\", "{C164368E-2A61-4D60-BCE2-8F66F0ACD942}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/SocialAuthSTSconsumer"
+		Debug.AspNetCompiler.PhysicalPath = "SocialAuthSTSconsumer\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\SocialAuthSTSconsumer\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/SocialAuthSTSconsumer"
+		Release.AspNetCompiler.PhysicalPath = "SocialAuthSTSconsumer\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\SocialAuthSTSconsumer\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "64039"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "STSInstaller", "STSInstaller\STSInstaller.vdproj", "{3E089AE6-7196-412B-B443-D68948FBD04A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomSocialAuthSTSInstaller", "CustomSocialAuthSTSInstaller\CustomSocialAuthSTSInstaller.csproj", "{D14CC9FB-6FA6-4B3E-BBA0-7091A8E1B461}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13147F95-ACC9-4098-91E0-1681266CB9B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13147F95-ACC9-4098-91E0-1681266CB9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13147F95-ACC9-4098-91E0-1681266CB9B1}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{13147F95-ACC9-4098-91E0-1681266CB9B1}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{C164368E-2A61-4D60-BCE2-8F66F0ACD942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C164368E-2A61-4D60-BCE2-8F66F0ACD942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C164368E-2A61-4D60-BCE2-8F66F0ACD942}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{C164368E-2A61-4D60-BCE2-8F66F0ACD942}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{3E089AE6-7196-412B-B443-D68948FBD04A}.Debug|Any CPU.ActiveCfg = Debug
+		{3E089AE6-7196-412B-B443-D68948FBD04A}.Release|Any CPU.ActiveCfg = Release
+		{D14CC9FB-6FA6-4B3E-BBA0-7091A8E1B461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14CC9FB-6FA6-4B3E-BBA0-7091A8E1B461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14CC9FB-6FA6-4B3E-BBA0-7091A8E1B461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14CC9FB-6FA6-4B3E-BBA0-7091A8E1B461}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
