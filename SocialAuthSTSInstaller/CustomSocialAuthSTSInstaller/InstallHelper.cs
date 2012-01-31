@@ -48,8 +48,8 @@ namespace CustomSocialAuthSTSInstaller
 
             sbSettings.Append("</Providers></SocialAuthConfiguration>");
 
-
-            string filePath = Directory.GetParent(Directory.GetParent(Context.Parameters["assemblypath"]).FullName).FullName +
+            
+            string filePath = (Directory.GetParent(Context.Parameters["assemblypath"]).FullName) +
                 @"\Web.config";
             FileStream stmPhysical = new FileStream(filePath, FileMode.Open);
             StreamReader srConfig = new StreamReader(stmPhysical);

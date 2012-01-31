@@ -57,6 +57,19 @@ public partial class _Default : Page
             else if (action == null && SocialAuthUser.IsLoggedIn())
             {
                 string originalUrl = SocialAuthUser.GetCurrentUser().GetConnection(SocialAuthUser.CurrentProvider).GetConnectionToken().UserReturnURL;
+
+                //replace ru value
+                int wctxBeginsFrom = originalUrl.IndexOf("wctx=");
+                int wctxEndsAt = originalUrl.IndexOf("&wct=");
+                string wctxContent = originalUrl.Substring(wctxBeginsFrom + 5, wctxEndsAt - (wctxBeginsFrom + 5));
+                originalUrl = originalUrl.Replace(wctxContent, Server.UrlEncode(wctxContent));
+
+                //replace wtrealm value
+                int wtrealmBeginsFrom = originalUrl.IndexOf("wtrealm=");
+                int wtrealmEndsAt = originalUrl.IndexOf("&", wtrealmBeginsFrom);
+                string wtrealmContent = originalUrl.Substring(wtrealmBeginsFrom + 8, wtrealmEndsAt - (wtrealmBeginsFrom + 8));
+                originalUrl = originalUrl.Replace(wtrealmContent, Server.UrlEncode(wtrealmContent));
+
                 SignInRequestMessage requestMessage = (SignInRequestMessage)WSFederationMessage.CreateFromUri(new Uri(originalUrl));
                 if (User != null && User.Identity != null && User.Identity.IsAuthenticated)
                 {

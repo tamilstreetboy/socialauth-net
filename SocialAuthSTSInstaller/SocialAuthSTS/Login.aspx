@@ -27,7 +27,7 @@
         <div class="style3">
             <img src="images/logo.png" alt="BrickRed Technologies Pvt. Ltd." />
             <br>
-            SECURED TOKEN SERVICE
+            Security Token Service
             <br />
             <br />
             <br />

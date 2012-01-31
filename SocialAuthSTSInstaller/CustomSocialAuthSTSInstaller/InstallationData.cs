@@ -45,6 +45,13 @@ namespace CustomSocialAuthSTSInstaller
                 ConsumerKey = "opensource.brickred.com",
                 ConsumerSecret = "YC06FqhmCLWvtBg/O4W/aJfj"
             });
+            //Default provider for yahoo
+            Providers.Add(new Provider()
+            {
+                WrapperName = Provider.Wrapper.YahooWrapper,
+                ConsumerKey = "dj0yJmk9VTdaSUVTU3RrWlRzJmQ9WVdrOWNtSjZNMFpITm1VbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iMA--",
+                ConsumerSecret = "1db3d0b897dac60e151aa9e2499fcb2a6b474546"
+            });
             //Default provider for MSN
             Providers.Add(new Provider()
             {

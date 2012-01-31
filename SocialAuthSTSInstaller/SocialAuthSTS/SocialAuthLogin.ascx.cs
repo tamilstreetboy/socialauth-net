@@ -49,7 +49,10 @@ public partial class SocialAuthLogin : System.Web.UI.UserControl
     private HtmlGenericControl constructControl(IProvider provider)
     {
 
-        string iconPath = Utility.GetSocialAuthConfiguration().IconFolder.Path + provider.ProviderType.ToString() + ".png";
+        string iconPath = Utility.GetSocialAuthConfiguration().IconFolder.Path ;
+        if (string.IsNullOrEmpty(iconPath))
+            iconPath = "images/socialauthicons/";
+        iconPath += provider.ProviderType.ToString() + ".png";
         bool isconnected = SocialAuthUser.IsConnectedWith(provider.ProviderType);
         bool iscurrent = (SocialAuthUser.CurrentProvider == provider.ProviderType);
         HtmlGenericControl providerDiv = new HtmlGenericControl("div");

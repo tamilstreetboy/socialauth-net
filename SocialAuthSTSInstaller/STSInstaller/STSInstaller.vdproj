@@ -15,14 +15,26 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_A0094EFF4E3F44B6B1B56108E19365AC"
+        "MsmKey" = "8:_AC980D22142244CCB276B4A5DFDB1D87"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
+        "MsmKey" = "8:_F286C53502DF43EE8B6DF130764D7BEF"
+        "OwnerKey" = "8:_AC980D22142244CCB276B4A5DFDB1D87"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A0094EFF4E3F44B6B1B56108E19365AC"
+        "OwnerKey" = "8:_F286C53502DF43EE8B6DF130764D7BEF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_AC980D22142244CCB276B4A5DFDB1D87"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -33,7 +45,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\STSInstaller.msi"
+        "OutputFilename" = "8:Debug\\SocialAuthSTS.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -107,17 +119,17 @@
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_9A7EB1210F7A4A3799510388CAF5E569"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_8063F06DC8B942CE8B16D49F01CA6AA4"
             {
             "Name" = "8:Primary output from CustomSocialAuthSTSInstaller (Active)"
             "Condition" = "8:"
-            "Object" = "8:_A0094EFF4E3F44B6B1B56108E19365AC"
+            "Object" = "8:_AC980D22142244CCB276B4A5DFDB1D87"
             "FileType" = "3:1"
             "InstallAction" = "3:1"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_FD25C506_2D3F_42C8_BE42_940EEBC18D41"
+            "Identifier" = "8:_3D1BA43C_89F5_48DF_B718_B46A0F311C8C"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/targetsite=\"[TARGETSITE]\""
             }
@@ -144,6 +156,37 @@
         }
         "File"
         {
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F286C53502DF43EE8B6DF130764D7BEF"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_F286C53502DF43EE8B6DF130764D7BEF"
+                    {
+                    "Name" = "8:Microsoft.Web.Administration.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Microsoft.Web.Administration.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_F5FB3F5BFA8741E8AC2A7F6C4C6F99A3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -152,7 +195,7 @@
         {
             "{80453C8E-1031-40EC-8E7A-9762B297303A}:_F5FB3F5BFA8741E8AC2A7F6C4C6F99A3"
             {
-            "VirtualDirectory" = "8:STSInstaller"
+            "VirtualDirectory" = "8:SocialAuthSTS"
             "Port" = "3:80"
             "IsApplication" = "11:TRUE"
             "AllowScriptSourceAccess" = "11:FALSE"
@@ -232,25 +275,25 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:STSInstaller"
+        "ProductName" = "8:SocialAuthSTS"
         "ProductCode" = "8:{35B31D46-481D-45A3-A0DF-551585E0901C}"
-        "PackageCode" = "8:{7DE58FD3-4539-4D4A-8E5D-0E86A2853091}"
+        "PackageCode" = "8:{08CF2DB8-A639-4DE5-A112-FA456744D435}"
         "UpgradeCode" = "8:{2AB0DC74-B946-4ED1-A966-B29D11C3DFD7}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
-        "Manufacturer" = "8:Default Company Name"
+        "Manufacturer" = "8:BrickRed Technologies Pvt. Ltd."
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
-        "Title" = "8:STSInstaller"
+        "ARPHELPLINK" = "8:http://code.google.com/p/socialauth-net/"
+        "Title" = "8:SocialAuthSTS Installer"
         "Subject" = "8:"
-        "ARPCONTACT" = "8:Default Company Name"
+        "ARPCONTACT" = "8:TSG, Brickred Technologies"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:"
+        "ARPURLINFOABOUT" = "8:http://www.brickred.com"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
@@ -684,12 +727,12 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A0094EFF4E3F44B6B1B56108E19365AC"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_AC980D22142244CCB276B4A5DFDB1D87"
             {
             "SourcePath" = "8:..\\CustomSocialAuthSTSInstaller\\obj\\Debug\\CustomSocialAuthSTSInstaller.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_026E37C0F56E455AB44A28451FDCF4B9"
+            "Folder" = "8:_F5FB3F5BFA8741E8AC2A7F6C4C6F99A3"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -712,7 +755,7 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DDCAC20B13294371AB946904CA6C8837"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CF0C567D66424F3CA1842D96CB8B089A"
             {
             "SourcePath" = "8:"
             "TargetName" = "8:"
