@@ -606,7 +606,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
             {
                 SessionManager.ExecuteCallback();
-                FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+                if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
+                    FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+                else
+                    FormsAuthentication.RedirectFromLoginPage(HttpContext.Current.User.Identity.Name, false);
             }
 
         }
