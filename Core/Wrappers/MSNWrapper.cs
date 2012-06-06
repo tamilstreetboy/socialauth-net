@@ -66,7 +66,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
         
 
-        public override string DefaultScope { get { return "wl.emails,wl.birthday"; } }
+        public override string DefaultScope { get { return "wl.basic,wl.emails,wl.birthday"; } }
 
 
 
