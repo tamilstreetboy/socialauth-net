@@ -139,7 +139,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     contacts.Add(new Contact()
                     {
                         ID = person.Element("id") != null ? person.Element("id").Value : "",
-                        ProfileURL = person.Element("public-profile-url").Value,
+                        ProfileURL = person.Element("public-profile-url") != null ? person.Element("public-profile-url").Value : "",
                         Name = person.Element("first-name") != null ? person.Element("first-name").Value : "" + " " + person.Element("first-name") != null ? person.Element("last-name").Value : ""
 
                     });
