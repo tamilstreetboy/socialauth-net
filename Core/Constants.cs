@@ -67,12 +67,12 @@ namespace Brickred.SocialAuth.NET.Core
     {
         public static string RequestTokenRequestError(string url, QueryParameters collection)
         {
-            return "An error occurred while requesting Request Token at " + url + Environment.NewLine + "with parameters " + collection.ToString();
+            return "An error occurred while requesting Request Token at " + url + Environment.NewLine + "with parameters " + ((collection == null) ? "" : collection.ToString());
         }
 
         public static string RequestTokenResponseInvalid(QueryParameters collection)
         {
-            return "Invalid Request Token received." + Environment.NewLine + "Provider returned: " + collection.ToString();
+            return "Invalid Request Token received." + Environment.NewLine + "Provider returned: " + ((collection == null) ? "" : collection.ToString());
         }
 
         public static string AccessTokenRequestError(string url, QueryParameters collection)
@@ -86,7 +86,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string AccessTokenResponseInvalid(QueryParameters collection)
         {
-            return "Invalid Access Token received." + Environment.NewLine + "Provider returned: " + collection.ToString();
+            return "Invalid Access Token received." + Environment.NewLine + "Provider returned: " + ((collection == null) ? "" : collection.ToString());
         }
 
         public static string UserDeniedAccess(PROVIDER_TYPE providerType, QueryParameters collection)
@@ -106,12 +106,12 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string ContactsParsingError(string response)
         {
-            return "An error occurred while parsing contacts data." + Environment.NewLine + "Provider returned: " + response ;
+            return "An error occurred while parsing contacts data." + Environment.NewLine + "Provider returned: " + response;
         }
 
         public static string CustomFeedExecutionError(string feedUrl, QueryParameters collection)
         {
-            return "An error occurred while executing " + feedUrl + Environment.NewLine + "Request Parameters: " + collection.ToString();
+            return "An error occurred while executing " + feedUrl + Environment.NewLine + "Request Parameters: " + ((collection == null) ? "" : ((collection == null) ? "" : collection.ToString()));
         }
 
         public static string CustomFeedResultParsingError()
@@ -126,7 +126,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string UserLoginResponseError(PROVIDER_TYPE providerType, QueryParameters collection)
         {
-            return "An error occurred in user login." + Environment.NewLine  + "Provider returned: " + collection.ToString();
+            return "An error occurred in user login." + Environment.NewLine + "Provider returned: " + ((collection == null) ? "" : collection.ToString());
         }
 
 
