@@ -29,7 +29,7 @@ using System;
 
 namespace Brickred.SocialAuth.NET.Core
 {
-   [Serializable]
+    [Serializable]
     public class QueryParameter
     {
         private string key = null;
@@ -52,7 +52,7 @@ namespace Brickred.SocialAuth.NET.Core
             set { this.value = value; }
         }
     }
-    
+
     /// <summary>
     /// Comparer class used to perform the sorting of the query parameters
     /// </summary>
@@ -204,5 +204,17 @@ namespace Brickred.SocialAuth.NET.Core
         #endregion
     }
 
+    public static class QueryParametersExt
+    {
+        public static string GetEncodedRequestString(this QueryParameters obj)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (QueryParameter qp in obj)
+            {
+                sb.Append(string.Format("{0}={1}&", qp.Key, Utility.HttpTransferEncode(qp.Value)));
+            }
+            return sb.ToString();
+        }
+    }
 
 }
