@@ -118,14 +118,15 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             try
             {
                 JArray contactsJson = JArray.Parse(JObject.Parse(response).SelectToken("entry").ToString());
-                contactsJson.ToList().ForEach(person =>
-                               contacts.Add(new Contact()
-                               {
-                                   ID = person.SelectToken("person.id") != null ? person.SelectToken("person.id").ToString().Replace("\"", "") : "",
-                                   ProfileURL = person.SelectToken("person.profileUrl").ToString().Replace("\"", ""),
-                                   Name = person.SelectToken("person.name.givenName") != null ? person.SelectToken("person.name.givenName").ToString() : "" + " " + person.SelectToken("person.name.familyName") != null ? person.SelectToken("person.name.familyName").ToString().Replace("\"", "") : ""
+                if (contactsJson.Count > 0)
+                    contactsJson.ToList().ForEach(person =>
+                                   contacts.Add(new Contact()
+                                   {
+                                       ID = person.SelectToken("person.id") != null ? person.SelectToken("person.id").ToString().Replace("\"", "") : "",
+                                       ProfileURL = person.SelectToken("person.profileUrl").ToString().Replace("\"", ""),
+                                       Name = person.SelectToken("person.name.givenName") != null ? person.SelectToken("person.name.givenName").ToString() : "" + " " + person.SelectToken("person.name.familyName") != null ? person.SelectToken("person.name.familyName").ToString().Replace("\"", "") : ""
 
-                               }));
+                                   }));
                 logger.Info("Contacts successfully received");
             }
             catch (Exception ex)
