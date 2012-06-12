@@ -64,10 +64,10 @@ public partial class Welcome : System.Web.UI.Page
 
 
         foreach (PROVIDER_TYPE p in SocialAuthUser.GetConnectedProviders())
-            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier()  + "</b>");
-            
+            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier() + "</b>");
 
-        
+
+
         if (SocialAuthUser.IsLoggedIn())
         {
             IsSTSaware = HttpContext.Current.ApplicationInstance.IsSTSaware();
@@ -88,7 +88,10 @@ public partial class Welcome : System.Web.UI.Page
             Language = User.Identity.GetProfile().Language;
             AccessToken = SocialAuthUser.GetCurrentUser().GetAccessToken();
             bool IsAlternate = false;
-            User.Identity.GetContacts().ForEach(
+
+            try
+            {
+                User.Identity.GetContacts().ForEach(
                 x =>
                 {
                     HtmlTableRow tr = new HtmlTableRow();
@@ -101,11 +104,17 @@ public partial class Welcome : System.Web.UI.Page
                 }
 
                 );
-            ContactsCount = (tblContacts.Rows.Count - 1).ToString();
+                ContactsCount = (tblContacts.Rows.Count - 1).ToString();
 
-           
+
+            }
+            catch (Exception ex)
+            {
+                contacts.InnerHtml = "<error>" + ex.Message + "</error>";
+            }
+
         }
-        else 
+        else
         {
 
             Response.Write("You are not logged in..");
@@ -115,6 +124,6 @@ public partial class Welcome : System.Web.UI.Page
     {
         SocialAuthUser.GetCurrentUser().Logout("ManualLogin.aspx");
     }
-    
+
 }
 

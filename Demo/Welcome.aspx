@@ -291,6 +291,7 @@
     </table>
     <h3>
         Contacts: (<%=ContactsCount %>)</h3>
+    <div id="contacts" runat="server">
     <table id="tblContacts" runat="server" cellpadding="1" border="1">
         <tr>
             <td style="width: 200px">
@@ -304,4 +305,5 @@
             </td>
         </tr>
     </table>
+    </div>
 </asp:Content>
