@@ -4,102 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title></title>
-    <style type="text/css">
-        body
-        {
-            margin: 0px 0px 0px 0px;
-            height: 100%;
-            width: 100%;
-            font-family:Verdana;
-            font-size:12px;
-        }
-        
-        .leftNav
-        {
-            background: #EEEEE7;
-            height: 85%;
-            width: 15%;
-            float: left;
-            color: #ffffff;
-        }
-        
-        .leftNav a
-        {
-            font-size: 12px;
-            text-decoration: none;
-        }
-        
-        ul
-        {
-            margin-left: 19px;
-            margin-top: 20px;
-            padding:5px 5px 5px 5px;
-        }
-        
-        li
-        {
-            padding-bottom: 20px;
-        }
-        
-        .liheading
-        {
-            list-style-type:square; background:darkgray; color:#FFFFFF; margin-bottom:2px; padding:0px;
-        }
-        
-        .content
-        {
-            width: 85%;
-            margin-left: 200px;
-            margin-top: 10px;
-            height: 15%;
-        }
-        
-        .header
-        {
-            background: #EEEEE7;
-            width: 100%;
-            height:63px;
-        }
-        TH
-        {
-            border-bottom: #c0c0c0 1px solid;
-            border-left: #c0c0c0 1px solid;
-            
-            font-size: 12px;
-            border-top: #c0c0c0 1px solid;
-            border-right: #c0c0c0 1px solid;
-        }
-        TD
-        {
-            border-bottom: #c0c0c0 1px solid;
-            border-left: #c0c0c0 1px solid;
-            
-            font-size: 12px;
-            border-top: #c0c0c0 1px solid;
-            border-right: #c0c0c0 1px solid;
-        }
-        TD
-        {
-        }
-        TH
-        {
-            background: purple;
-            color: #ffffff;
-            font-weight: bold;
-        }
-        .altTr
-        {
-            
-            width: 100px;
-        }
-        
-        
-        form
-        {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="default.css"/>
     <asp:ContentPlaceHolder ID="head" runat="server">
     </asp:ContentPlaceHolder>
 </head>
@@ -107,7 +12,7 @@
     <form id="form2" runat="server">
     <div class="header">
         <div style="font-size: 20px; float: left; width: 15%; font-weight: bold;margin-top:15px">
-            <center><a href="http://code.google.com/p/socialauth-net/">SocialAuth 2.2</a></center></div>
+            <center><a href="http://code.google.com/p/socialauth-net/">SocialAuth 2.3</a></center></div>
         <div style="width: 85%; float: left;">
             <div style="float: left;">
                 <uc1:SocialAuthLogin ID="SocialAuthLogin1" runat="server" Width="490px" Height="60px" BackgroundColor="purple" />
@@ -129,6 +34,8 @@
             <li><a href="CustomFeedDemo.aspx">Custom Feeds Demo</a></li>
             <li><a href="Protocols.aspx">Supported Protocols</a></li>
             <li><a href="postdemo.aspx">Tweets Post Demo</a></li>
+            <li><a href="FbStatusUpdateDemo.aspx">Facebook Status update Demo<sup><small>New</small></sup></a></li>
+
             
         </ul>
         <br />
