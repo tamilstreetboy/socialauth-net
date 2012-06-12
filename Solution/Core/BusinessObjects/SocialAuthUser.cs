@@ -42,7 +42,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     {
 
         #region ConsumerMethods&Properties
-        ILog logger = LogManager.GetLogger("SocialAuthUser");
+
+        readonly ILog _logger = LogManager.GetLogger("SocialAuthUser");
 
         //--------- Constructor (Optional and is for backward compatibility)
         /// <summary>
@@ -61,7 +62,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             if (token.ExpiresOn != null && token.ExpiresOn != DateTime.MinValue)
                 if (token.ExpiresOn < DateTime.Now)
                 {
-                    logger.Error("Token has expired");
+                    _logger.Error("Token has expired");
                     throw new OAuthException("Token has expired.");
                 }
 
@@ -93,7 +94,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 SessionManager.SetCallback(callback);
             if (providerType == PROVIDER_TYPE.NOT_SPECIFIED && this.providerType != PROVIDER_TYPE.NOT_SPECIFIED)
                 providerType = this.providerType;
-            Connect(providerType, returnUrl,errorRedirectURL);
+            Connect(providerType, returnUrl, errorRedirectURL);
         }
 
 
@@ -374,11 +375,19 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 if (HttpContext.Current.Request["ReturnUrl"] != null)
                 {
                     string ret = HttpContext.Current.Request["ReturnUrl"];
+                    if (Utility.GetAuthenticationOption() == AUTHENTICATION_OPTION.FORMS_AUTHENTICATION)
+                    {
+                        if (ret.ToLower().StartsWith(HttpContext.Current.Request.ApplicationPath.ToLower() + "/"))
+                        {
+                            ret = ret.Substring(ret.IndexOf("/", 1));
+                            if (ret.StartsWith("/"))
+                                ret = ret.Substring(1);
+                        }
+                    }
                     if (ret.ToLower().Contains("wa=wsignin"))
-                        returnURL = HttpContext.Current.Request.GetBaseURL() + HttpContext.Current.Request["ReturnUrl"];
+                        returnURL = HttpContext.Current.Request.GetBaseURL() + ret;
                     else if (!ret.ToLower().StartsWith("http"))
-                        returnURL = HttpContext.Current.Request.GetBaseURL() + HttpUtility.UrlDecode(HttpContext.Current.Request["ReturnUrl"]);
-
+                        returnURL = HttpContext.Current.Request.GetBaseURL() + ret;
                     else
                         returnURL = ret;
                 }
@@ -594,24 +603,38 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.None ||
                Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Windows)
             {
-                FormsAuthenticationTicket ticket =
-                    new FormsAuthenticationTicket(SessionManager.GetUserSessionGUID().ToString(), false, HttpContext.Current.Session.Timeout);
-
-                string EncryptedTicket = FormsAuthentication.Encrypt(ticket);
-                HttpCookie cookie = new HttpCookie(FormsAuthentication.FormsCookieName, EncryptedTicket);
-                HttpContext.Current.Response.Cookies.Add(cookie);
-                SessionManager.ExecuteCallback();
-                SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
+                CreateAuthenticationCookieAndRedirect();
             }
             else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
             {
                 SessionManager.ExecuteCallback();
                 if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
-                    FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+                {
+                    if (!string.IsNullOrEmpty(GetCurrentConnectionToken().UserReturnURL))
+                        CreateAuthenticationCookieAndRedirect();
+                    else
+                        FormsAuthentication.RedirectFromLoginPage(SessionManager.GetUserSessionGUID().ToString(), false);
+                }
                 else
-                    FormsAuthentication.RedirectFromLoginPage(HttpContext.Current.User.Identity.Name, false);
+                {
+                    if (!string.IsNullOrEmpty(GetCurrentConnectionToken().UserReturnURL))
+                        CreateAuthenticationCookieAndRedirect();
+                    else
+                        FormsAuthentication.RedirectFromLoginPage(HttpContext.Current.User.Identity.Name, false);
+                }
             }
 
+        }
+
+        private static void CreateAuthenticationCookieAndRedirect()
+        {
+            var ticket = new FormsAuthenticationTicket((string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name) ? SessionManager.GetUserSessionGUID().ToString() : HttpContext.Current.User.Identity.Name), false, HttpContext.Current.Session.Timeout);
+
+            string encryptedTicket = FormsAuthentication.Encrypt(ticket);
+            var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+            HttpContext.Current.Response.Cookies.Add(cookie);
+            SessionManager.ExecuteCallback();
+            SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);
         }
 
         #endregion
