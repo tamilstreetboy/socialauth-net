@@ -33,7 +33,7 @@ using System.Web;
 namespace Brickred.SocialAuth.NET.Core
 {
 
-
+    [Serializable]
     class SocialAuthSession
     {
         internal Action callback;
