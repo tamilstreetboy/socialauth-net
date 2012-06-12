@@ -158,6 +158,8 @@ namespace Brickred.SocialAuth.NET.Core
                     openIDValues.Add(new QueryParameter("openid.ext1.value.language", responseCollection["openid.ext1.value.language"]));
                 if (responseCollection.HasName("openid.ext1.value.country"))
                     openIDValues.Add(new QueryParameter("openid.ext1.value.country", responseCollection["openid.ext1.value.country"]));
+                if (responseCollection.HasName("openid.identity"))
+                    openIDValues.Add(new QueryParameter("openid.identity", responseCollection["openid.identity"]));
                 connectionToken.ResponseCollection.AddRange(openIDValues, true);
             }
             else if (responseCollection.HasName("openid.ns.ax"))
