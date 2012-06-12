@@ -182,6 +182,27 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
+
+        /// <summary>
+        /// Authorization Header Generator for OAuth requests
+        /// </summary>
+        /// <param name="oauthParameters"></param>
+        /// <returns></returns>
+        public string GetAuthorizationUrlParameters(QueryParameters oauthParameters)
+        {
+            //Generate Authorization Header
+            string authorizationHeader = "";
+            foreach (var p in oauthParameters)
+                if (p.Key == "oauth_signature")
+                    authorizationHeader += (p.Key + "=" + Utility.UrlEncode(p.Value) + "&");
+                else
+                    authorizationHeader += (p.Key + "=" + p.Value + "&");
+
+            authorizationHeader = authorizationHeader.Replace(SIGNATURE_TYPE.HMACSHA1.ToString(), HMACSHA1SignatureType);
+            return authorizationHeader.Substring(0, authorizationHeader.Length - 1); //remove the & at end
+
+        }
+
         /// <summary>
         /// Helper function to compute a hash value
         /// </summary>
