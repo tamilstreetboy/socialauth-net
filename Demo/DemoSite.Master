@@ -29,7 +29,7 @@
             <li><a href="Default.aspx">Demo Home</a></li>
             <li><a href="GetToken.aspx">Save/Load Token</a></li>
             <li><a href="ManualLogin.aspx">Supported Controls Demo</a></li>
-            <li><a href="popupdemo.aspx">Pop-up Login Demo <small><i>new</i></small></a></li>
+            <li><a href="popupdemo.aspx">Pop-up Login Demo
             <li><a href="welcome.aspx">Detailed Profile & Contacts of Current Connection</a></li>
             <li><a href="CustomFeedDemo.aspx">Custom Feeds Demo</a></li>
             <li><a href="Protocols.aspx">Supported Protocols</a></li>
