@@ -9,9 +9,9 @@ using log4net.Config;
 [assembly: AssemblyTitle("SocialAuth-net")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Brickred")]
+[assembly: AssemblyCompany("Three Pillar Group (BrickRed)")]
 [assembly: AssemblyProduct("SocialAuth")]
-[assembly: AssemblyCopyright("Copyright © Brickred 2011")]
+[assembly: AssemblyCopyright("Copyright © Brickred 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: XmlConfigurator(Watch = true)]
@@ -35,5 +35,5 @@ using log4net.Config;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.1.0.0")]
-[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: AssemblyVersion("2.3.0.0")]
+[assembly: AssemblyFileVersion("2.3.0.0")]
