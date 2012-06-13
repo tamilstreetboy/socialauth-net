@@ -104,12 +104,13 @@ namespace Brickred.SocialAuth.NET.Core
 
             //4.Connect and obtain Token
             logger.Debug("Requesting Request Token at: " + provider.RequestTokenEndpoint);
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(provider.RequestTokenEndpoint);
+            string requestUrl = provider.RequestTokenEndpoint + "?" + oauthHelper.GetAuthorizationUrlParameters(oauthParameters);
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUrl);
             request.Method = provider.TransportName.ToString();
-            request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParameters));
+            //request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParameters));
             request.ContentLength = 0;
             //request.ContentType = "application/x-www-form-urlencoded";
-
+            //TODO: Check issue with Authorization Header
             string response = "";
 
             try
@@ -202,7 +203,7 @@ namespace Brickred.SocialAuth.NET.Core
 
             ////1. Generate Signature
             oauthParameters.Add("oauth_consumer_key", provider.Consumerkey);
-            oauthParameters.Add("oauth_token", connectionToken.RequestToken);
+            oauthParameters.Add("oauth_token", connectionToken.AuthorizationToken);
             oauthParameters.Add("oauth_signature_method", provider.SignatureMethod.ToString());
             oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
@@ -215,9 +216,11 @@ namespace Brickred.SocialAuth.NET.Core
             BeforeRequestingAccessToken(oauthParameters); // hook called
 
             //3.Connect and obtain Token
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(provider.AccessTokenEndpoint);
+            string targetUrl = provider.AccessTokenEndpoint + "?" +
+                               oauthHelper.GetAuthorizationUrlParameters(oauthParameters);
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(targetUrl);
             request.Method = provider.TransportName.ToString();
-            request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParameters));
+            //request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParameters));
             request.ContentLength = 0;
             string response = "";
 
@@ -318,8 +321,8 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParams.Add("oauth_version", "1.0");
             signature = oauthHelper.GenerateSignature(new Uri(feedURL), oauthParams, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, TRANSPORT_METHOD.POST, connectionToken.TokenSecret);
 
-            
-            
+
+
 
             oauthParams.Add("oauth_signature", signature);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(feedURL);
@@ -351,10 +354,10 @@ namespace Brickred.SocialAuth.NET.Core
                 }
 
             }
-            
+
             request.ContentLength = (content == null) ? 0 : content.Length;
             request.Headers.Add("Authorization", oauthHelper.GetAuthorizationHeader(oauthParams));
-            if (content != null) 
+            if (content != null)
                 request.GetRequestStream().Write(content, 0, content.Length);
             WebResponse wr = null;
             try
