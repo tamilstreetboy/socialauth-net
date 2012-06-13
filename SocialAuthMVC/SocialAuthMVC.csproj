@@ -14,6 +14,7 @@
     <AssemblyName>SocialAuthMVC</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>false</UseIISExpress>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,7 +45,7 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>E:\Projects\TSG\SocialAuth.Net\Solution\Lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SocialAuth-net, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SocialAuth-net">
       <HintPath>..\Solution\Lib\SocialAuth-net.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.Entity" />

@@ -10,11 +10,10 @@ c:\projects\SocialAuthMVC\SocialAuthMVC\obj\Debug\SocialAuthMVC.dll
 c:\projects\SocialAuthMVC\SocialAuthMVC\obj\Debug\SocialAuthMVC.pdb
 c:\projects\SocialAuthMVC\SocialAuthMVC\bin\SocialAuth-net.pdb
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\ResolveAssemblyReference.cache
-E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.dll
-E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.pdb
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\SocialAuthMVC.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\SocialAuthMVC.pdb
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\log4net.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\Newtonsoft.Json.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\SocialAuth-net.dll
-E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\EntityFramework.xml
+E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.dll
+E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.pdb
