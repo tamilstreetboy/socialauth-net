@@ -13,6 +13,7 @@
     <RootNamespace>Brickred.SocialAuth.NET.Demo</RootNamespace>
     <AssemblyName>Demo</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <UseIISExpress>false</UseIISExpress>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -62,7 +63,9 @@
   <ItemGroup>
     <Content Include="CustomFeedDemo.aspx" />
     <Content Include="Default.aspx" />
+    <Content Include="default.css" />
     <Content Include="Demo.sln" />
+    <Content Include="FbStatusUpdateDemo.aspx" />
     <Content Include="GetToken.aspx" />
     <Content Include="Global.asax" />
     <Content Include="images\brickred-logo.jpg" />
@@ -122,6 +125,13 @@
     </Compile>
     <Compile Include="DemoSite.Master.designer.cs">
       <DependentUpon>DemoSite.Master</DependentUpon>
+    </Compile>
+    <Compile Include="FbStatusUpdateDemo.aspx.cs">
+      <DependentUpon>FbStatusUpdateDemo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FbStatusUpdateDemo.aspx.designer.cs">
+      <DependentUpon>FbStatusUpdateDemo.aspx</DependentUpon>
     </Compile>
     <Compile Include="GetToken.aspx.cs">
       <DependentUpon>GetToken.aspx</DependentUpon>
