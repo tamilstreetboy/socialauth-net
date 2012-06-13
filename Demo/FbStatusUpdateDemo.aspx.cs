@@ -32,7 +32,7 @@ namespace Brickred.SocialAuth.NET.Demo
 
         private void GetUpdates()
         {
-            var response = SocialAuthUser.GetCurrentUser().ExecuteFeed("https://graph.facebook.com/" + SocialAuthUser.GetCurrentUser().GetProfile().ID + "/feed?access_token=" + SocialAuthUser.GetCurrentUser().GetAccessToken(), TRANSPORT_METHOD.GET, PROVIDER_TYPE.FACEBOOK);
+            var response = SocialAuthUser.GetCurrentUser().ExecuteFeed("https://graph.facebook.com/me/feed?access_token=" + SocialAuthUser.GetCurrentUser().GetAccessToken(), TRANSPORT_METHOD.GET, PROVIDER_TYPE.FACEBOOK);
             var updatesJson = new StreamReader(response.GetResponseStream()).ReadToEnd();
             var data = JObject.Parse(updatesJson);
             var updates = JArray.Parse(data.SelectToken("data").ToString());
