@@ -54,7 +54,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
-        public override string DefaultScope { get { return "user_birthday,user_location"; } }
+        public override string DefaultScope { get { return "user_birthday,user_location,email"; } }
 
 
         //****** OPERATIONS
