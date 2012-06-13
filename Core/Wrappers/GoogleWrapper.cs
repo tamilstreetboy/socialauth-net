@@ -58,8 +58,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 return oauth1_0HybridStrategy;
             }
         }
-        public override string ProfileEndpoint { get { return "https://www.google.com/m8/feeds"; } }
-        public override string ContactsEndpoint { get { return "http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000&"; } }
+        public override string ProfileEndpoint { get { return "https://www.googleapis.com/oauth2/v1/userinfo"; } }//https://www-opensocial.googleusercontent.com/api/people/@me/@self
+        public override string ContactsEndpoint { get { return "http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
         public override string ScopeDelimeter
@@ -77,7 +77,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
         }
 
-        public override string DefaultScope { get { return "http://www.google.com/m8/feeds/"; } }
+        public override string DefaultScope { get { return "http://www.google.com/m8/feeds/ https://www.googleapis.com/auth/userinfo.profile"; } }
 
 
 
@@ -94,7 +94,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
             var provider = ProviderFactory.GetProvider(token.Provider);
 
-            if (GetScope().Contains("https://www-opensocial.googleusercontent.com/api/people/"))
+            if (GetScope().ToLower().Contains("https://www.googleapis.com/auth/userinfo.profile"))
             {
                 try
                 {
@@ -113,11 +113,12 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     //    "thumbnailUrl":"http://www.,"urls":[{"value":"https://plus.google.com/103908432244378021535","type":"profile"}],
                     //    "photos":[{"value":"http://www.google.com/ig/c/photos/public/AIbEiAIAAABDCJ_d1payzeKeNiILdmNhcmRfcGhvdG8qKGFjM2RmMzQ1ZDc4Nzg5NmI5NmFjYTc1NDNjOTA3MmQ5MmNmOTYzZWIwAe0HZMa7crOI_laYBG7LxYvlAvqe","type":"thumbnail"}],"displayName":"deepak Aggarwal"}}
                     profile.Provider = ProviderType;
-                    profile.ID = profileJson.Get("entry.id");
-                    profile.ProfileURL = profileJson.Get("entry.profileUrl");
-                    profile.FirstName = profileJson.Get("entry.name.givenName");
-                    profile.LastName = profileJson.Get("entry.name.familyName");
-                    profile.ProfilePictureURL = profileJson.Get("entry.thumbnailUrl");
+                    profile.ID = profileJson.Get("id");
+                    profile.ProfileURL = profileJson.Get("link");
+                    profile.FirstName = profileJson.Get("given_name");
+                    profile.LastName = profileJson.Get("family_name");
+                    profile.ProfilePictureURL = profileJson.Get("picture");
+                    profile.GenderType = Utility.ParseGender(profileJson.Get("gender"));
                 }
                 catch (Exception ex)
                 {
