@@ -617,7 +617,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     else
                     {
                         HttpCookie authCookie = HttpContext.Current.Response.Cookies[FormsAuthentication.FormsCookieName];
-                        if (authCookie != null)
+                        if (authCookie != null && !string.IsNullOrEmpty(authCookie.Value))
                         {
                             FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
                             FormsAuthentication.RedirectFromLoginPage(ticket.Name, false);
@@ -639,18 +639,27 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         private static void CreateAuthenticationCookieAndRedirect()
         {
+            string token;
             HttpCookie cookie = HttpContext.Current.Response.Cookies[FormsAuthentication.FormsCookieName];
-            if (cookie == null || string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
+            if (!string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
             {
-                var ticket = new FormsAuthenticationTicket(
-                    (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name) ?
-                    SessionManager.GetUserSessionGUID().ToString() :
-                    HttpContext.Current.User.Identity.Name)
-                    , false, HttpContext.Current.Session.Timeout);
-
-                string encryptedTicket = FormsAuthentication.Encrypt(ticket);
-                cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+                token = HttpContext.Current.User.Identity.Name;
             }
+            else if (cookie != null && !string.IsNullOrEmpty(cookie.Value))
+            {
+                FormsAuthenticationTicket recTicket = FormsAuthentication.Decrypt(cookie.Value);
+                token = recTicket.Name;
+            }
+            else
+            {
+                token = SessionManager.GetUserSessionGUID().ToString();
+            }
+
+            var ticket = new FormsAuthenticationTicket(token, false, HttpContext.Current.Session.Timeout);
+
+            string encryptedTicket = FormsAuthentication.Encrypt(ticket);
+            cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+
             HttpContext.Current.Response.Cookies.Add(cookie);
             SessionManager.ExecuteCallback();
             SocialAuthUser.Redirect(GetCurrentConnectionToken().UserReturnURL);

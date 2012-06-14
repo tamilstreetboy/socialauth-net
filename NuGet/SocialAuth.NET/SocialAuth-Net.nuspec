@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>SocialAuth.NET</id>
+    <version>2.3.0.0</version>
+    <authors>Three Pillar Global Inc.</authors>
+    <owners>Three Pillar Global Inc.</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>http://code.google.com/p/socialauth-net/</projectUrl>
+    <iconUrl>http://socialauth-net.googlecode.com/svn/wiki/images/NuGet_installation_icon.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>SocialAuth.NET is our open-source library to help you make your applications social.</description>
+    <summary>SocialAuth.NET is our open-source library to help you make your applications social. Easily integrated, it will allow your users to login directly into your ASP.Net application using their Facebook, Twitter, Yahoo, Google or any other account, and it also enables you to obtain their profile and contacts for easy registration. Please visit our project for more details.</summary>
+    <copyright>Copyright 2012</copyright>
+  </metadata>
+</package>

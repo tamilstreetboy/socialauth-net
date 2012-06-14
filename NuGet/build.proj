@@ -1,0 +1,40 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="default">
+  <PropertyGroup>
+    <BaseDir>$(MSBuildProjectDirectory)\..\Solution</BaseDir>
+    <Configuration Condition="'$(Configuration)'==''" >Release</Configuration>
+    <BuildDir>$(BaseDir)\Core\bin</BuildDir>
+    <SolutionFile>$(BaseDir)\Brickred.SocialAuth.NET.sln</SolutionFile>
+    <NugetDir>$(MSBuildProjectDirectory)\</NugetDir>
+    <PackageDir>$(NugetDir)packages\</PackageDir>
+    <SocialAuthNet>$(NugetDir)SocialAuth.NET\</SocialAuthNet>
+    <MSBuildExtensions>$(NugetDir)MSBuild.Community.Tasks.dll</MSBuildExtensions>
+  </PropertyGroup>
+ 
+  <UsingTask AssemblyFile="$(MSBuildExtensions)" TaskName="MSBuild.Community.Tasks.XmlUpdate" />
+ 
+  <Target Name="default" DependsOnTargets="Compile; CopyFilesToPackage; Package" />
+ 
+  <Target Name="Compile">
+    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(Configuration)"  />
+  </Target>
+  <Target Name="CopyFilesToPackage">
+	<Copy SourceFiles="$(BuildDir)\$(Configuration)\SocialAuth-net.dll" DestinationFolder="$(NugetDir)\SocialAuth.NET\Lib\4.0\" />
+  </Target>
+  <Target Name="Package">
+    
+    <!-- Get the version number of the main FV assembly to insert into the nuspec files -->
+    <GetAssemblyIdentity AssemblyFiles="$(BuildDir)\$(Configuration)\SocialAuth-net.dll">
+      <Output TaskParameter="Assemblies" ItemName="AsmInfo" />
+    </GetAssemblyIdentity>
+ 
+    <!-- insert the version number into the nuspec files -->
+    <XmlUpdate
+      Namespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+      XmlFileName="$(SocialAuthNet)SocialAuth-Net.nuspec"
+      XPath="/package/metadata/version"
+      Value="%(AsmInfo.Version)" />
+ 
+    <Exec WorkingDirectory="$(PackageDir)" 
+          Command="$(NugetDir)nuget.exe pack $(SocialAuthNet)SocialAuth-Net.nuspec" />
+  </Target>
+</Project>

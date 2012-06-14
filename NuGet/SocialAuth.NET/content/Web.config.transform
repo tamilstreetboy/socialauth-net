@@ -1,0 +1,45 @@
+<configuration>
+    <configSections>
+       <section name="SocialAuthConfiguration" type="Brickred.SocialAuth.NET.Core.SocialAuthConfiguration, SocialAuth-net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null" allowDefinition="Everywhere" allowLocation="true" />
+	</configSections>
+	<system.web>
+		<httpHandlers>
+			<add verb="*" path="*.sauth" type="Brickred.SocialAuth.NET.Core.CallbackHandler" />
+		</httpHandlers>
+		<httpModules>
+			 <add name="SocialAuthAuthentication" type="Brickred.SocialAuth.NET.Core.SocialAuthHttpModule" />
+		</httpModules>	
+	</system.web>
+	<!--IIS7 Support-->
+  <system.webServer>
+    <validation validateIntegratedModeConfiguration="false" />
+    <handlers>
+      <add name="socialAuth.NET" verb="*" path="*.sauth" type="Brickred.SocialAuth.NET.Core.CallbackHandler" />
+    </handlers>
+    <modules>
+      <add name="SocialAuthAuthentication" type="Brickred.SocialAuth.NET.Core.SocialAuthHttpModule" />
+
+    </modules>
+  </system.webServer>
+<!-- Social Auth Configuration-->
+ <SocialAuthConfiguration>
+     <Providers>
+      <add WrapperName="FacebookWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="GoogleWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="MSNWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="YahooWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="TwitterWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="LinkedInWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="MySpaceWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+    </Providers>
+    <Allow Files=""  />
+    <Authentication Enabled="false" LoginUrl="" DefaultUrl=""  />
+ </SocialAuthConfiguration>
+ <location path="SocialAuth">
+        <system.web>
+            <authorization>
+                <allow users="*"/>
+            </authorization>
+        </system.web>
+    </location>
+</configuration>
