@@ -356,6 +356,15 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 {
                     if (!string.IsNullOrEmpty(returnURL))
                         SocialAuthUser.Redirect(returnURL);
+                    else
+                    {
+                        if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
+                        {
+                            returnURL = FormsAuthentication.DefaultUrl;
+                            SocialAuthUser.Redirect(returnURL);
+                        }
+
+                    }
                     return;
                 }
 
