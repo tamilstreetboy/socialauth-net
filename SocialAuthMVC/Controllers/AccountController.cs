@@ -59,7 +59,7 @@ namespace SocialAuthMVC.Controllers
         public ActionResult LogOff()
         {
             FormsAuthentication.SignOut();
-
+            SocialAuthUser.GetCurrentUser().Logout();
             return RedirectToAction("Index", "Home");
         }
 
