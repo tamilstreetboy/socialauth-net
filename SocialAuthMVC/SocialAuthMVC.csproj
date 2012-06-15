@@ -180,7 +180,7 @@
           </IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>True</UseCustomServer>
-          <CustomServerUrl>http://opensource.brickred.com/mvcdemo/account/logon</CustomServerUrl>
+          <CustomServerUrl>http://opensource.brickred.com/mvc3demo/account/logon</CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
