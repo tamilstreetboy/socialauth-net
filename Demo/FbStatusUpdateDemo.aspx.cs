@@ -57,7 +57,7 @@ namespace Brickred.SocialAuth.NET.Demo
         {
 
             string msg = HttpUtility.UrlEncode(txtStatus.Text);
-            string endpoint = "https://graph.facebook.com/me/feed?message=test&access_token=" + SocialAuthUser.GetCurrentUser().GetConnection(PROVIDER_TYPE.FACEBOOK).GetConnectionToken().AccessToken ;
+            string endpoint = "https://graph.facebook.com/me/feed?message=" + msg + "&access_token=" + SocialAuthUser.GetCurrentUser().GetConnection(PROVIDER_TYPE.FACEBOOK).GetConnectionToken().AccessToken ;
 
             string body = String.Empty;
             byte[] reqbytes = new ASCIIEncoding().GetBytes(body);
