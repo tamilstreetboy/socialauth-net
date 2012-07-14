@@ -132,7 +132,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 return ID;
             else if (!string.IsNullOrEmpty(Email))
                 return Email;
-            else if (string.IsNullOrEmpty(FullName))
+            else if (!string.IsNullOrEmpty(FullName))
                 return FullName + "@" + Provider.ToString();
             else
                 return Provider.ToString();
