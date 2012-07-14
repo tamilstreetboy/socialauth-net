@@ -577,7 +577,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     UriBuilder errorUri = new UriBuilder(SessionManager.ErrorURL);
                     errorUri.SetQueryparameter("error_message", ex.Message);
                     errorUri.SetQueryparameter("error_type", ex.GetType().ToString());
-                    HttpContext.Current.Response.Redirect(errorUri.ToString());
+                    HttpContext.Current.Response.Redirect(errorUri.Uri.AbsoluteUri.ToString());
                 }
                 else
                     throw;
