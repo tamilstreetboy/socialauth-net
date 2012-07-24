@@ -52,39 +52,14 @@ namespace Brickred.SocialAuth.NET.Core
 
         public static string GetBaseURL(this HttpRequest request)
         {
-            string baseUrlInConfig = Utility.GetSocialAuthConfiguration().BaseURL.Domain;
-            StringBuilder url = new StringBuilder();
-            url.Append(request.Url.Scheme);
-            url.Append("://");
+            var baseUrlInConfig = Utility.GetSocialAuthConfiguration().BaseURL;
+            string protocol = string.IsNullOrEmpty(baseUrlInConfig.Protocol) ? request.Url.Scheme : baseUrlInConfig.Protocol;
+            int port = string.IsNullOrEmpty(baseUrlInConfig.Port) ? request.Url.Port : int.Parse(baseUrlInConfig.Port);
+            string domain = string.IsNullOrEmpty(baseUrlInConfig.Domain) ? request.Url.Host : baseUrlInConfig.Domain;
+            string path = request.ApplicationPath;
 
-            if (string.IsNullOrEmpty(baseUrlInConfig))
-            {
-                url.Append(request.Url.Host);
-                if (request.Url.Port != 80)
-                {
-                    url.Append(":");
-                    url.Append(request.Url.Port);
-                }
-
-
-                url.Append(request.ApplicationPath);
-
-            }
-            else
-            {
-                //if port is not default 80 and there is no information about port in web.config as well
-                if (request.Url.Port != 80 && !baseUrlInConfig.Contains(":"))
-                {
-                    url.Append(":");
-                    url.Append(request.Url.Port);
-                }
-                url.Append(baseUrlInConfig);
-
-            }
-            if (!url.ToString().EndsWith("/"))
-                url.Append("/");
-            return url.ToString();
-
+            UriBuilder uri = new UriBuilder(protocol, domain, port, path);
+            return uri.Uri.AbsoluteUri + "/";
         }
         public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
         {

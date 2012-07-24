@@ -277,6 +277,20 @@ namespace Brickred.SocialAuth.NET.Core
             set { this["Domain"] = value; }
 
         }
+        [ConfigurationProperty("Protocol", IsRequired = false)]
+        public string Protocol
+        {
+            get { return (string)this["Protocol"]; }
+            set { this["Protocol"] = value; }
+
+        }
+        [ConfigurationProperty("Port", IsRequired = false)]
+        public string Port
+        {
+            get { return (string)this["Port"]; }
+            set { this["Port"] = value; }
+
+        }
     }
 
     public class AllowElement : ConfigurationElement
