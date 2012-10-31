@@ -135,6 +135,13 @@ namespace Brickred.SocialAuth.NET.Core
         {
             //In Hybrid protocol, OAuth may not be necessary. In such case flow ends
             //But some providers may have scope black as scope is defined at provider directly (like Yahoo)
+            
+            if(responseCollection.HasName("openid.mode"))
+            {
+                if(responseCollection["openid.mode"].Contains("cancel"))
+                    throw new UserDeniedPermissionException(provider.ProviderType);
+            }
+
             if (!string.IsNullOrEmpty(provider.GetScope()) || provider.IsScopeDefinedAtProvider)
                 if (responseCollection.HasName("openid.oauth.request_token"))
                     connectionToken.RequestToken = responseCollection["openid.oauth.request_token"];
@@ -231,7 +238,7 @@ namespace Brickred.SocialAuth.NET.Core
                 isSuccess = true;
                 logger.Info("Access Token Successfully Received");
             }
-            else
+             else
             {
                 logger.Error(ErrorMessages.AccessTokenResponseInvalid(responseCollection));
                 throw new OAuthException(ErrorMessages.AccessTokenResponseInvalid(responseCollection));

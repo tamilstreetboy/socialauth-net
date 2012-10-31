@@ -145,4 +145,19 @@ namespace Brickred.SocialAuth.NET.Core
             }
         }
     }
+
+    public class UserDeniedPermissionException : Exception
+    {
+        PROVIDER_TYPE providertype;
+
+        public UserDeniedPermissionException(PROVIDER_TYPE providertype = PROVIDER_TYPE.NOT_SPECIFIED)
+        {
+            this.providertype = providertype;
+        }
+
+        public override string Message
+        {
+            get { return ErrorMessages.UserDeniedAccess(providertype, null); }
+        }
+    }
 }
