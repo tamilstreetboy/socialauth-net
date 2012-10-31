@@ -101,7 +101,7 @@ namespace Brickred.SocialAuth.NET.Core
             else if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
             {
                 logger.Error(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
-                throw new OAuthException(ErrorMessages.UserDeniedAccess(provider.ProviderType, responseCollection));
+                throw new UserDeniedPermissionException(provider.ProviderType);
             }
             else
             {
