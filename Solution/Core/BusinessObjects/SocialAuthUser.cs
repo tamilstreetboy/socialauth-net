@@ -414,7 +414,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                 if (!string.IsNullOrEmpty(errorURL))
                     SessionManager.ErrorURL = HttpContext.Current.Request.GetBaseURL() + errorURL;
 
-                ((IProviderConnect)ProviderFactory.GetProvider(providerType)).Connect();
+                //CONNECT WITH PROVIDER
+                var provider = ((IProviderConnect)ProviderFactory.GetProvider(providerType));
+                provider.ConnectionToken = InProgressToken();
+                provider.Connect();
             }
             catch
             {

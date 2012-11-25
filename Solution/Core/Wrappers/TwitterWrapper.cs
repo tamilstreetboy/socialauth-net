@@ -13,6 +13,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class TwitterWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
 
         //****** PROPERTIES
@@ -21,7 +22,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string RequestTokenEndpoint { get { return "https://api.twitter.com/oauth/request_token"; } }
         public override string UserLoginEndpoint { get { return "https://api.twitter.com/oauth/authorize"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://api.twitter.com/oauth/access_token"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth1_0a(this); } }
+        public override OAuthStrategyBase AuthenticationStrategy { get { return _AuthenticationStrategy?? (_AuthenticationStrategy = new OAuth1_0a(this)); } }
         public override string ProfileEndpoint { get { return "http://api.twitter.com/1/users/show.json"; } }
         public override string ContactsEndpoint { get { return "http://api.twitter.com/1/friends/ids.json?screen_name={0}&cursor=-1"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }

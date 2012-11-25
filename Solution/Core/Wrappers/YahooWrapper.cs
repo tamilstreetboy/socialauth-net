@@ -38,6 +38,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class YahooWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
 
         //****** PROPERTIES
@@ -47,7 +48,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         string userloginendpoint = "https://api.login.yahoo.com/oauth/v2/request_auth";
         public override string UserLoginEndpoint { get { return userloginendpoint; } set { userloginendpoint = value; } }
         public override string AccessTokenEndpoint { get { return "https://api.login.yahoo.com/oauth/v2/get_token"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth1_0Hybrid(this); } }
+        public override OAuthStrategyBase AuthenticationStrategy { get { return _AuthenticationStrategy ?? (_AuthenticationStrategy = new OAuth1_0Hybrid(this)); } }
         public override string ProfileEndpoint { get { return "http://social.yahooapis.com/v1/user/{0}/profile"; } }
         public override string ContactsEndpoint { get { return "http://social.yahooapis.com/v1/user/{0}/contacts"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }

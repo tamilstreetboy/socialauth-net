@@ -43,6 +43,39 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
+        public override string GetLoginUrl()
+        {
+            var oauthParameters = new QueryParameters();
+            string processedUrl = "";
+
+            oauthParameters.Add("openid.ns", "http://specs.openid.net/auth/2.0");
+            oauthParameters.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
+            oauthParameters.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
+            oauthParameters.Add("openid.return_to", ConnectionToken.ProviderCallbackUrl);
+            oauthParameters.Add("openid.realm", ConnectionToken.Domain);
+            oauthParameters.Add("openid.mode", "checkid_setup");
+            oauthParameters.Add("openid.ns.pape", "http://specs.openid.net/extensions/pape/1.0");
+            oauthParameters.Add("openid.ns.max_auth_age", "0");
+            oauthParameters.Add("openid.ns.ax", "http://openid.net/srv/ax/1.0");
+            oauthParameters.Add("openid.ax.mode", "fetch_request");
+            oauthParameters.Add("openid.ax.type.country", "http://axschema.org/contact/country/home");
+            oauthParameters.Add("openid.ax.type.email", "http://axschema.org/contact/email");
+            oauthParameters.Add("openid.ax.type.firstname", "http://axschema.org/namePerson/first");
+            oauthParameters.Add("openid.ax.type.language", "http://axschema.org/pref/language");
+            oauthParameters.Add("openid.ax.type.lastname", "http://axschema.org/namePerson/last");
+            oauthParameters.Add("openid.ax.required", "country,email,firstname,language,lastname");
+            //ADDING OAUTH PROTOCOLS
+            oauthParameters.Add("openid.ns.oauth", "http://specs.openid.net/extensions/oauth/1.0");
+            oauthParameters.Add("openid.oauth.consumer", provider.Consumerkey);
+
+            BeforeDirectingUserToServiceProvider(oauthParameters);
+
+            processedUrl = oauthParameters.ToEncodedString();
+
+            return provider.UserLoginEndpoint + "?" + processedUrl;
+
+        }
+
         public override void Login()
         {
             logger.Info("OAuth1.0Hybrid Authorization Flow begins for " + provider.ProviderType.ToString() + "...");
@@ -92,42 +125,15 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void DirectUserToServiceProvider()
         {
-
-            QueryParameters oauthParameters = new QueryParameters();
-            string processedUrl = "";
-
+            string loginUrl = GetLoginUrl();
             try
             {
-                oauthParameters.Add("openid.ns", "http://specs.openid.net/auth/2.0");
-                oauthParameters.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
-                oauthParameters.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
-                oauthParameters.Add("openid.return_to", connectionToken.ProviderCallbackUrl);
-                oauthParameters.Add("openid.realm", connectionToken.Domain);
-                oauthParameters.Add("openid.mode", "checkid_setup");
-                oauthParameters.Add("openid.ns.pape", "http://specs.openid.net/extensions/pape/1.0");
-                oauthParameters.Add("openid.ns.max_auth_age", "0");
-                oauthParameters.Add("openid.ns.ax", "http://openid.net/srv/ax/1.0");
-                oauthParameters.Add("openid.ax.mode", "fetch_request");
-                oauthParameters.Add("openid.ax.type.country", "http://axschema.org/contact/country/home");
-                oauthParameters.Add("openid.ax.type.email", "http://axschema.org/contact/email");
-                oauthParameters.Add("openid.ax.type.firstname", "http://axschema.org/namePerson/first");
-                oauthParameters.Add("openid.ax.type.language", "http://axschema.org/pref/language");
-                oauthParameters.Add("openid.ax.type.lastname", "http://axschema.org/namePerson/last");
-                oauthParameters.Add("openid.ax.required", "country,email,firstname,language,lastname");
-                //ADDING OAUTH PROTOCOLS
-                oauthParameters.Add("openid.ns.oauth", "http://specs.openid.net/extensions/oauth/1.0");
-                oauthParameters.Add("openid.oauth.consumer", provider.Consumerkey);
-
-                BeforeDirectingUserToServiceProvider(oauthParameters);
-
-                processedUrl = oauthParameters.ToEncodedString();
-
-                logger.Debug("Redirecting user for login to " + processedUrl);
-                SocialAuthUser.Redirect(provider.UserLoginEndpoint + "?" + processedUrl);
+                logger.Debug("Redirecting user for login to " + loginUrl);
+                SocialAuthUser.Redirect(loginUrl);
             }
             catch (Exception ex)
             {
-                logger.Error(ErrorMessages.UserLoginRedirectionError(provider.UserLoginEndpoint + "?" + processedUrl), ex);
+                logger.Error(ErrorMessages.UserLoginRedirectionError(loginUrl), ex);
             }
         }
 
@@ -135,18 +141,18 @@ namespace Brickred.SocialAuth.NET.Core
         {
             //In Hybrid protocol, OAuth may not be necessary. In such case flow ends
             //But some providers may have scope black as scope is defined at provider directly (like Yahoo)
-            
-            if(responseCollection.HasName("openid.mode"))
+
+            if (responseCollection.HasName("openid.mode"))
             {
-                if(responseCollection["openid.mode"].Contains("cancel"))
+                if (responseCollection["openid.mode"].Contains("cancel"))
                     throw new UserDeniedPermissionException(provider.ProviderType);
             }
 
             if (!string.IsNullOrEmpty(provider.GetScope()) || provider.IsScopeDefinedAtProvider)
                 if (responseCollection.HasName("openid.oauth.request_token"))
-                    connectionToken.RequestToken = responseCollection["openid.oauth.request_token"];
+                    ConnectionToken.RequestToken = responseCollection["openid.oauth.request_token"];
                 else if (responseCollection.HasName("openid.ext2.request_token"))
-                    connectionToken.RequestToken = responseCollection["openid.ext2.request_token"];
+                    ConnectionToken.RequestToken = responseCollection["openid.ext2.request_token"];
                 else
                 {
                     logger.Error(ErrorMessages.RequestTokenResponseInvalid(responseCollection));
@@ -167,7 +173,7 @@ namespace Brickred.SocialAuth.NET.Core
                     openIDValues.Add(new QueryParameter("openid.ext1.value.country", responseCollection["openid.ext1.value.country"]));
                 if (responseCollection.HasName("openid.identity"))
                     openIDValues.Add(new QueryParameter("openid.identity", responseCollection["openid.identity"]));
-                connectionToken.ResponseCollection.AddRange(openIDValues, true);
+                ConnectionToken.ResponseCollection.AddRange(openIDValues, true);
             }
             else if (responseCollection.HasName("openid.ns.ax"))
             {
@@ -181,7 +187,7 @@ namespace Brickred.SocialAuth.NET.Core
                     openIDValues.Add(new QueryParameter("openid.ax.value.language", responseCollection["openid.ax.value.language"]));
                 if (responseCollection.HasName("openid.ax.value.country"))
                     openIDValues.Add(new QueryParameter("openid.ax.value.country", responseCollection["openid.ax.value.country"]));
-                connectionToken.ResponseCollection.AddRange(openIDValues, true);
+                ConnectionToken.ResponseCollection.AddRange(openIDValues, true);
             }
             logger.Info("User successfully logged in and returned with Authorization Token");
         }
@@ -194,7 +200,7 @@ namespace Brickred.SocialAuth.NET.Core
 
             ////1. Generate Signature
             oauthParameters.Add("oauth_consumer_key", provider.Consumerkey);
-            oauthParameters.Add("oauth_token", Utility.UrlEncode(connectionToken.RequestToken));
+            oauthParameters.Add("oauth_token", Utility.UrlEncode(ConnectionToken.RequestToken));
             oauthParameters.Add("oauth_signature_method", provider.SignatureMethod.ToString());
             oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
@@ -232,13 +238,13 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (responseCollection.HasName("oauth_token_secret") || string.IsNullOrEmpty(provider.GetScope()))
             {
-                connectionToken.AccessToken = responseCollection["oauth_token"];
-                connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
-                connectionToken.ResponseCollection.AddRange(responseCollection, true);
+                ConnectionToken.AccessToken = responseCollection["oauth_token"];
+                ConnectionToken.TokenSecret = responseCollection["oauth_token_secret"];
+                ConnectionToken.ResponseCollection.AddRange(responseCollection, true);
                 isSuccess = true;
                 logger.Info("Access Token Successfully Received");
             }
-             else
+            else
             {
                 logger.Error(ErrorMessages.AccessTokenResponseInvalid(responseCollection));
                 throw new OAuthException(ErrorMessages.AccessTokenResponseInvalid(responseCollection));

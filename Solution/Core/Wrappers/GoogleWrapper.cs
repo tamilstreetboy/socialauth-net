@@ -39,6 +39,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class GoogleWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
+
         #region IProvider Members
 
         //****** PROPERTIES
@@ -53,9 +55,14 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         {
             get
             {
-                OAuth1_0Hybrid oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
-                oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider += (x) => { x.Add(new QueryParameter("openid.oauth.scope", GetScope())); };
-                return oauth1_0HybridStrategy;
+                if (_AuthenticationStrategy == null)
+                {
+                    var oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
+                    oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider +=
+                        (x) => x.Add(new QueryParameter("openid.oauth.scope", GetScope()));
+                    _AuthenticationStrategy = oauth1_0HybridStrategy;
+                }
+                return _AuthenticationStrategy;
             }
         }
         public override string ProfileEndpoint { get { return "https://www.googleapis.com/oauth2/v1/userinfo"; } }//https://www-opensocial.googleusercontent.com/api/people/@me/@self

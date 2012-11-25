@@ -160,6 +160,7 @@ namespace Brickred.SocialAuth.NET.Core
         //******** PROVIDER OPERATIONS
         public virtual void Connect()
         {
+            AuthenticationStrategy.ConnectionToken = ConnectionToken;
             AuthenticationStrategy.Login();
         }
 
@@ -183,13 +184,20 @@ namespace Brickred.SocialAuth.NET.Core
                 throw new NotImplementedException("This method is not implemented!;");
         }
 
+        public Token ConnectionToken { get; set; }
+
         public Token GetConnectionToken()
         {
-            return SessionManager.GetConnectionToken(this.ProviderType);
+            return ConnectionToken;
         }
         public virtual void AuthenticationCompleting(bool isSuccess)
         {
 
+        }
+
+        public string GetLoginRedirectUrl()
+        {
+            return AuthenticationStrategy.GetLoginUrl();
         }
 
         #endregion

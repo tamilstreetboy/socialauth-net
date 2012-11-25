@@ -38,6 +38,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class MSNWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
 
         //****** PROPERTIES
@@ -49,13 +50,17 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         {
             get
             {
-                OAuth2_0server strategy = new OAuth2_0server(this);
-                strategy.BeforeDirectingUserToServiceProvider += (x) =>
+                if (_AuthenticationStrategy == null)
                 {
-                    if (string.IsNullOrEmpty(GetScope()))
-                        x["scope"] = "wl.signin";
-                };
-                return strategy;
+                    OAuth2_0server strategy = new OAuth2_0server(this);
+                    strategy.BeforeDirectingUserToServiceProvider += (x) =>
+                                    {
+                                        if (string.IsNullOrEmpty(GetScope()))
+                                            x["scope"] = "wl.signin";
+                                    };
+                    _AuthenticationStrategy = strategy;
+                }
+                return _AuthenticationStrategy;
             }
         }
         public override string ProfileEndpoint { get { return "https://apis.live.net/v5.0/me"; } }
@@ -64,7 +69,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string ProfilePictureEndpoint { get { return "https://apis.live.net/v5.0/me/picture"; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
-        
+
 
         public override string DefaultScope { get { return "wl.basic,wl.emails,wl.birthday"; } }
 
@@ -161,15 +166,15 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         {
             string firstName = "";
             string lastName = "";
-            if(contactJT.SelectToken("first_name")!=null)
-                firstName =  contactJT.SelectToken("first_name").ToString().Replace("\"","");
+            if (contactJT.SelectToken("first_name") != null)
+                firstName = contactJT.SelectToken("first_name").ToString().Replace("\"", "");
 
             if (contactJT.SelectToken("last_name") != null)
                 lastName = " " + contactJT.SelectToken("last_name").ToString().Replace("\"", "");
-            
-            if(firstName=="" && lastName=="")
-                return  "";
-            else if(firstName=="" & lastName!="")
+
+            if (firstName == "" && lastName == "")
+                return "";
+            else if (firstName == "" & lastName != "")
                 return lastName.Substring(1);
             else return firstName + lastName;
         }

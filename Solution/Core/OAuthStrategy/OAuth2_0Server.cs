@@ -46,6 +46,20 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
+        public override string GetLoginUrl()
+        {
+            var ub = new UriBuilder(provider.UserLoginEndpoint);
+            
+            var oauthParams = new QueryParameters();
+            oauthParams.Add("client_id", provider.Consumerkey);
+            oauthParams.Add("redirect_uri", ConnectionToken.ProviderCallbackUrl);
+            oauthParams.Add("response_type", "code");
+            oauthParams.Add("scope", provider.GetScope());
+            
+            BeforeDirectingUserToServiceProvider(oauthParams);
+            return ub.ToString() + "?" + oauthParams.ToEncodedString();
+        }
+
         //Called Before Directing User
         public override void Login()
         {
@@ -67,27 +81,16 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void DirectUserToServiceProvider()
         {
-            UriBuilder ub = new UriBuilder(provider.UserLoginEndpoint);
+            var loginUrl = GetLoginUrl();
             try
             {
-                QueryParameters oauthParams = new QueryParameters();
-                oauthParams.Add("client_id", provider.Consumerkey);
-                oauthParams.Add("redirect_uri", connectionToken.ProviderCallbackUrl);
-                oauthParams.Add("response_type", "code");
-                oauthParams.Add("scope", provider.GetScope());
-                //ub.SetQueryparameter("client_id", provider.Consumerkey);
-                //ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
-                //ub.SetQueryparameter("response_type", "code");
-                //ub.SetQueryparameter("scope", provider.GetScope());
-
-                BeforeDirectingUserToServiceProvider(oauthParams);
-                logger.Debug("Redirecting user for login to " + ub.ToString() + "?" + oauthParams.ToEncodedString());
-                SocialAuthUser.Redirect(ub.ToString() + "?" + oauthParams.ToEncodedString());
+                logger.Debug("Redirecting user for login to " + loginUrl);
+                SocialAuthUser.Redirect(GetLoginUrl());
             }
             catch (Exception ex)
             {
-                logger.Error(ErrorMessages.UserLoginRedirectionError(ub.ToString()), ex);
-                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(ub.ToString()), ex);
+                logger.Error(ErrorMessages.UserLoginRedirectionError(loginUrl), ex);
+                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(loginUrl), ex);
             }
         }
 
@@ -95,7 +98,7 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (responseCollection.HasName("code"))
             {
-                connectionToken.Code = responseCollection["code"];
+                ConnectionToken.Code = responseCollection["code"];
                 logger.Info("User successfully logged in and returned with Authorization code");
             }
             else if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
@@ -116,8 +119,8 @@ namespace Brickred.SocialAuth.NET.Core
             UriBuilder ub = new UriBuilder(provider.AccessTokenEndpoint);
             ub.SetQueryparameter("client_id", provider.Consumerkey);
             ub.SetQueryparameter("client_secret", provider.Consumersecret);
-            ub.SetQueryparameter("code", connectionToken.Code);
-            ub.SetQueryparameter("redirect_uri", connectionToken.ProviderCallbackUrl);
+            ub.SetQueryparameter("code", ConnectionToken.Code);
+            ub.SetQueryparameter("redirect_uri", ConnectionToken.ProviderCallbackUrl);
             ub.SetQueryparameter("grant_type", "authorization_code");
             //logger.LogAuthorizationRequest(ub.ToString());
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
@@ -153,12 +156,12 @@ namespace Brickred.SocialAuth.NET.Core
                     //  {"access_token":"asasdasdAA","expires_in":3600,"scope":"wl.basic","token_type":"bearer"}
                     JObject accessTokenJson = JObject.Parse(response);
                     responseCollection.Add("response", response);
-                    connectionToken.AccessToken = accessTokenJson.SelectToken("access_token").ToString().Replace("\"", "");
+                    ConnectionToken.AccessToken = accessTokenJson.SelectToken("access_token").ToString().Replace("\"", "");
                     if (accessTokenJson.SelectToken("expires_in") != null)
-                        connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(accessTokenJson.SelectToken("expires_in").ToString().Replace("\"", "")) - 20);
+                        ConnectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(accessTokenJson.SelectToken("expires_in").ToString().Replace("\"", "")) - 20);
                     //put in raw list
                     foreach (var t in accessTokenJson.AfterSelf())
-                        connectionToken.ResponseCollection.Add(t.Type.ToString(), t.ToString());
+                        ConnectionToken.ResponseCollection.Add(t.Type.ToString(), t.ToString());
                     logger.Info("Access Token successfully received");
                     isSuccess = true;
                 }
@@ -168,14 +171,14 @@ namespace Brickred.SocialAuth.NET.Core
                     responseCollection = Utility.GetQuerystringParameters(response);
                     string keyForAccessToken = responseCollection.Single(x => x.Key.Contains("token")).Key;
 
-                    connectionToken.AccessToken = responseCollection[keyForAccessToken].Replace("\"", "");
+                    ConnectionToken.AccessToken = responseCollection[keyForAccessToken].Replace("\"", "");
                     if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("expir")))
                     {
                         string keyForExpiry = responseCollection.Single(x => x.Key.Contains("expir")).Key;
-                        connectionToken.ExpiresOn = connectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(responseCollection[keyForExpiry].Replace("\"", "")) - 20);
+                        ConnectionToken.ExpiresOn = ConnectionToken.ExpiresOn = DateTime.Now.AddSeconds(int.Parse(responseCollection[keyForExpiry].Replace("\"", "")) - 20);
                     }
                     //put in raw list
-                    responseCollection.ToList().ForEach(x => connectionToken.ResponseCollection.Add(x.Key, x.Value));
+                    responseCollection.ToList().ForEach(x => ConnectionToken.ResponseCollection.Add(x.Key, x.Value));
                     logger.Info("Access Token successfully received");
                     isSuccess = true;
 

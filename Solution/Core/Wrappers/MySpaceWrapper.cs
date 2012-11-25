@@ -40,6 +40,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class MySpaceWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
 
         //****** PROPERTIES
@@ -52,9 +53,16 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         {
             get
             {
-                OAuth1_0a oauth1_0astrategy = new OAuth1_0a(this);
-                oauth1_0astrategy.BeforeDirectingUserToServiceProvider += (x) => { x.Add(new QueryParameter("oauth_callback", Utility.UrlEncode(SocialAuthUser.InProgressToken().ProviderCallbackUrl))); };
-                return oauth1_0astrategy;
+                if (_AuthenticationStrategy == null)
+                {
+                    var strategy = new OAuth1_0a(this);
+                    strategy.BeforeDirectingUserToServiceProvider +=
+                        (x) =>
+                        x.Add(new QueryParameter("oauth_callback",
+                                                 Utility.UrlEncode(SocialAuthUser.InProgressToken().ProviderCallbackUrl)));
+                    _AuthenticationStrategy = strategy;
+                }
+                return _AuthenticationStrategy;
             }
         }
         public override string ProfileEndpoint { get { return "http://api.myspace.com/1.0/people/@me/@self"; } }

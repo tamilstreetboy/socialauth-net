@@ -64,12 +64,14 @@ namespace Brickred.SocialAuth.NET.Core
         bool IsScopeDefinedAtProvider { get; }
         string GetScope();
 
-        
+
         UserProfile GetProfile(); //Data Feed Access of last connected provider
         List<Contact> GetContacts(); //Data Feed Access of last connected provider
+        Token ConnectionToken { get; set; }
         Token GetConnectionToken();
         WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
         WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null);
+        string GetLoginRedirectUrl();
         //void Logout();
     }
 }

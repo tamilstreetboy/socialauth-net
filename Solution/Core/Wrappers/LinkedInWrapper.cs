@@ -40,6 +40,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
     internal class LinkedInWrapper : Provider, IProvider
     {
+        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
 
         //****** PROPERTIES
@@ -48,7 +49,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string RequestTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/requestToken"; } }
         public override string UserLoginEndpoint { get { return "https://www.linkedin.com/uas/oauth/authenticate"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/accessToken"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth1_0a(this); } }
+        public override OAuthStrategyBase AuthenticationStrategy { get {return _AuthenticationStrategy?? (_AuthenticationStrategy = new OAuth1_0a(this)); } }
         public override string ProfileEndpoint { get { return "http://api.linkedin.com/v1/people/~:(id,first-name,last-name,languages,date-of-birth,picture-url,location:(name))"; } }
         public override string ContactsEndpoint { get { return "http://api.linkedin.com/v1/people/~/connections:(id,first-name,last-name,public-profile-url)"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
