@@ -41,12 +41,17 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
     {
         #region IProvider Members
 
+        private OAuthStrategyBase _AuthenticationStrategy = null;
+
         //****** PROPERTIES
         private static readonly ILog logger = log4net.LogManager.GetLogger("FacebookWrapper");
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.FACEBOOK; } }
         public override string UserLoginEndpoint { get { return "https://www.facebook.com/dialog/oauth"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://graph.facebook.com/oauth/access_token"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return new OAuth2_0server(this); } }
+        public override OAuthStrategyBase AuthenticationStrategy
+        {
+            get { return _AuthenticationStrategy ?? (_AuthenticationStrategy = new OAuth2_0server(this)); }
+        }
         public override string ProfileEndpoint { get { return "https://graph.facebook.com/me"; } }
 
         public override string ContactsEndpoint { get { return "https://graph.facebook.com/me/friends"; } }
@@ -60,7 +65,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         //****** OPERATIONS
         public override UserProfile GetProfile()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
+            //Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = AuthenticationStrategy;
             string response = "";
 
@@ -128,7 +134,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
+            //Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = this.AuthenticationStrategy;
             Stream responseStream = null;
             string response = "";
@@ -168,7 +175,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, ConnectionToken, transportMethod);
         }
 
         #endregion

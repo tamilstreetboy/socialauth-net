@@ -37,10 +37,21 @@ namespace Brickred.SocialAuth.NET.Core
     public class OAuth1_0a : OAuthStrategyBase, IOAuth1_0a
     {
         static ILog logger = log4net.LogManager.GetLogger("OAuth1_0a");
+        public event Action<QueryParameters> BeforeDirectingUserToServiceProvider = delegate { };
 
         public OAuth1_0a(IProvider provider)
         {
             this.provider = provider;
+        }
+
+        public override string GetLoginUrl()
+        {
+            var oauthParameters = new QueryParameters
+                                      {
+                                          new QueryParameter("oauth_token", ConnectionToken.RequestToken)
+                                      };
+            BeforeDirectingUserToServiceProvider(oauthParameters);
+            return provider.UserLoginEndpoint + "?" + oauthParameters.ToString();
         }
 
         public override void Login()
@@ -92,7 +103,7 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
             oauthParameters.Add("oauth_version", "1.0");
-            oauthParameters.Add("oauth_callback", connectionToken.Domain + "SocialAuth/validate.sauth");
+            oauthParameters.Add("oauth_callback", ConnectionToken.Domain + "SocialAuth/validate.sauth");
 
             //2. Notify Consumer (optionally user may wish to add extra parameters)
             BeforeRequestingRequestToken(oauthParameters); // hook called
@@ -141,9 +152,9 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (responseCollection.HasName("oauth_token_secret"))
             {
-                connectionToken.RequestToken = responseCollection["oauth_token"];
-                connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
-                connectionToken.ResponseCollection.AddRange(responseCollection, false);
+                ConnectionToken.RequestToken = responseCollection["oauth_token"];
+                ConnectionToken.TokenSecret = responseCollection["oauth_token_secret"];
+                ConnectionToken.ResponseCollection.AddRange(responseCollection, false);
                 logger.Info("Request Token successfully received");
             }
             else
@@ -154,23 +165,21 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
-        public event Action<QueryParameters> BeforeDirectingUserToServiceProvider = delegate { };
+        
 
         public void DirectUserToServiceProvider()
         {
-            QueryParameters oauthParameters = new QueryParameters();
+            string loginUrl = GetLoginUrl();
 
             try
             {
-                oauthParameters.Add(new QueryParameter("oauth_token", connectionToken.RequestToken));
-                BeforeDirectingUserToServiceProvider(oauthParameters);
-                logger.Debug("redirecting user for login to: " + provider.UserLoginEndpoint + "?" + oauthParameters.ToString());
-                SocialAuthUser.Redirect(provider.UserLoginEndpoint + "?" + oauthParameters.ToString());
+                logger.Debug("redirecting user for login to: " + loginUrl);
+                SocialAuthUser.Redirect(loginUrl);
             }
             catch (Exception ex)
             {
-                logger.Error(ErrorMessages.UserLoginRedirectionError(provider.UserLoginEndpoint + "?" + oauthParameters.ToString()), ex);
-                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(provider.UserLoginEndpoint + "?" + oauthParameters.ToString()), ex);
+                logger.Error(ErrorMessages.UserLoginRedirectionError(loginUrl), ex);
+                throw new OAuthException(ErrorMessages.UserLoginRedirectionError(loginUrl), ex);
             }
 
         }
@@ -179,14 +188,14 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (responseCollection.HasName("oauth_verifier"))
             {
-                connectionToken.OauthVerifier = responseCollection["oauth_verifier"];
-                connectionToken.AuthorizationToken = responseCollection["oauth_token"];
+                ConnectionToken.OauthVerifier = responseCollection["oauth_verifier"];
+                ConnectionToken.AuthorizationToken = responseCollection["oauth_token"];
                 logger.Info("User successfully logged in and returned");
             }
             else if (responseCollection.ToList().Exists(x => x.Key.ToLower().Contains("denied") || x.Value.ToLower().Contains("denied")))
             {
-                logger.Error(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));
-                throw new OAuthException(ErrorMessages.UserDeniedAccess(connectionToken.Provider, responseCollection));
+                logger.Error(ErrorMessages.UserDeniedAccess(ConnectionToken.Provider, responseCollection));
+                throw new OAuthException(ErrorMessages.UserDeniedAccess(ConnectionToken.Provider, responseCollection));
             }
             else
             {
@@ -203,13 +212,13 @@ namespace Brickred.SocialAuth.NET.Core
 
             ////1. Generate Signature
             oauthParameters.Add("oauth_consumer_key", provider.Consumerkey);
-            oauthParameters.Add("oauth_token", connectionToken.AuthorizationToken);
+            oauthParameters.Add("oauth_token", ConnectionToken.AuthorizationToken);
             oauthParameters.Add("oauth_signature_method", provider.SignatureMethod.ToString());
             oauthParameters.Add("oauth_timestamp", oauthHelper.GenerateTimeStamp());
             oauthParameters.Add("oauth_nonce", oauthHelper.GenerateNonce());
             oauthParameters.Add("oauth_version", "1.0");
-            oauthParameters.Add("oauth_verifier", connectionToken.OauthVerifier);
-            signature = oauthHelper.GenerateSignature(new Uri(provider.AccessTokenEndpoint), oauthParameters, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, provider.TransportName, connectionToken.TokenSecret);
+            oauthParameters.Add("oauth_verifier", ConnectionToken.OauthVerifier);
+            signature = oauthHelper.GenerateSignature(new Uri(provider.AccessTokenEndpoint), oauthParameters, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, provider.TransportName, ConnectionToken.TokenSecret);
             oauthParameters.Add("oauth_signature", signature);
 
             //2. Notify Consumer (if applicable)
@@ -251,9 +260,9 @@ namespace Brickred.SocialAuth.NET.Core
         {
             if (responseCollection.HasName("oauth_token_secret"))
             {
-                connectionToken.AccessToken = responseCollection["oauth_token"];
-                connectionToken.TokenSecret = responseCollection["oauth_token_secret"];
-                connectionToken.ResponseCollection.AddRange(responseCollection, true);
+                ConnectionToken.AccessToken = responseCollection["oauth_token"];
+                ConnectionToken.TokenSecret = responseCollection["oauth_token_secret"];
+                ConnectionToken.ResponseCollection.AddRange(responseCollection, true);
                 isSuccess = true;
                 logger.Info("Access token successfully received");
             }
