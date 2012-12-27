@@ -56,10 +56,13 @@ namespace Brickred.SocialAuth.NET.Core
             string protocol = string.IsNullOrEmpty(baseUrlInConfig.Protocol) ? request.Url.Scheme : baseUrlInConfig.Protocol;
             int port = string.IsNullOrEmpty(baseUrlInConfig.Port) ? request.Url.Port : int.Parse(baseUrlInConfig.Port);
             string domain = string.IsNullOrEmpty(baseUrlInConfig.Domain) ? request.Url.Host : baseUrlInConfig.Domain;
-            string path = request.ApplicationPath;
+            string path =  string.IsNullOrEmpty(baseUrlInConfig.Path)? request.ApplicationPath:baseUrlInConfig.Path;
 
             UriBuilder uri = new UriBuilder(protocol, domain, port, path);
-            return uri.Uri.AbsoluteUri + "/";
+            return port == 0 ? uri.Uri.GetComponents(UriComponents.Scheme |
+                               UriComponents.Host |
+                               UriComponents.PathAndQuery,
+                               UriFormat.UriEscaped) : uri.Uri.AbsoluteUri + "/";
         }
         public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
         {
@@ -69,7 +72,7 @@ namespace Brickred.SocialAuth.NET.Core
             return startIndex;
         }
 
-        
+
         public static string Get(this Newtonsoft.Json.Linq.JObject input, string key)
         {
             if (input.SelectToken(key) == null)
