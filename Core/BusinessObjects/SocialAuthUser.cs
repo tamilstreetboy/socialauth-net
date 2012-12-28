@@ -85,16 +85,16 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="returnUrl">URL where user should return after login.</param>
         /// <param name="callback">Delegate invoked just before redirecting user after successful login</param>
-        public void Login(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, string returnUrl = "", Action callback = null, string errorRedirectURL = "")
+        public void Login(PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED, string returnUrl = "", Action callback = null, string errorRedirectURL = "", bool skipRedirectionIfAlreadyConnected=false)
         {
-
+            
             if (this.providerType == PROVIDER_TYPE.NOT_SPECIFIED && providerType == PROVIDER_TYPE.NOT_SPECIFIED)
                 throw new Exception("Provider not specified. Either pass provider as parameter to Login or pass it in constructor");
             if (callback != null)
                 SessionManager.SetCallback(callback);
             if (providerType == PROVIDER_TYPE.NOT_SPECIFIED && this.providerType != PROVIDER_TYPE.NOT_SPECIFIED)
                 providerType = this.providerType;
-            Connect(providerType, returnUrl, errorRedirectURL);
+            Connect(providerType, returnUrl, errorRedirectURL,skipRedirectionIfAlreadyConnected);
         }
 
 
@@ -333,7 +333,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
         #region InternalStuff
 
-
+        
         PROVIDER_TYPE providerType { get; set; }
         internal Token contextToken { get; set; }
 
@@ -342,7 +342,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="providerType">Provider to which connection has to be established</param>
         /// <param name="returnURL">Optional URL where user will be redirected after login (for this provider only)</param>
-        internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "", string errorURL = "")
+        internal static void Connect(PROVIDER_TYPE providerType, string returnURL = "", string errorURL = "", bool skipRedirectionIfAlreadyConnected=false)
         {
             returnURL = returnURL ?? "";
             if (!returnURL.ToLower().StartsWith("http") && returnURL.Length > 0)
@@ -350,12 +350,12 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
 
             try
             {
-
+                
                 //User is already connected. return or redirect
                 if (IsConnectedWith(providerType))
                 {
-                    if (!string.IsNullOrEmpty(returnURL))
-                        SocialAuthUser.Redirect(returnURL);
+                    if (skipRedirectionIfAlreadyConnected)
+                        return;
                     else
                     {
                         if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
