@@ -62,7 +62,7 @@ namespace Brickred.SocialAuth.NET.Core
             return port == 0 ? uri.Uri.GetComponents(UriComponents.Scheme |
                                UriComponents.Host |
                                UriComponents.PathAndQuery,
-                               UriFormat.UriEscaped) : uri.Uri.AbsoluteUri + "/";
+                               UriFormat.UriEscaped) : uri.Uri.AbsoluteUri ;
         }
         public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
         {
@@ -108,7 +108,7 @@ public static class IdentityExtensions
 
     public static Brickred.SocialAuth.NET.Core.BusinessObjects.UserProfile GetProfile(this IIdentity identity)
     {
-        if (SocialAuthUser.IsLoggedIn())
+        if (SocialAuthUser.IsLoggedIn() && Brickred.SocialAuth.NET.Core.Utility.GetSocialAuthConfiguration().Authentication.AllowModificationToUserIdentity)
             return SocialAuthUser.GetCurrentUser().GetProfile();
         else
             return null;
@@ -116,7 +116,7 @@ public static class IdentityExtensions
 
     public static List<Brickred.SocialAuth.NET.Core.BusinessObjects.Contact> GetContacts(this IIdentity identity)
     {
-        if (SocialAuthUser.IsLoggedIn())
+        if (SocialAuthUser.IsLoggedIn() && Brickred.SocialAuth.NET.Core.Utility.GetSocialAuthConfiguration().Authentication.AllowModificationToUserIdentity)
             return SocialAuthUser.GetCurrentUser().GetContacts();
         else
             return null;
@@ -124,7 +124,7 @@ public static class IdentityExtensions
 
     public static string GetProvider(this IIdentity identity)
     {
-        if (SocialAuthUser.IsLoggedIn())
+        if (SocialAuthUser.IsLoggedIn() && Brickred.SocialAuth.NET.Core.Utility.GetSocialAuthConfiguration().Authentication.AllowModificationToUserIdentity)
             return SocialAuthUser.CurrentConnection.ProviderType.ToString();
         else
             return "";
