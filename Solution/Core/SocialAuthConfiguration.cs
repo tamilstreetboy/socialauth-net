@@ -236,6 +236,13 @@ namespace Brickred.SocialAuth.NET.Core
             set { this["Enabled"] = value; }
         }
 
+        [ConfigurationProperty("AllowModificationToUserIdentity", IsRequired = false, DefaultValue = true)]
+        public bool AllowModificationToUserIdentity
+        {
+            get { return (bool)this["AllowModificationToUserIdentity"]; }
+            set { this["AllowModificationToUserIdentity"] = value; }
+        }
+
         [ConfigurationProperty("LoginUrl")]
         public string LoginUrl
         {
@@ -257,6 +264,7 @@ namespace Brickred.SocialAuth.NET.Core
             set { this["AllowedUrls"] = value; }
         }
     }
+
 
     public class IconFolderElement : ConfigurationElement
     {
