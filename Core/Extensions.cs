@@ -62,7 +62,7 @@ namespace Brickred.SocialAuth.NET.Core
             return port == 0 ? uri.Uri.GetComponents(UriComponents.Scheme |
                                UriComponents.Host |
                                UriComponents.PathAndQuery,
-                               UriFormat.UriEscaped) : uri.Uri.AbsoluteUri ;
+                               UriFormat.UriEscaped) : uri.Uri.AbsoluteUri + "/";
         }
         public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
         {
