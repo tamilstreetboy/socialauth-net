@@ -49,15 +49,35 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string RequestTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/requestToken"; } }
         public override string UserLoginEndpoint { get { return "https://www.linkedin.com/uas/oauth/authenticate"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/accessToken"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get {return _AuthenticationStrategy?? (_AuthenticationStrategy = new OAuth1_0a(this)); } }
-        public override string ProfileEndpoint { get { return "http://api.linkedin.com/v1/people/~:(id,first-name,last-name,languages,date-of-birth,picture-url,location:(name))"; } }
+        public override string ScopeDelimeter { get { return " "; } }
+        public override OAuthStrategyBase AuthenticationStrategy
+        {
+            get
+            {
+                if (_AuthenticationStrategy == null)
+                {
+                    var oauth1Strategy = new OAuth1_0a(this);
+                    string scope = GetScope();
+                    if (!string.IsNullOrEmpty(scope))
+                        oauth1Strategy.BeforeRequestingRequestToken +=
+                            (x) => x.Add(new QueryParameter("scope", scope));
+                    _AuthenticationStrategy = oauth1Strategy;
+                }
+                return _AuthenticationStrategy;
+            }
+        }
+
+        public override string ProfileEndpoint { get { return "http://api.linkedin.com/v1/people/~:(id,first-name,last-name,languages,date-of-birth,picture-url,email-address,location:(name))"; } }
         public override string ContactsEndpoint { get { return "http://api.linkedin.com/v1/people/~/connections:(id,first-name,last-name,public-profile-url)"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
         public override string DefaultScope { get { return ""; } }
 
+        public LinkedInWrapper()
+        {
 
+        }
 
         //****** OPERATIONS
         public override UserProfile GetProfile()
@@ -94,6 +114,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 token.Profile.FirstName = person.Element("first-name") != null ? person.Element("first-name").Value : "";
                 token.Profile.LastName = person.Element("first-name") != null ? person.Element("last-name").Value : "";
                 token.Profile.ProfilePictureURL = person.Element("picture-url") != null ? person.Element("picture-url").Value : "";
+                token.Profile.Email = person.Element("email-address") != null ? person.Element("email-address").Value : "";
                 if (person.Element("date-of-birth") != null)
                 {
                     string d = person.Element("date-of-birth").Element("day") == null ? "" : person.Element("date-of-birth").Element("day").Value;
