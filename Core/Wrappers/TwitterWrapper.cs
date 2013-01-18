@@ -20,7 +20,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         private static readonly ILog logger = log4net.LogManager.GetLogger("TwitterWrapper");
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.TWITTER; } }
         public override string RequestTokenEndpoint { get { return "https://api.twitter.com/oauth/request_token"; } }
-        public override string UserLoginEndpoint { get { return "https://api.twitter.com/oauth/authorize"; } set { } }
+        public override string UserLoginEndpoint { get { return "https://api.twitter.com/oauth/authenticate"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://api.twitter.com/oauth/access_token"; } }
         public override OAuthStrategyBase AuthenticationStrategy { get { return _AuthenticationStrategy?? (_AuthenticationStrategy = new OAuth1_0a(this)); } }
         public override string ProfileEndpoint { get { return "http://api.twitter.com/1/users/show.json"; } }
