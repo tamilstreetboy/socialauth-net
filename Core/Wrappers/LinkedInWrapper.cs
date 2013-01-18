@@ -72,9 +72,9 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
-        public override string DefaultScope { get { return ""; } }
+        public override string DefaultScope { get { return "r_fullprofile,r_emailaddress,r_network,r_contactinfo,rw_nus"; } }
 
-        public LinkedInWrapper()
+            public LinkedInWrapper()
         {
 
         }
