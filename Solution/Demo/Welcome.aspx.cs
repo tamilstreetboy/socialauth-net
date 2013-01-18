@@ -64,9 +64,13 @@ public partial class Welcome : System.Web.UI.Page
 
 
         foreach (PROVIDER_TYPE p in SocialAuthUser.GetConnectedProviders())
-            divConnections.InnerHtml += ("<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" + SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier() + "</b>");
-
-
+        {
+            divConnections.Controls.Add(new Literal(){Text = "<br>Connected to: <b>" + p.ToString() + "</b> with identifier <b>" +
+                                         SocialAuthUser.GetCurrentUser().GetProfile(p).GetIdentifier() + "</b>"});
+            LinkButton logoutBtn = new LinkButton() { Text = "[Logout from " + p.ToString() + "]", CommandArgument = p.ToString()};
+            logoutBtn.Command += new CommandEventHandler(btnIndividualLogout_Click);
+            divConnections.Controls.Add(logoutBtn);
+        }
 
         if (SocialAuthUser.IsLoggedIn())
         {
@@ -120,10 +124,17 @@ public partial class Welcome : System.Web.UI.Page
             Response.Write("You are not logged in..");
         }
     }
+    
     protected void btnLogout_Click(object sender, EventArgs e)
     {
         SocialAuthUser.GetCurrentUser().Logout("ManualLogin.aspx");
     }
 
+    protected void btnIndividualLogout_Click(object sender, CommandEventArgs e)
+    {
+        PROVIDER_TYPE provider = (PROVIDER_TYPE) Enum.Parse(typeof (PROVIDER_TYPE), e.CommandArgument.ToString());
+        SocialAuthUser.GetCurrentUser().Logout(providerType: provider);
+        Response.Redirect(HttpContext.Current.Request.Url.ToString());
+    }
 }
 

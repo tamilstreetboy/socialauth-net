@@ -103,8 +103,14 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// </summary>
         /// <param name="loginUrl">Where should user be redirected after logout. (Only applicable when using custom authentication)</param>
         /// <param name="callback">Delegate invoked (if specified) just before redirecting user to login page</param>
-        public void Logout(string loginUrl = "", Action callback = null)
+        /// <param name="provider"> </param>
+        public void Logout(string loginUrl = "", Action callback = null, PROVIDER_TYPE providerType = PROVIDER_TYPE.NOT_SPECIFIED)
         {
+            if(providerType != PROVIDER_TYPE.NOT_SPECIFIED && GetConnectedProviders().Count>1)
+            {
+                SessionManager.RemoveConnectionToken(providerType);
+                return;
+            }
             Disconnect(loginUrl, callback);
         }
 
