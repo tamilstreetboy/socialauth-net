@@ -632,7 +632,6 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
             }
             else if (Utility.GetAuthenticationMode() == System.Web.Configuration.AuthenticationMode.Forms)
             {
-                SessionManager.ExecuteCallback();
                 if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
                 {
                     if (!string.IsNullOrEmpty(GetCurrentConnectionToken().UserReturnURL))
@@ -641,6 +640,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     }
                     else
                     {
+                        SessionManager.ExecuteCallback();
                         HttpCookie authCookie = HttpContext.Current.Response.Cookies[FormsAuthentication.FormsCookieName];
                         if (authCookie != null && !string.IsNullOrEmpty(authCookie.Value))
                         {
@@ -656,7 +656,10 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
                     if (!string.IsNullOrEmpty(GetCurrentConnectionToken().UserReturnURL))
                         CreateAuthenticationCookieAndRedirect(setUserAuthenticated);
                     else
+                    {
+                        SessionManager.ExecuteCallback();
                         FormsAuthentication.RedirectFromLoginPage(HttpContext.Current.User.Identity.Name, false);
+                    }
                 }
             }
 
