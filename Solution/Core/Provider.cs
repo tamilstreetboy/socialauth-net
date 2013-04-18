@@ -170,6 +170,7 @@ namespace Brickred.SocialAuth.NET.Core
         }
         public virtual void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler)
         {
+            AuthenticationStrategy.ConnectionToken = this.ConnectionToken;
             AuthenticationStrategy.LoginCallback(responseCollection, AuthenticationHandler);
         }
         public abstract UserProfile GetProfile();
@@ -195,9 +196,9 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
-        public string GetLoginRedirectUrl()
+        public string GetLoginRedirectUrl(string returnUrl)
         {
-            return AuthenticationStrategy.GetLoginUrl();
+            return AuthenticationStrategy.GetLoginUrl(returnUrl);
         }
 
         #endregion

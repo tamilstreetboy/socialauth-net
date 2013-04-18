@@ -46,13 +46,13 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
-        public override string GetLoginUrl()
+        public override string GetLoginUrl(string returnUrl)
         {
             var ub = new UriBuilder(provider.UserLoginEndpoint);
             
             var oauthParams = new QueryParameters();
             oauthParams.Add("client_id", provider.Consumerkey);
-            oauthParams.Add("redirect_uri", ConnectionToken.ProviderCallbackUrl);
+            oauthParams.Add("redirect_uri", returnUrl);
             oauthParams.Add("response_type", "code");
             oauthParams.Add("scope", provider.GetScope());
             
@@ -81,11 +81,11 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void DirectUserToServiceProvider()
         {
-            var loginUrl = GetLoginUrl();
+            var loginUrl = GetLoginUrl(ConnectionToken.ProviderCallbackUrl);
             try
             {
                 logger.Debug("Redirecting user for login to " + loginUrl);
-                SocialAuthUser.Redirect(GetLoginUrl());
+                SocialAuthUser.Redirect(loginUrl);
             }
             catch (Exception ex)
             {

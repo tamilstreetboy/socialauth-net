@@ -36,7 +36,7 @@ namespace Brickred.SocialAuth.NET.Core
     public abstract class OAuthStrategyBase
     {
         protected IProvider provider;
-        public abstract string GetLoginUrl();
+        public abstract string GetLoginUrl(string returnUrl);
         public Token ConnectionToken { get; set; } //= SocialAuthUser.InProgressToken();// .GetCurrentConnectionToken();
         protected bool isSuccess = false;
         public abstract void Login();
