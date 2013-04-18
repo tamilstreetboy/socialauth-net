@@ -43,7 +43,7 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
-        public override string GetLoginUrl()
+        public override string GetLoginUrl(string returnUrl)
         {
             var oauthParameters = new QueryParameters();
             string processedUrl = "";
@@ -51,7 +51,7 @@ namespace Brickred.SocialAuth.NET.Core
             oauthParameters.Add("openid.ns", "http://specs.openid.net/auth/2.0");
             oauthParameters.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
             oauthParameters.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
-            oauthParameters.Add("openid.return_to", ConnectionToken.ProviderCallbackUrl);
+            oauthParameters.Add("openid.return_to", returnUrl);
             oauthParameters.Add("openid.realm", ConnectionToken.Domain);
             oauthParameters.Add("openid.mode", "checkid_setup");
             oauthParameters.Add("openid.ns.pape", "http://specs.openid.net/extensions/pape/1.0");
@@ -125,7 +125,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void DirectUserToServiceProvider()
         {
-            string loginUrl = GetLoginUrl();
+            string loginUrl = GetLoginUrl(ConnectionToken.ProviderCallbackUrl);
             try
             {
                 logger.Debug("Redirecting user for login to " + loginUrl);

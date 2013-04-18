@@ -44,7 +44,7 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
-        public override string GetLoginUrl()
+        public override string GetLoginUrl(string returnUrl)
         {
             var oauthParameters = new QueryParameters
                                       {
@@ -171,7 +171,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public void DirectUserToServiceProvider()
         {
-            string loginUrl = GetLoginUrl();
+            string loginUrl = GetLoginUrl(ConnectionToken.ProviderCallbackUrl);
 
             try
             {

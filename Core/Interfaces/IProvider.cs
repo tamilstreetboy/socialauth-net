@@ -71,7 +71,7 @@ namespace Brickred.SocialAuth.NET.Core
         Token GetConnectionToken();
         WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod);
         WebResponse ExecuteFeed(string feedURL, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null);
-        string GetLoginRedirectUrl();
+        string GetLoginRedirectUrl(string url);
         //void Logout();
     }
 }
