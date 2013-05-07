@@ -40,7 +40,7 @@ namespace Brickred.SocialAuth.NET.Core
         public Token ConnectionToken { get; set; } //= SocialAuthUser.InProgressToken();// .GetCurrentConnectionToken();
         protected bool isSuccess = false;
         public abstract void Login();
-        public abstract void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler);
+        public abstract void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationCompletionHandler);
         public abstract WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
         public virtual WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod, byte[] content = null, Dictionary<string, string> headers = null)
         {

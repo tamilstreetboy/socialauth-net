@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Brickred.SocialAuth.NET.Core.BusinessObjects;
 
 namespace Brickred.SocialAuth.NET.Core
 {
@@ -9,6 +10,6 @@ namespace Brickred.SocialAuth.NET.Core
     {
         //******** PROVIDER OPERATIONS
         void Connect(); //Connect to a provider 1st time
-        void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationHandler);// used internally to handle external login by user
+        void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationHandler);// used internally to handle external login by user
     }
 }

@@ -91,6 +91,7 @@
     <Compile Include="SessionManager.cs" />
     <Compile Include="SocialAuthConfiguration.cs" />
     <Compile Include="SocialAuthHttpModule.cs" />
+    <Compile Include="SocialAuthManager.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Wrappers\FacebookWrapper.cs" />
     <Compile Include="Wrappers\GoogleWrapper.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="Wrappers\TwitterWrapper.cs" />
     <Compile Include="Wrappers\YahooWrapper.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetPath) $(SolutionPath)"/../Lib"</PostBuildEvent>

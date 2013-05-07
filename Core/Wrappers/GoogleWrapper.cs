@@ -48,7 +48,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.GOOGLE; } }
         public override string OpenIdDiscoveryEndpoint { get { return "https://www.google.com/accounts/o8/id"; } }
         public override string RequestTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetRequestToken"; } }
-        string userloginendpoint = "https://www.google.com/accounts/OAuthAuthorizeToken";
+        private string userloginendpoint = ""; //"https://www.google.com/accounts/OAuthAuthorizeToken";
         public override string UserLoginEndpoint { get { return userloginendpoint; } set { userloginendpoint = value; } }
         public override string AccessTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetAccessToken"; } }
         public override OAuthStrategyBase AuthenticationStrategy

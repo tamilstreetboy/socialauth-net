@@ -88,12 +88,19 @@ namespace Brickred.SocialAuth.NET.Core
             var provider = ProviderFactory.GetProvider(providerType);
             provider.ConnectionToken = new Token()
             {
-                Domain = "http://opensource.brickred.com/"
+                Domain = "http://opensource.brickred.com/socialauthdemo/",
+                Profile = new UserProfile(providerType)
             };
             return provider.GetLoginRedirectUrl(returnUrl);
         }
 
-
+        /// <summary>
+        /// Connects and retrieves access token from provider
+        /// </summary>
+        /// <param name="providerType"></param>
+        /// <param name="redirectResponse"></param>
+        /// <param name="overrideConnection"></param>
+        /// <returns></returns>
         public bool Connect(PROVIDER_TYPE providerType, string redirectResponse, bool overrideConnection = false)
         {
             if (overrideConnection && IsConnectedWith(providerType)) return true;
@@ -104,7 +111,7 @@ namespace Brickred.SocialAuth.NET.Core
             token.Domain = "http://opensource.brickred.com/socialauthdemo/";
             accessGrant.Add(providerType, token);
             provider.ConnectionToken = token;
-            provider.LoginCallback(Utility.GetQuerystringParameters(redirectResponse), (x) => { });
+            provider.LoginCallback(Utility.GetQuerystringParameters(redirectResponse), (x,y) => { });
             return true;
         }
 

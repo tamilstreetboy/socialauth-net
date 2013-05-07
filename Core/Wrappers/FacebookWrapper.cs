@@ -47,7 +47,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         private static readonly ILog logger = log4net.LogManager.GetLogger("FacebookWrapper");
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.FACEBOOK; } }
         public override string UserLoginEndpoint { get { return "https://www.facebook.com/dialog/oauth"; } set { } }
-        public override string AccessTokenEndpoint { get { return "https://graph.facebook.com/oauth/access_token"; } }
+        public override string AccessTokenEndpoint { get { return "https://graph.facebook.com:443/oauth/access_token"; } }
         public override OAuthStrategyBase AuthenticationStrategy
         {
             get { return _AuthenticationStrategy ?? (_AuthenticationStrategy = new OAuth2_0server(this)); }

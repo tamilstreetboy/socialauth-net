@@ -31,6 +31,9 @@ namespace Brickred.SocialAuth.NET.Demo
         {
             List<PROVIDER_TYPE> providers = SocialAuthUser.GetConnectedProviders();
 
+            //var result = SocialAuthUser.GetCurrentUser().ExecuteFeed(
+            //    "http://api.linkedin.com/v1/people/~/connections:(headline,first-name,last-name,educations)",
+            //    TRANSPORT_METHOD.GET, PROVIDER_TYPE.LINKEDIN);
 
             foreach (var provider in providers)
                 profiles.Add(SocialAuthUser.GetCurrentUser().GetProfile(provider));
