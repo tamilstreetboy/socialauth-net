@@ -47,7 +47,8 @@ namespace Brickred.SocialAuth.NET.Core
         {
             var oauthParameters = new QueryParameters();
             string processedUrl = "";
-
+            if(string.IsNullOrEmpty(provider.UserLoginEndpoint))
+                PerformDiscovery();
             oauthParameters.Add("openid.ns", "http://specs.openid.net/auth/2.0");
             oauthParameters.Add("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select");
             oauthParameters.Add("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select");
@@ -84,7 +85,7 @@ namespace Brickred.SocialAuth.NET.Core
             DirectUserToServiceProvider(); // (C)
         }
 
-        public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationCompletionHandler)
         {
             HandleRequestToken(responseCollection); // (D)
             if (!string.IsNullOrEmpty(provider.GetScope()) || provider.IsScopeDefinedAtProvider)
@@ -96,7 +97,7 @@ namespace Brickred.SocialAuth.NET.Core
                 isSuccess = true;
             logger.Info("OAuth1_0Hybrid Authorization ends..");
             //Authentication Process is through. Inform Consumer.
-            AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
+            AuthenticationCompletionHandler(isSuccess,ConnectionToken); // Authentication process complete. Call final method
         }
 
         #region IOAuth1_0Hybrid Members

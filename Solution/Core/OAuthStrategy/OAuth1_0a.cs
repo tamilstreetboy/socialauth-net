@@ -46,6 +46,8 @@ namespace Brickred.SocialAuth.NET.Core
 
         public override string GetLoginUrl(string returnUrl)
         {
+            if(string.IsNullOrEmpty(ConnectionToken.RequestToken))
+                RequestForRequestToken();
             var oauthParameters = new QueryParameters
                                       {
                                           new QueryParameter("oauth_token", ConnectionToken.RequestToken)
@@ -61,7 +63,7 @@ namespace Brickred.SocialAuth.NET.Core
             //HandleRequestTokenGrant(response); //(B) Called From within above
             DirectUserToServiceProvider(); //(C)
         }
-        public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationCompletionHandler)
         {
             logger.Info("User returns from provider");
             HandleUserReturnCallback(responseCollection); //(D) 
@@ -71,7 +73,7 @@ namespace Brickred.SocialAuth.NET.Core
 
             //Authentication Process is through. Inform Consumer. [Set isSuccess on successful authentication]
 
-            AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
+            AuthenticationCompletionHandler(isSuccess, ConnectionToken); // Authentication process complete. Call final method
 
         }
 

@@ -67,14 +67,14 @@ namespace Brickred.SocialAuth.NET.Core
             DirectUserToServiceProvider(); //(A) (B)
         }
         //Called After Directing User
-        public override void LoginCallback(QueryParameters responseCollection, Action<bool> AuthenticationCompletionHandler)
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationCompletionHandler)
         {
             HandleAuthorizationCode(responseCollection); //(C)
             RequestForAccessToken(); // (D)
             //HandleAccessTokenResponse(response); //(E) Handled from above
             logger.Info("OAuth2.0 server side Authorization flow ends ..");
             //Authentication Process is through. Inform Consumer.
-            AuthenticationCompletionHandler(isSuccess); // Authentication process complete. Call final method
+            AuthenticationCompletionHandler(isSuccess,ConnectionToken); // Authentication process complete. Call final method
         }
 
         #region Oauth2_0Implementation

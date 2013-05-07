@@ -479,7 +479,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         /// Called by Authentication Strategy at end of authentication process
         /// </summary>
         /// <param name="isSuccess">Is authentication successful</param>
-        internal static void OnAuthneticationProcessCompleted(bool isSuccess)
+        internal static void OnAuthneticationProcessCompleted(bool isSuccess, Token token)
         {
 
 
