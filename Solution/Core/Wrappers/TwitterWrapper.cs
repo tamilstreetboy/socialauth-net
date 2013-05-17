@@ -171,7 +171,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, ConnectionToken, transportMethod);
         }
         public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
         {
@@ -195,17 +195,13 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             try
             {
                 JArray j = JArray.Parse(friendsData);
-                j.ToList().ForEach(f =>
-                {
-                    friends.Add(
-                      new Contact()
-                      {
-                          Name = (string)f["name"],
-                          ID = (string)f["id_str"],
-                          ProfileURL = "http://twitter.com/#!/" + (string)f["screen_name"]
-                      });
-
-                });
+                j.ToList().ForEach(f => friends.Add(
+                    new Contact()
+                        {
+                            Name = (string)f["name"],
+                            ID = (string)f["id_str"],
+                            ProfileURL = "http://twitter.com/#!/" + (string)f["screen_name"]
+                        }));
             }
             catch
             {

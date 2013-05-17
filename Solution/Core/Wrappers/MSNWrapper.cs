@@ -80,7 +80,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         {
 
             //If token already has profile for this provider, we can return it to avoid a call
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             if (token.Profile.IsSet)
             {
                 logger.Debug("Profile successfully returned from session");
@@ -129,7 +129,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             List<Contact> contacts = new List<Contact>();
             string response = "";
             try
@@ -182,7 +182,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
             logger.Debug("Calling execution of " + feedUrl);
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, ConnectionToken, transportMethod);
         }
         public static WebResponse ExecuteFeed(string feedUrl, string accessToken, TRANSPORT_METHOD transportMethod)
         {

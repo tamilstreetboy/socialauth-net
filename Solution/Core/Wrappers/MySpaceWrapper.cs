@@ -59,7 +59,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     strategy.BeforeDirectingUserToServiceProvider +=
                         (x) =>
                         x.Add(new QueryParameter("oauth_callback",
-                                                 Utility.UrlEncode(SocialAuthUser.InProgressToken().ProviderCallbackUrl)));
+                                                 Utility.UrlEncode(ConnectionToken.ProviderCallbackUrl)));
                     _AuthenticationStrategy = strategy;
                 }
                 return _AuthenticationStrategy;
@@ -76,7 +76,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         //****** OPERATIONS
         public override UserProfile GetProfile()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             string response = "";
             //If token already has profile for this provider, we can return it to avoid a call
             if (token.Profile.IsSet)
@@ -113,7 +113,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             List<Contact> contacts = new List<Contact>();
             string response = "";
             try
