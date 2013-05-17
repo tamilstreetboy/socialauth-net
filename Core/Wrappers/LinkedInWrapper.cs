@@ -83,7 +83,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override UserProfile GetProfile()
         {
 
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             string response = "";
 
             //If token already has profile for this provider, we can return it to avoid a call
@@ -139,7 +139,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override List<Contact> GetContacts()
         {
-            Token token = SocialAuthUser.GetCurrentUser().GetConnection(this.ProviderType).GetConnectionToken();
+            Token token = ConnectionToken;
             List<Contact> contacts = new List<Contact>();
             string response = "";
             try
@@ -177,7 +177,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
-            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken(), transportMethod);
+            return AuthenticationStrategy.ExecuteFeed(feedUrl, this, ConnectionToken, transportMethod);
         }
         public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
         {

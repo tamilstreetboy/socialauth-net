@@ -66,7 +66,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override UserProfile GetProfile()
         {
             Token token = ConnectionToken;
-            //Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = AuthenticationStrategy;
             string response = "";
 
@@ -135,7 +134,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override List<Contact> GetContacts()
         {
             Token token = ConnectionToken;
-            //Token token = SocialAuthUser.GetCurrentUser().GetConnection(ProviderType).GetConnectionToken();
             OAuthStrategyBase strategy = this.AuthenticationStrategy;
             Stream responseStream = null;
             string response = "";
