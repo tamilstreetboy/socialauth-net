@@ -81,6 +81,7 @@ namespace Brickred.SocialAuth.NET.Core
 
         public event Action<QueryParameters> BeforeRequestingRequestToken = delegate { };
         public event Action<QueryParameters> BeforeRequestingAccessToken = delegate { };
+        public event Action<QueryParameters, Token> AfterGettingAccessToken = delegate { };
 
         public void RequestForRequestToken()
         {
@@ -247,7 +248,7 @@ namespace Brickred.SocialAuth.NET.Core
                     response = reader.ReadToEnd();
                     var responseCollection = Utility.GetQuerystringParameters(response);
                     HandleAccessTokenResponse(responseCollection);
-
+                    AfterGettingAccessToken(responseCollection, ConnectionToken);
                 }
 
             }

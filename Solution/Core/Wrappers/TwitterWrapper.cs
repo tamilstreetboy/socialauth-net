@@ -22,7 +22,19 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override string RequestTokenEndpoint { get { return "https://api.twitter.com/oauth/request_token"; } }
         public override string UserLoginEndpoint { get { return "https://api.twitter.com/oauth/authenticate"; } set { } }
         public override string AccessTokenEndpoint { get { return "https://api.twitter.com/oauth/access_token"; } }
-        public override OAuthStrategyBase AuthenticationStrategy { get { return _AuthenticationStrategy ?? (_AuthenticationStrategy = new OAuth1_0a(this)); } }
+        public override OAuthStrategyBase AuthenticationStrategy
+        {
+            get
+            {
+                if(_AuthenticationStrategy == null)
+                {
+                    var strategy = new OAuth1_0a(this);
+                    strategy.AfterGettingAccessToken += ProcessAccessToken;
+                    _AuthenticationStrategy = strategy;
+                }
+                return _AuthenticationStrategy;
+            }
+        }
         public override string ProfileEndpoint { get { return "http://api.twitter.com/1/users/show.json"; } }
         public override string ContactsEndpoint { get { return "http://api.twitter.com/1/friends/ids.json?screen_name={0}&cursor=-1"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
@@ -30,6 +42,14 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
 
         public override string DefaultScope { get { return ""; } }
 
+        public void ProcessAccessToken(QueryParameters responseCollection, Token connectionToken)
+        {
+            if (!string.IsNullOrEmpty(connectionToken.AccessToken))
+            {
+                connectionToken.Profile.DisplayName = connectionToken.ResponseCollection["screen_name"];
+                connectionToken.Profile.ID = connectionToken.ResponseCollection["user_id"];
+            }
+        }
 
         bool isAuthenticated = false;
         public void OnAuthenticationCompleting(bool isSuccess, Token connectionToken)
