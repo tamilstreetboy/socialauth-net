@@ -45,6 +45,7 @@ namespace Brickred.SocialAuth.NET.Core
         event Action<QueryParameters> BeforeRequestingAccessToken; //HOOK
         void RequestForAccessToken(); //(E)
         void HandleAccessTokenResponse(QueryParameters response); //(F)
+        event Action<QueryParameters, Token> AfterGettingAccessToken; //HOOK
         WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
     }
 
