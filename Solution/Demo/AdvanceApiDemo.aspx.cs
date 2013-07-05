@@ -49,7 +49,8 @@ namespace Brickred.SocialAuth.NET.Demo
         protected void btnGetProfile_Click(object sender, EventArgs e)
         {
             SocialAuthManager manager = Session["socialauth"] as SocialAuthManager;
-            var response =  manager.ExecuteFeed(PROVIDER_TYPE.FACEBOOK, "https://graph.facebook.com/me");
+            var selectedProvider = (PROVIDER_TYPE) Enum.Parse(typeof (PROVIDER_TYPE),lstProviders.SelectedItem.Text);
+            var response =  manager.ExecuteFeed(selectedProvider, ProviderFactory.GetProvider(selectedProvider).ProfileEndpoint);
             lblProfileData.Text = new StreamReader(response.GetResponseStream()).ReadToEnd();
         }
 

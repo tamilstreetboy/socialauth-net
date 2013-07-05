@@ -59,10 +59,13 @@ namespace Brickred.SocialAuth.NET.Core
             string path =  string.IsNullOrEmpty(baseUrlInConfig.Path)? request.ApplicationPath:baseUrlInConfig.Path;
 
             UriBuilder uri = new UriBuilder(protocol, domain, port, path);
-            return port == 0 ? uri.Uri.GetComponents(UriComponents.Scheme |
+            string result =  port == 0 ? uri.Uri.GetComponents(UriComponents.Scheme |
                                UriComponents.Host |
                                UriComponents.PathAndQuery,
                                UriFormat.UriEscaped) : uri.Uri.AbsoluteUri + "/";
+            if (result.EndsWith("//"))
+                result = result.Substring(0, result.Length - 1);
+            return result;
         }
         public static int IndexOfNthOrLast(this string input, string delimeter, int n, int startIndex)
         {

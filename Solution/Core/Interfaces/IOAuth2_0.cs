@@ -37,12 +37,12 @@ namespace Brickred.SocialAuth.NET.Core
 {
     public interface IOAuth2_0
     {
-
+        TRANSPORT_METHOD AccessTokenRequestType { get; set; }
         event Action<QueryParameters> BeforeDirectingUserToServiceProvider; //HOOK
         void DirectUserToServiceProvider(); // (A)(B)
         void HandleAuthorizationCode(QueryParameters responseCollection); // (C)
         event Action<QueryParameters> BeforeRequestingAccessToken; //HOOK
-        void RequestForAccessToken(); // (D)
+        void RequestForAccessToken(TRANSPORT_METHOD method); // (D)
         void HandleAccessTokenResponse(string response); // (E)
         WebResponse ExecuteFeed(string feedURL, IProvider provider, Token connectionToken, TRANSPORT_METHOD transportMethod);
     }
