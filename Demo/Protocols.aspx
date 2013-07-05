@@ -63,7 +63,7 @@
                     Implemented using OAuth2.0
                 </td>
                 <td>
-                     <img src="images/oauth_small.png" alt="OAuth 2.0" />
+                     <img src="images/oauth2_small.png" alt="OAuth 2.0" />
                 </td>
             </tr>
             <tr>
