@@ -49,15 +49,22 @@ namespace Brickred.SocialAuth.NET.Core
         public override string GetLoginUrl(string returnUrl)
         {
             var ub = new UriBuilder(provider.UserLoginEndpoint);
-            
+
             var oauthParams = new QueryParameters();
             oauthParams.Add("client_id", provider.Consumerkey);
             oauthParams.Add("redirect_uri", returnUrl);
             oauthParams.Add("response_type", "code");
             oauthParams.Add("scope", provider.GetScope());
-            
+
             BeforeDirectingUserToServiceProvider(oauthParams);
             return ub.ToString() + "?" + oauthParams.ToEncodedString();
+        }
+
+        private TRANSPORT_METHOD accessTokenRequestType = TRANSPORT_METHOD.GET;
+        public TRANSPORT_METHOD AccessTokenRequestType
+        {
+            get { return accessTokenRequestType; }
+            set { accessTokenRequestType = value; }
         }
 
         //Called Before Directing User
@@ -67,14 +74,14 @@ namespace Brickred.SocialAuth.NET.Core
             DirectUserToServiceProvider(); //(A) (B)
         }
         //Called After Directing User
-        public override void LoginCallback(QueryParameters responseCollection, Action<bool,Token> AuthenticationCompletionHandler)
+        public override void LoginCallback(QueryParameters responseCollection, Action<bool, Token> AuthenticationCompletionHandler)
         {
             HandleAuthorizationCode(responseCollection); //(C)
-            RequestForAccessToken(); // (D)
+            RequestForAccessToken(AccessTokenRequestType); // (D)
             //HandleAccessTokenResponse(response); //(E) Handled from above
             logger.Info("OAuth2.0 server side Authorization flow ends ..");
             //Authentication Process is through. Inform Consumer.
-            AuthenticationCompletionHandler(isSuccess,ConnectionToken); // Authentication process complete. Call final method
+            AuthenticationCompletionHandler(isSuccess, ConnectionToken); // Authentication process complete. Call final method
         }
 
         #region Oauth2_0Implementation
@@ -114,18 +121,49 @@ namespace Brickred.SocialAuth.NET.Core
 
         }
 
-        public void RequestForAccessToken()
+        public void RequestForAccessToken(TRANSPORT_METHOD method = TRANSPORT_METHOD.GET)
         {
-            UriBuilder ub = new UriBuilder(provider.AccessTokenEndpoint);
-            ub.SetQueryparameter("client_id", provider.Consumerkey);
-            ub.SetQueryparameter("client_secret", provider.Consumersecret);
-            ub.SetQueryparameter("code", ConnectionToken.Code);
-            ub.SetQueryparameter("redirect_uri", ConnectionToken.ProviderCallbackUrl);
-            ub.SetQueryparameter("grant_type", "authorization_code");
-            //logger.LogAuthorizationRequest(ub.ToString());
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
+            if (method != TRANSPORT_METHOD.GET && method != TRANSPORT_METHOD.POST)
+                throw new OAuthException("Invalid Verb used for requesting AccessToken. Supported verbs are GET/POST.");
 
-            string authToken = "";
+            UriBuilder ub = new UriBuilder(provider.AccessTokenEndpoint);
+            //logger.LogAuthorizationRequest(ub.ToString());
+            HttpWebRequest request;
+            
+            if (method == TRANSPORT_METHOD.POST)
+            {
+                request = (HttpWebRequest)WebRequest.Create(ub.ToString());
+                string postData = "code=" + ConnectionToken.Code;
+                postData += ("&client_id=" + provider.Consumerkey);
+                postData += ("&client_secret=" + provider.Consumersecret);
+                postData += ("&redirect_uri=" + ConnectionToken.ProviderCallbackUrl);
+                postData += ("&grant_type=authorization_code");
+
+                request.Method = "POST";
+                byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+                // Set the ContentType property of the WebRequest.
+                request.ContentType = "application/x-www-form-urlencoded";
+                // Set the ContentLength property of the WebRequest.
+                request.ContentLength = byteArray.Length;
+                // Get the request stream.
+                Stream dataStream = request.GetRequestStream();
+                // Write the data to the request stream.
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                // Close the Stream object.
+                dataStream.Close();
+                // Get the response.
+            }
+            else
+            {
+                ub.SetQueryparameter("client_id", provider.Consumerkey);
+                ub.SetQueryparameter("client_secret", provider.Consumersecret);
+                ub.SetQueryparameter("code", ConnectionToken.Code);
+                ub.SetQueryparameter("redirect_uri", ConnectionToken.ProviderCallbackUrl);
+                ub.SetQueryparameter("grant_type", "authorization_code");
+                request = (HttpWebRequest)WebRequest.Create(ub.ToString());
+            }
+
+
             try
             {
                 logger.Debug("Requesting Access Token at " + ub.ToString());
@@ -133,7 +171,7 @@ namespace Brickred.SocialAuth.NET.Core
                 using (Stream responseStream = webResponse.GetResponseStream())
                 using (StreamReader reader = new StreamReader(responseStream))
                 {
-                    authToken = reader.ReadToEnd();
+                    string authToken = reader.ReadToEnd();
                     HandleAccessTokenResponse(authToken);
                 }
 
@@ -199,11 +237,11 @@ namespace Brickred.SocialAuth.NET.Core
 
             /******** retrieve standard Fields ************/
             ub = new UriBuilder(feedURL);
-   
+
             ub.SetQueryparameter("access_token", connectionToken.AccessToken);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
             request.Method = transportMethod.ToString();
-            
+
             //logger.LogContactsRequest(ub.ToString());
             WebResponse wr;
             try
@@ -229,7 +267,7 @@ namespace Brickred.SocialAuth.NET.Core
             request = (HttpWebRequest)HttpWebRequest.Create(feedURL);
             request.ServicePoint.Expect100Continue = false;
             request.Method = transportMethod.ToString();
-           
+
             //if headers are specified, set/append them
             if (headers != null)
             {

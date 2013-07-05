@@ -41,7 +41,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         MSN,
         TWITTER,
         LINKEDIN,
-        MYSPACE
+        MYSPACE,
+        GOOGLEHYBRID
       
     }
 
@@ -68,7 +69,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
     /// <summary>
     /// Configuration Option for SocialAuth.NET
     /// </summary>
-    internal enum AUTHENTICATION_OPTION
+    public enum AUTHENTICATION_OPTION
     {
         SOCIALAUTH_SECURITY_SOCIALAUTH_SCREEN, //Everything by socialauth including screen generation
         SOCIALAUTH_SECURITY_CUSTOM_SCREEN, //Everything by socialauth but user's login url

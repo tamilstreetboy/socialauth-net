@@ -48,19 +48,21 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.GOOGLE; } }
         public override string OpenIdDiscoveryEndpoint { get { return "https://www.google.com/accounts/o8/id"; } }
         public override string RequestTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetRequestToken"; } }
-        private string userloginendpoint = ""; //"https://www.google.com/accounts/OAuthAuthorizeToken";
+        private string userloginendpoint = "https://accounts.google.com/o/oauth2/auth";
         public override string UserLoginEndpoint { get { return userloginendpoint; } set { userloginendpoint = value; } }
-        public override string AccessTokenEndpoint { get { return "https://www.google.com/accounts/OAuthGetAccessToken"; } }
+        public override string AccessTokenEndpoint { get { return "https://accounts.google.com/o/oauth2/token"; } }
         public override OAuthStrategyBase AuthenticationStrategy
         {
             get
             {
                 if (_AuthenticationStrategy == null)
                 {
-                    var oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
-                    oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider +=
-                        (x) => x.Add(new QueryParameter("openid.oauth.scope", GetScope()));
-                    _AuthenticationStrategy = oauth1_0HybridStrategy;
+                    //var oauth1_0HybridStrategy = new OAuth1_0Hybrid(this);
+                    //oauth1_0HybridStrategy.BeforeDirectingUserToServiceProvider +=
+                    //    (x) => x.Add(new QueryParameter("openid.oauth.scope", GetScope()));
+                    //_AuthenticationStrategy = oauth1_0HybridStrategy;
+                    _AuthenticationStrategy = new OAuth2_0server(this);
+                    ((OAuth2_0server)_AuthenticationStrategy).AccessTokenRequestType = TRANSPORT_METHOD.POST;
                 }
                 return _AuthenticationStrategy;
             }
@@ -121,6 +123,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     //    "photos":[{"value":"http://www.google.com/ig/c/photos/public/AIbEiAIAAABDCJ_d1payzeKeNiILdmNhcmRfcGhvdG8qKGFjM2RmMzQ1ZDc4Nzg5NmI5NmFjYTc1NDNjOTA3MmQ5MmNmOTYzZWIwAe0HZMa7crOI_laYBG7LxYvlAvqe","type":"thumbnail"}],"displayName":"deepak Aggarwal"}}
                     profile.Provider = ProviderType;
                     profile.ID = profileJson.Get("id");
+                    profile.Email = profileJson.Get("email");
                     profile.ProfileURL = profileJson.Get("link");
                     profile.FirstName = profileJson.Get("given_name");
                     profile.LastName = profileJson.Get("family_name");
@@ -138,7 +141,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 profile.FirstName = token.ResponseCollection["openid.ext1.value.firstname"];
                 profile.LastName = token.ResponseCollection["openid.ext1.value.lastname"];
             }
-            profile.Email = token.ResponseCollection.Get("openid.ext1.value.email");
+            if (string.IsNullOrEmpty(profile.Email))
+                profile.Email = token.ResponseCollection.Get("openid.ext1.value.email");
             profile.Country = token.ResponseCollection.Get("openid.ext1.value.country");
             profile.Language = token.ResponseCollection.Get("openid.ext1.value.language");
             profile.IsSet = true;

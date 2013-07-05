@@ -46,13 +46,24 @@
             </tr>
             <tr>
                 <td>
-                    <img src="images/Socialauthicons/google.png" alt="google" />
+                    <img src="images/Socialauthicons/googlehybrid.png" alt="google" />
                 </td>
                 <td class="bigText">
                     Implemented using OAuth+OpenID
                 </td>
                 <td>
                     <img src="images/hybrid_small.png" alt="OAuth 1.0 Hybrid" />
+                </td>
+            </tr>
+             <tr>
+                <td>
+                    <img src="images/Socialauthicons/google.png" alt="google" />
+                </td>
+                <td class="bigText">
+                    Implemented using OAuth2.0
+                </td>
+                <td>
+                     <img src="images/oauth_small.png" alt="OAuth 2.0" />
                 </td>
             </tr>
             <tr>
