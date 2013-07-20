@@ -111,7 +111,7 @@ namespace Brickred.SocialAuth.NET.Core
             //2. Notify Consumer (optionally user may wish to add extra parameters)
             BeforeRequestingRequestToken(oauthParameters); // hook called
 
-            oauthParameters.ToList().ForEach(x=>x.Value = Utility.UrlEncode(x.Value));
+            //oauthParameters.ToList().ForEach(x=>x.Value = Utility.UrlEncode(x.Value));
 
             //3. Generate Signature
             signature = oauthHelper.GenerateSignature(new Uri(provider.RequestTokenEndpoint), oauthParameters, provider.Consumerkey, provider.Consumersecret, provider.SignatureMethod, provider.TransportName, string.Empty);

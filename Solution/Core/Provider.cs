@@ -152,7 +152,7 @@ namespace Brickred.SocialAuth.NET.Core
                 strScopes = strScopes.Substring(0, strScopes.Length - 1);
             if (strScopes.StartsWith(ScopeDelimeter))
                 strScopes = strScopes.Substring(ScopeDelimeter.Length);
-            return strScopes;
+            return HttpUtility.UrlEncode(strScopes);
         }
 
 
