@@ -126,7 +126,10 @@ namespace Brickred.SocialAuth.NET.Core
             //tmpOauthParameters["scope"] = Utility.UrlEncode(tmpOauthParameters["scope"]);
 
             foreach (var p in Utility.GetQuerystringParameters(requestURL.ToString()))
-                tmpOauthParameters.Add(p.Key, Utility.UrlEncodeForSigningRequest(p.Value));
+                tmpOauthParameters.Add(p.Key, UrlEncode(HttpUtility.UrlDecode(p.Value)));
+
+                //following works for Twitter with spaces
+                //tmpOauthParameters.Add(p.Key, UrlEncode(HttpUtility.UrlDecode(p.Value)));
 
             //3. Perform Lexographic Sorting
             tmpOauthParameters.Sort();
