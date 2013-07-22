@@ -25,7 +25,8 @@
  <SocialAuthConfiguration>
      <Providers>
       <add WrapperName="FacebookWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
-      <add WrapperName="GoogleWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+      <add WrapperName="GoogleHybridWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+	  <add WrapperName="GoogleWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
       <add WrapperName="MSNWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
       <add WrapperName="YahooWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
       <add WrapperName="TwitterWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
