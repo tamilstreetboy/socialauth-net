@@ -44,17 +44,6 @@
                     <img src="images/oauth2_small.png" alt="OAuth 2.0" />
                 </td>
             </tr>
-            <tr>
-                <td>
-                    <img src="images/Socialauthicons/googlehybrid.png" alt="google" />
-                </td>
-                <td class="bigText">
-                    Implemented using OAuth+OpenID
-                </td>
-                <td>
-                    <img src="images/hybrid_small.png" alt="OAuth 1.0 Hybrid" />
-                </td>
-            </tr>
              <tr>
                 <td>
                     <img src="images/Socialauthicons/google.png" alt="google" />
@@ -64,6 +53,17 @@
                 </td>
                 <td>
                      <img src="images/oauth2_small.png" alt="OAuth 2.0" />
+                </td>
+            </tr>
+             <tr>
+                <td>
+                    <img src="images/Socialauthicons/LinkedIn.png" alt="LinkedIn" />
+                </td>
+                <td class="bigText">
+                    Implemented using OAuth 2.0
+                </td>
+                <td>
+                    <img src="images/oauth2_small.png" alt="OAuth 2.0" />
                 </td>
             </tr>
             <tr>
@@ -99,17 +99,29 @@
                     <img src="images/oauth_small.png" alt="OAuth 1.0a" />
                 </td>
             </tr>
+             <tr>
+                <td>
+                    <img src="images/Socialauthicons/googlehybrid.png" alt="google" />
+                </td>
+                <td class="bigText">
+                    Implemented using OAuth+OpenID
+                </td>
+                <td>
+                    <img src="images/hybrid_small.png" alt="OAuth 1.0 Hybrid" />
+                </td>
+            </tr>
             <tr>
                 <td>
-                    <img src="images/Socialauthicons/LinkedIn.png" alt="LinkedIn" />
+                    <img src="images/Socialauthicons/LinkedIn1.png" alt="LinkedIn" />
                 </td>
                 <td class="bigText">
                     Implemented using OAuth 1.0a
                 </td>
                 <td>
-                    <img src="images/oauth_small.png" alt="OAuth 2.0" />
+                    <img src="images/oauth_small.png" alt="OAuth 1.0a" />
                 </td>
             </tr>
+            
         </table>
     </div>
 </asp:Content>

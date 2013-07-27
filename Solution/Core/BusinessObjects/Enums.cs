@@ -40,6 +40,7 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         YAHOO,
         MSN,
         TWITTER,
+        LINKEDIN1,
         LINKEDIN,
         MYSPACE,
         GOOGLEHYBRID

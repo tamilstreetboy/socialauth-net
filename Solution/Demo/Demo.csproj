@@ -40,6 +40,10 @@
     <Reference Include="Newtonsoft.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="SocialAuth-net, Version=2.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\SocialAuth-net.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -74,7 +78,9 @@
     <Content Include="images\SocialAuthIcons\currentyes.png" />
     <Content Include="images\SocialAuthIcons\facebook.png" />
     <Content Include="images\SocialAuthIcons\google.png" />
+    <Content Include="images\SocialAuthIcons\googlehybrid.png" />
     <Content Include="images\SocialAuthIcons\linkedin.png" />
+    <Content Include="images\SocialAuthIcons\linkedin1.png" />
     <Content Include="images\SocialAuthIcons\msn.png" />
     <Content Include="images\SocialAuthIcons\myspace.png" />
     <Content Include="images\SocialAuthIcons\twitter.png" />
