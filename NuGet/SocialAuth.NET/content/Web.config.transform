@@ -32,6 +32,7 @@
       <add WrapperName="TwitterWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
       <add WrapperName="LinkedInWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
       <add WrapperName="MySpaceWrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
+	  <add WrapperName="LinkedIn1Wrapper" ConsumerKey="Key" ConsumerSecret="Secret" />
     </Providers>
     <Allow Files=""  />
     <Authentication Enabled="false" LoginUrl="" DefaultUrl=""  />
