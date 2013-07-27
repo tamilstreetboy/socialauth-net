@@ -97,6 +97,7 @@
     <Compile Include="Wrappers\FacebookWrapper.cs" />
     <Compile Include="Wrappers\GoogleHybridWrapper.cs" />
     <Compile Include="Wrappers\GoogleWrapper.cs" />
+    <Compile Include="Wrappers\LinkedIn1Wrapper.cs" />
     <Compile Include="Wrappers\LinkedInWrapper.cs" />
     <Compile Include="Wrappers\MSNWrapper.cs" />
     <Compile Include="Wrappers\MySpaceWrapper.cs" />

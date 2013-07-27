@@ -22,69 +22,67 @@ THE SOFTWARE.
 ===========================================================================
 
 */
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
+using Brickred.SocialAuth.NET.Core.BusinessObjects;
 using System.Web;
 using System.Net;
 using System.IO;
-using Brickred.SocialAuth.NET.Core.BusinessObjects;
-using System.Collections.Specialized;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using log4net;
 
+
 namespace Brickred.SocialAuth.NET.Core.Wrappers
 {
-    internal class LinkedInWrapper : Provider, IProvider
+    public class LinkedInWrapper : Provider, IProvider
     {
-        private OAuthStrategyBase _AuthenticationStrategy = null;
         #region IProvider Members
+
+        private OAuthStrategyBase _AuthenticationStrategy = null;
 
         //****** PROPERTIES
         private static readonly ILog logger = log4net.LogManager.GetLogger("LinkedInWrapper");
         public override PROVIDER_TYPE ProviderType { get { return PROVIDER_TYPE.LINKEDIN; } }
-        public override string RequestTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/requestToken"; } }
-        public override string UserLoginEndpoint { get { return "https://www.linkedin.com/uas/oauth/authenticate"; } set { } }
-        public override string AccessTokenEndpoint { get { return "https://api.linkedin.com/uas/oauth/accessToken"; } }
-        public override string ScopeDelimeter { get { return " "; } }
+        public override string UserLoginEndpoint { get { return "https://www.linkedin.com/uas/oauth2/authorization"; } set { } }
+        public override string AccessTokenEndpoint { get { return "https://www.linkedin.com/uas/oauth2/accessToken"; } }
         public override OAuthStrategyBase AuthenticationStrategy
         {
             get
             {
                 if (_AuthenticationStrategy == null)
                 {
-                    var oauth1Strategy = new OAuth1_0a(this);
-                    string scope = GetScope();
-                    if (!string.IsNullOrEmpty(scope))
-                        oauth1Strategy.BeforeRequestingRequestToken +=
-                            (x) => x.Add(new QueryParameter("scope", scope));
-                    _AuthenticationStrategy = oauth1Strategy;
+                    var strategy = new OAuth2_0server(this);
+                    strategy.AccessTokenQueryParameterKey = "oauth2_access_token";
+                    strategy.BeforeDirectingUserToServiceProvider += (queryParameters)=>
+                    {
+                        queryParameters.Add(new QueryParameter("state",DateTime.Today.Ticks.ToString()));
+                    };
+                    strategy.AccessTokenRequestType = TRANSPORT_METHOD.POST;
+                    _AuthenticationStrategy = strategy;
                 }
                 return _AuthenticationStrategy;
             }
         }
-
-        public override string ProfileEndpoint { get { return "http://api.linkedin.com/v1/people/~:(id,first-name,last-name,languages,date-of-birth,picture-url,email-address,location:(name))"; } }
+        public override string ProfileEndpoint { get { return "https://api.linkedin.com/v1/people/~:(id,first-name,last-name,languages,date-of-birth,picture-url,email-address,location:(name))"; } }
         public override string ContactsEndpoint { get { return "http://api.linkedin.com/v1/people/~/connections:(id,first-name,last-name,public-profile-url)"; } }
-        public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
+
+        public override SIGNATURE_TYPE SignatureMethod { get { throw new NotImplementedException(); } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
         public override string DefaultScope { get { return "r_fullprofile,r_emailaddress,r_network,r_contactinfo,rw_nus"; } }
 
-            public LinkedInWrapper()
-        {
-
-        }
 
         //****** OPERATIONS
         public override UserProfile GetProfile()
         {
-
             Token token = ConnectionToken;
+            OAuthStrategyBase strategy = AuthenticationStrategy;
             string response = "";
+
 
             //If token already has profile for this provider, we can return it to avoid a call
             if (token.Profile.IsSet)
@@ -96,7 +94,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             try
             {
                 logger.Debug("Executing Profile feed");
-                Stream responseStream = AuthenticationStrategy.ExecuteFeed(ProfileEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
+                Stream responseStream = strategy.ExecuteFeed(ProfileEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
                 response = new StreamReader(responseStream).ReadToEnd();
             }
             catch
@@ -137,6 +135,10 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
             return token.Profile;
         }
+
+
+
+
         public override List<Contact> GetContacts()
         {
             Token token = ConnectionToken;
@@ -175,14 +177,11 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
             return contacts;
         }
+
         public override WebResponse ExecuteFeed(string feedUrl, TRANSPORT_METHOD transportMethod)
         {
+            logger.Debug("Calling execution of " + feedUrl);
             return AuthenticationStrategy.ExecuteFeed(feedUrl, this, ConnectionToken, transportMethod);
-        }
-        public static WebResponse ExecuteFeed(string feedUrl, string accessToken, string tokenSecret, TRANSPORT_METHOD transportMethod)
-        {
-            LinkedInWrapper wrapper = new LinkedInWrapper();
-            return wrapper.AuthenticationStrategy.ExecuteFeed(feedUrl, wrapper, new Token() { AccessToken = accessToken, TokenSecret = tokenSecret }, transportMethod);
         }
 
         #endregion
