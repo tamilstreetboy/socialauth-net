@@ -17,3 +17,11 @@ E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\Newtonsoft.Json.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\bin\SocialAuth-net.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.dll
 E:\Projects\TSG\SocialAuth.Net\SocialAuthMVC\obj\Debug\SocialAuthMVC.pdb
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\bin\SocialAuthMVC.dll
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\bin\SocialAuthMVC.pdb
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\bin\SocialAuth-net.dll
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\bin\Microsoft.IdentityModel.dll
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\bin\EntityFramework.xml
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\obj\Debug\ResolveAssemblyReference.cache
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\obj\Debug\SocialAuthMVC.dll
+D:\Projects\TSG\SocialAuth.NET\svn\trunk\SocialAuthMVC\obj\Debug\SocialAuthMVC.pdb
