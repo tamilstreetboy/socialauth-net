@@ -47,6 +47,8 @@ namespace Brickred.SocialAuth.NET.Demo
             Response.ClearContent();
             Response.AddHeader("Content-Disposition", String.Format("attachment; filename={0}", "MyFile.token"));
             Response.WriteFile("~/temptokens/MyFile.token");
+            Response.End();
+            
         }
 
         protected void btnUpload_Click(object sender, EventArgs e)

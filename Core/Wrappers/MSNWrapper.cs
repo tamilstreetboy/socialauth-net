@@ -53,6 +53,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 if (_AuthenticationStrategy == null)
                 {
                     OAuth2_0server strategy = new OAuth2_0server(this);
+                    strategy.AccessTokenRequestType = TRANSPORT_METHOD.POST;
                     strategy.BeforeDirectingUserToServiceProvider += (x) =>
                                     {
                                         if (string.IsNullOrEmpty(GetScope()))

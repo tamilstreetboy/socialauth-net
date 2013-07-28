@@ -34,7 +34,7 @@ namespace Brickred.SocialAuth.NET.Demo
 
         private void GetTweets()
         {
-            var response = SocialAuthUser.GetCurrentUser().ExecuteFeed("https://api.twitter.com/1/statuses/home_timeline.json?include_entities=true", TRANSPORT_METHOD.GET, PROVIDER_TYPE.TWITTER);
+            var response = SocialAuthUser.GetCurrentUser().ExecuteFeed("https://api.twitter.com/1.1/statuses/home_timeline.json?include_entities=true", TRANSPORT_METHOD.GET, PROVIDER_TYPE.TWITTER);
             var tweetsJson = new StreamReader(response.GetResponseStream()).ReadToEnd();
             var tweets = JArray.Parse(tweetsJson);
             var i = 0;
@@ -58,7 +58,7 @@ namespace Brickred.SocialAuth.NET.Demo
         {
 
             string msg = HttpUtility.UrlEncode(txtTweet.Text);
-            string endpoint = "http://api.twitter.com/1/statuses/update.json?status=" + msg;
+            string endpoint = "http://api.twitter.com/1.1/statuses/update.json?status=" + msg;
 
             string body = String.Empty;
             byte[] reqbytes = new ASCIIEncoding().GetBytes(body);

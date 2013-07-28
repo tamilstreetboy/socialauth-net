@@ -46,6 +46,13 @@ namespace Brickred.SocialAuth.NET.Core
             this.provider = provider;
         }
 
+        private string accessTokenQueryParameterKey = "access_token";
+        public string AccessTokenQueryParameterKey
+        {
+            get { return accessTokenQueryParameterKey; }
+            set { accessTokenQueryParameterKey = value; }
+        }
+
         public override string GetLoginUrl(string returnUrl)
         {
             var ub = new UriBuilder(provider.UserLoginEndpoint);
@@ -129,7 +136,7 @@ namespace Brickred.SocialAuth.NET.Core
             UriBuilder ub = new UriBuilder(provider.AccessTokenEndpoint);
             //logger.LogAuthorizationRequest(ub.ToString());
             HttpWebRequest request;
-            
+
             if (method == TRANSPORT_METHOD.POST)
             {
                 request = (HttpWebRequest)WebRequest.Create(ub.ToString());
@@ -160,7 +167,9 @@ namespace Brickred.SocialAuth.NET.Core
                 ub.SetQueryparameter("code", ConnectionToken.Code);
                 ub.SetQueryparameter("redirect_uri", ConnectionToken.ProviderCallbackUrl);
                 ub.SetQueryparameter("grant_type", "authorization_code");
+
                 request = (HttpWebRequest)WebRequest.Create(ub.ToString());
+                request.Method = "POST";
             }
 
 
@@ -238,7 +247,7 @@ namespace Brickred.SocialAuth.NET.Core
             /******** retrieve standard Fields ************/
             ub = new UriBuilder(feedURL);
 
-            ub.SetQueryparameter("access_token", connectionToken.AccessToken);
+            ub.SetQueryparameter(AccessTokenQueryParameterKey, connectionToken.AccessToken);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(ub.ToString());
             request.Method = transportMethod.ToString();
 
