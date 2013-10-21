@@ -180,7 +180,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
         }
         private List<Contact> Friends(string friendUserIDs, Token token)
         {
-            string lookupUrl = "http://api.twitter.com/1/users/lookup.json?user_id=" + friendUserIDs;
+            string lookupUrl = "http://api.twitter.com/1.1/users/lookup.json?user_id=" + friendUserIDs;
             OAuthHelper helper = new OAuthHelper();
             string friendsData = "";
             try
