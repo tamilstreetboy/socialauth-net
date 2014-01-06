@@ -102,20 +102,15 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 return token.Profile;
 
             var provider = ProviderFactory.GetProvider(token.Provider);
-
-            if (GetScope().ToLower().Contains("https://www.googleapis.com/auth/userinfo.profile"))
+            var scope = GetScope().ToLower();
+            if (scope.Contains("userinfo.profile") || scope.Contains("userinfo.email"))
             {
                 try
                 {
                     logger.Debug("Executing profile feed");
                     Stream responseStream = AuthenticationStrategy.ExecuteFeed(ProfileEndpoint, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
                     response = new StreamReader(responseStream).ReadToEnd();
-                }
-                catch
-                { throw; }
-
-                try
-                {
+            
                     JObject profileJson = JObject.Parse(response);
                     //{"entry":{"profileUrl":"https://plus.google.com/103908432244378021535","isViewer":true,"id":"103908432244378021535",
                     //    "name":{"formatted":"deepak Aggarwal","familyName":"Aggarwal","givenName":"deepak"},
@@ -136,15 +131,6 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                     throw new DataParsingException(response, ex);
                 }
             }
-            else
-            {
-                profile.FirstName = token.ResponseCollection["openid.ext1.value.firstname"];
-                profile.LastName = token.ResponseCollection["openid.ext1.value.lastname"];
-            }
-            if (string.IsNullOrEmpty(profile.Email))
-                profile.Email = token.ResponseCollection.Get("openid.ext1.value.email");
-            profile.Country = token.ResponseCollection.Get("openid.ext1.value.country");
-            profile.Language = token.ResponseCollection.Get("openid.ext1.value.language");
             profile.IsSet = true;
             token.Profile = profile;
             logger.Info("Profile successfully received");
