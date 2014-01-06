@@ -99,9 +99,9 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 if (xDoc.Root.Element(xn + "gender") != null)
                     profile.GenderType = Utility.ParseGender(xDoc.Root.Element(xn + "gender").Value);
 
-                if (string.IsNullOrEmpty(profile.FirstName))
+                if (token.ResponseCollection.HasName("openid.ax.value.firstname") && string.IsNullOrEmpty(profile.FirstName))
                     profile.FirstName = token.ResponseCollection["openid.ax.value.firstname"];
-                if (string.IsNullOrEmpty(profile.FirstName))
+                if (token.ResponseCollection.HasName("openid.ax.value.lastname") && string.IsNullOrEmpty(profile.LastName))
                     profile.LastName = token.ResponseCollection["openid.ax.value.lastname"];
                 profile.Email = token.ResponseCollection.Get("openid.ax.value.email");
                 profile.Country = token.ResponseCollection.Get("openid.ax.value.country");
