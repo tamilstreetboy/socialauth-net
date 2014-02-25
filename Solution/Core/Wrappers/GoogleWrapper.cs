@@ -68,7 +68,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             }
         }
         public override string ProfileEndpoint { get { return "https://www.googleapis.com/oauth2/v1/userinfo"; } }//https://www-opensocial.googleusercontent.com/api/people/@me/@self
-        public override string ContactsEndpoint { get { return "http://www.google.com/m8/feeds/contacts/default/full/?max-results=1000"; } }
+        public override string ContactsEndpoint { get { return "https://www.google.com/m8/feeds/contacts/default/full/?max-results=1000"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.GET; } }
         public override string ScopeDelimeter
