@@ -115,9 +115,18 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 token.Profile.GenderType = Utility.ParseGender(profileJson.Get("gender"));
                 if (!string.IsNullOrEmpty(ProfileEndpoint))
                 {
-                    var pictureResponse = strategy.ExecuteFeed(ProfilePictureEndpoint, this, token, TRANSPORT_METHOD.GET);
-                    if (pictureResponse != null && !string.IsNullOrEmpty(pictureResponse.ResponseUri.AbsolutePath))
-                        token.Profile.ProfilePictureURL = pictureResponse.ResponseUri.AbsoluteUri.Replace("\"", "");
+                    try
+                    {
+                        var pictureResponse = strategy.ExecuteFeed(ProfilePictureEndpoint, this, token,
+                                                                   TRANSPORT_METHOD.GET);
+                        if (pictureResponse != null && !string.IsNullOrEmpty(pictureResponse.ResponseUri.AbsolutePath))
+                            token.Profile.ProfilePictureURL = pictureResponse.ResponseUri.AbsoluteUri.Replace("\"", "");
+                    }
+
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex.Message);
+                    }
                 }
                 token.Profile.IsSet = true;
                 logger.Info("Profile successfully received");
