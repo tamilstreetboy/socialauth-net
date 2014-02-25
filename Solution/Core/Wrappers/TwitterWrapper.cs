@@ -35,8 +35,8 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
                 return _AuthenticationStrategy;
             }
         }
-        public override string ProfileEndpoint { get { return "http://api.twitter.com/1.1/users/show.json"; } }
-        public override string ContactsEndpoint { get { return "http://api.twitter.com/1.1/friends/ids.json?screen_name={0}&cursor=-1"; } }
+        public override string ProfileEndpoint { get { return "https://api.twitter.com/1.1/users/show.json"; } }
+        public override string ContactsEndpoint { get { return "https://api.twitter.com/1.1/friends/ids.json?screen_name={0}&cursor=-1"; } }
         public override SIGNATURE_TYPE SignatureMethod { get { return SIGNATURE_TYPE.HMACSHA1; } }
         public override TRANSPORT_METHOD TransportName { get { return TRANSPORT_METHOD.POST; } }
 
@@ -76,7 +76,7 @@ namespace Brickred.SocialAuth.NET.Core.Wrappers
             try
             {
                 logger.Debug("Executing Profile feed");
-                string profileUrl = ProfileEndpoint + "?user_id=" + token.Profile.ID;
+                string profileUrl = ProfileEndpoint + "?screen_name=" + token.Profile.DisplayName;
                 Stream responseStream = AuthenticationStrategy.ExecuteFeed(profileUrl, this, token, TRANSPORT_METHOD.GET).GetResponseStream();
                 response = new StreamReader(responseStream).ReadToEnd();
 
