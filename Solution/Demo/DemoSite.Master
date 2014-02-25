@@ -12,7 +12,7 @@
     <form id="form2" runat="server">
     <div class="header">
         <div style="font-size: 20px; float: left; width: 15%; font-weight: bold;margin-top:15px">
-            <center><a href="http://code.google.com/p/socialauth-net/">SocialAuth 2.4</a></center></div>
+            <center><a href="http://code.google.com/p/socialauth-net/">v<%=System.Reflection.Assembly.GetAssembly(typeof(Brickred.SocialAuth.NET.Core.BusinessObjects.SocialAuthUser)).GetName().Version %></a></center></div>
         <div style="width: 85%; float: left;">
             <div style="float: left;">
                 <uc1:SocialAuthLogin ID="SocialAuthLogin1" runat="server" Width="710px" Height="60px" BackgroundColor="purple" />
