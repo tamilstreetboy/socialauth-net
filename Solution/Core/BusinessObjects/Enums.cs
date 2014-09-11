@@ -43,8 +43,8 @@ namespace Brickred.SocialAuth.NET.Core.BusinessObjects
         LINKEDIN1,
         LINKEDIN,
         MYSPACE,
-        GOOGLEHYBRID
-      
+        GOOGLEHYBRID,
+        AMAZON
     }
 
     /// <summary>

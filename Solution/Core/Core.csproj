@@ -73,7 +73,6 @@
     <Compile Include="BusinessObjects\UserProfile.cs" />
     <Compile Include="BusinessObjects\SocialAuthUser.cs" />
     <Compile Include="Interfaces\IOauth1_0Hybrid.cs" />
-    <Compile Include="Interfaces\IUserSessionPersistence.cs" />
     <Compile Include="Interfaces\IProvider.cs" />
     <Compile Include="Interfaces\IOAuth2_0.cs" />
     <Compile Include="Interfaces\IOAuth1_0a.cs" />
@@ -94,6 +93,7 @@
     <Compile Include="SocialAuthHttpModule.cs" />
     <Compile Include="SocialAuthManager.cs" />
     <Compile Include="Utility.cs" />
+    <Compile Include="Wrappers\AmazonWrapper.cs" />
     <Compile Include="Wrappers\FacebookWrapper.cs" />
     <Compile Include="Wrappers\GoogleHybridWrapper.cs" />
     <Compile Include="Wrappers\GoogleWrapper.cs" />
